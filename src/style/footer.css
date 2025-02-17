@@ -1,0 +1,164 @@
+/* Gaya umum footer */
+.footer {
+    background-color: #222;
+    color: #ffffffd3;
+    padding: 30px 0;
+  }
+  
+  /* Kontainer utama */
+  .footer-container {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  /* Layout row */
+  .footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Bagian Kiri */
+  .footer-section {
+    flex: 1;
+    min-width: 250px;
+    text-align: left;
+  }
+  
+ 
+  
+  .footer-muted {
+    color: #777;
+  }
+  
+  .footer-link {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 8px;
+  }
+  
+  .footer-link:hover {
+    color: white;
+  }
+  
+  /* Bagian Tengah (Social Media) */
+  .footer-social {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .social-icon {
+    color: white;
+    font-size: 24px;
+    transition: color 0.3s;
+  }
+  
+  .social-icon:hover {
+    color: #4caf50;
+  }
+
+  
+  
+  /* Bagian Kanan (Download App) */
+  .logo {
+    display: flex;
+    align-items: baseline; /* Menjajarkan teks berdasarkan baseline */
+    font-family: 'Poppins', sans-serif;
+}
+  .footer-logo {
+    display: flex;
+    align-items: baseline; /* Menjajarkan teks berdasarkan baseline */
+    font-family: 'Poppins', sans-serif;
+}
+
+.nusas {
+    color: #00a650;
+    font-weight: bold;
+    font-size: 28px;
+}
+
+.nusas-mobile{
+  color: #00a650;
+  font-size: 23px;
+}
+
+.food {
+    color: #00a650;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.food-mobile {
+  color: #00a650;
+  font-size: 23px;
+  font-weight: bold;
+  display: inline-block; 
+  border: 2px solid #00a650; 
+  padding: 1.5px 3px; 
+  margin: 2px; 
+  border-radius: 4px; 
+}
+
+.bordered {
+  display: inline-block; 
+  border: 2px solid #00a650; 
+  padding: 2px 5px; 
+  margin: 2px; 
+  border-radius: 5px; 
+}
+
+.footer-section-header {
+  margin-bottom: 50px;
+}
+
+.footer-section-header .text {
+  font-size: 18px;
+}
+
+
+  
+  /* Responsif */
+  @media (max-width: 990px) {
+    .footer-container {
+      width: 90%;
+    }
+  }
+  
+  @media (max-width: 700px) {
+    .footer-container {
+      width: 100%;
+      padding: 0 10px;
+      text-align: center;
+      display: block;
+    } 
+
+    .footer-row {
+      text-align: center;
+      display: flex;
+      justify-content: center;
+    }
+
+    .footer-section-header {
+      text-align: center;
+    }
+
+    .footer-section-buttom {
+      text-align: center;
+    }
+
+    .footer-logo {
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      margin-top: 50px;
+    }
+   
+  }
+  
+
+ 

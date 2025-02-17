@@ -1,0 +1,98 @@
+.container-profile {
+    position: relative;
+    margin: auto;
+    height: 98vh;
+    align-items: center;
+    max-width: 600px;
+    background-color: #fff;
+}
+
+.header-profile {
+    display: flex;
+    padding: 20px;
+    align-items: center;
+    border-radius:  5px;
+    z-index: 30px;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3);
+    background-color: #fff;
+}
+
+.header-profile p {
+    margin: 0;
+}
+
+.circle-profile {
+    margin-right: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: green; /* Warna background lingkaran */
+    color: white; /* Warna teks */
+    border-radius: 50%; /* Membuat elemen menjadi lingkaran */
+    width: 80px; /* Lebar lingkaran */
+    height: 80px; /* Tinggi lingkaran */
+    font-size: 30px; /* Ukuran font untuk inisial */
+    font-weight: bold; /* Membuat inisial tebal */
+    text-align: center;
+  }
+
+
+  .title {
+    font-size: 22px;
+  }
+
+  .article {
+    color: #b1aeae;
+    font-size: 15px;
+  }
+
+  .body-profile {
+    margin: 20px;
+    gap: 10px;
+    margin-top: 30px;
+  }
+
+  .fill-body-profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    padding: 10px 10px 5px 10px;
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.2);
+    z-index: 20px;
+  }
+
+  .fill-body-profile svg {
+    margin-right: 50px;
+  }
+
+  .fill-body-profile input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    height: 2.9rem;
+  }
+
+  .pointer {
+    cursor: pointer;
+  }
+
+  .cart-badge-profile {
+    position: absolute;
+    top: -5px;
+    right: 8px;
+    background: linear-gradient(45deg, #ff6b6b, #ff3838);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Segoe UI', sans-serif;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    animation: pulse 2s infinite;
+    border: 2px solid white;
+  }

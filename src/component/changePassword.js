@@ -1,0 +1,40 @@
+import "../style/loginSignup.css"
+import { useNavigate } from "react-router-dom"
+
+export default function ChangePassword() {
+    const navigate = useNavigate();
+
+    return (
+        <div>   
+            <div class="container-change-password">
+                <div class="card-change-password">
+                    <div className="flex" style={{justifyContent: 'space-between'}}>
+                        <h1 className="title-change-password">Ganti Password</h1>
+                        <svg 
+                        onClick={() => navigate("/profile")}   
+                        style={{opacity: '0.3', cursor: 'pointer'}}
+                        xmlns="http://www.w3.org/2000/svg" width="30" height="40" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16" 
+                        >
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                        </svg>
+                    </div>
+                    <form className="form">
+                        <div style={{position: 'relative'}}>
+                            <input type="email" placeholder="" className="input mb-10" />
+                            <label className="input-label">Current Password</label>
+                        </div>
+                        <div style={{position: 'relative'}}>
+                            <input type="Password" placeholder="" className="input mb-10" />
+                            <label className="input-label">Password</label>
+                        </div>
+                        <div style={{position: 'relative', marginBottom: '1.5rem'}}>
+                            <input type="Password" placeholder="" className="input mb-10" />
+                            <label className="input-label">Repeat Password</label>
+                        </div>
+                        <button className="button">Continue</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    )
+}

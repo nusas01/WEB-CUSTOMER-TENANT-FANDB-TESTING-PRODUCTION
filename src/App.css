@@ -1,0 +1,353 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+  overflow-x: hidden;
+}
+
+
+.navbar {
+  top: 0; 
+  left: 0;
+  width: 80%; 
+  margin: auto;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 20px 0 35px 0;
+}
+
+.navbar-mobile {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.container-navbar {
+  position: fixed; 
+  width: 100%;
+  z-index: 10;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-menu {
+  display: flex;
+}
+
+.navbar-cart {
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.navbar-cart:hover {
+  transform: translateY(-2px);
+}
+
+.navbar-cart svg {
+  width: 32px;
+  height: 32px;
+  color: #2d3748;
+  transition: all 0.2s ease;
+}
+
+.navbar-cart:hover svg {
+  color: #4a5568;
+  transform: scale(1.05);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(45deg, #ff6b6b, #ff3838);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Segoe UI', sans-serif;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  animation: pulse 2s infinite;
+  border: 2px solid white;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.navbar-cart:hover .cart-badge:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.container-button-category {
+  margin: auto;
+  position: fixed;
+  width: 80%;
+  position: relative;
+}
+
+.container-button-category-mobile {
+  margin: auto;
+  position: fixed;
+  width: 80%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.container-button-category-mobile button {
+  font-size: 15px;
+}
+
+
+.container-bg {
+  background-color: #fff;
+}
+
+.container-home {
+  width: 80%;
+  align-items: center;
+  margin: auto;
+  position: relative;
+  padding-top: 210px;
+  padding-bottom: 50px;
+}
+
+.container-home-mobile {
+  width: 100%;
+  padding-top: 145px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.title-category {
+  font-size: 35px;
+  margin-bottom: 40px;
+}
+
+.container-category {
+  margin-bottom: 50px;
+}
+
+
+
+.logo img {
+  width: 150px;
+}
+
+.auth button, .language select {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.category-tabs {
+  display: flex;
+  justify-content: center;
+  background-color: #fff;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab {
+  padding: 10px 20px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tab.active {
+  border-bottom: 2px solid #00a650;
+  color: #00a650;
+  
+}
+
+.menu {
+  padding: 20px;
+}
+
+.menu h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap; /* Membuat elemen bisa membungkus ke baris berikutnya */
+  gap: 20px; /* Memberikan jarak antar produk */
+  justify-content: flex-start; /* Mengatur agar produk dimulai dari kiri */
+}
+
+.product-card {
+  cursor: pointer;
+  display: flex;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 1px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+  width: calc(33.333% - 20px); /* Mengatur lebar produk 1/3 dari lebar kontainer */
+  position: relative;
+  margin-bottom: 20px; /* Jarak antara produk dan baris berikutnya */
+}
+
+.product-card:hover {
+  border: 1px solid #00a650;
+}
+
+.product-title {
+  text-align: start;
+  margin-left: 15px;
+}
+
+.product-card img {
+  width: 120px;
+  height: 120px;
+  border-radius: 5px;
+}
+
+.product-card p {
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.add-btn {
+  background-color: #00a650;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  bottom: 10px;
+  right: 10px;
+  cursor: pointer;
+  position: absolute;
+}
+
+.add-btn i {
+  font-size: 16px;
+}
+
+.food-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m-buy {
+  width: 100%;
+}
+
+.container-expire-buy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: end;
+}
+
+.font-green {
+  color: #00a650;
+  font-size: 17px;
+}
+
+.copy {
+  cursor: pointer;
+  color: rgb(94, 94, 255);
+  font-size: 18px;
+}
+
+.step-desc {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 990px) {
+  .navbar {
+    width: 90%;
+  }
+  .container-button-category {
+    width: 90%;
+  }
+  .container-home {
+    width: 90%;
+  }
+  .product-grid {
+    display: block;
+    width: 100%;
+  }
+  .product-card {
+    box-shadow: none;
+    background-color: #fff;
+    width: 100%; /* Mengatur lebar produk 1/3 dari lebar kontainer */
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    align-items: center;
+  }
+
+  .product-card img {
+    width: 100px;
+    height: 100px;
+  }
+  .product-card:hover {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.123);
+  }
+  .title-category {
+    font-size: 25px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .navbar {
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .container-button-category {
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .container-home {
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .product-card {
+    width: 100%;
+  }
+
+  .product-grid {
+    display: block;
+    width: 100%;
+    gap: 0; /* Menghilangkan jarak antar produk pada layar kecil */
+  }
+}
+
+
+
+
+

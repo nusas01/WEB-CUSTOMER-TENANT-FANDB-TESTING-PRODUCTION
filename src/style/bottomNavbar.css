@@ -1,0 +1,52 @@
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:  100%;
+    max-width: 600px;
+    background-color: white;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    padding: 7px 0;
+    gap: 100px;
+}
+
+
+.icon {
+    cursor: pointer;
+    justify-content: center;
+    text-align: center;
+}
+
+.icon.active {
+    color: #03c050; /* Warna biru untuk tombol aktif */
+    font-weight: bold;
+}
+
+.icon.active svg {
+    fill: #03c050; /* Mengubah warna ikon jika aktif */
+}
+
+.size-font {
+    font-size: 12.5px;
+}
+
+@media (max-width: 500px) {
+    .bottom-navbar {
+        gap: 75px;
+    }
+}
+
+@media (max-width: 410px) {
+    .bottom-navbar {
+        gap: 60px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bottom-navbar {
+        gap: 45px;
+    }
+}

@@ -1,0 +1,115 @@
+import "../style/add.css"
+import { useState } from 'react';
+import { useDispatch } from "react-redux";
+import { addItem, deleteItem, updateItem, clearCart } from "../reducers/cartSlice";
+
+export const AddProductToCart = ({ onClose, name, harga, image, description }) => {
+  const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState('');
+  const amountPrice = quantity * harga
+  console.log(name, harga, image, description)
+
+  const handleIncrement = () => setQuantity(prev => prev + 1);
+  const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+
+  const dispatch = useDispatch();
+
+  const handleAddItem = (name, harga, image, description, amountPrice, quantity) => {
+      const newItem = {name, harga, image, description, notes, amountPrice, quantity};
+      dispatch(addItem(newItem));
+      onClose()
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    if (value === '0') {
+      setQuantity(1)
+      return
+    }
+    setQuantity(value === '' ? '' : Number(value));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h3 className="text-2xl font-bold text-gray-800">Tambah ke Keranjang</h3>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6 space-y-6">
+          {/* Product Info */}
+          <div className="flex items-center space-x-4">
+            <img 
+              src={require("../image/foto1.jpg")} 
+              alt="Product" 
+              className="w-20 h-20 rounded-xl object-cover"
+            />
+            <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+              <h4 className="text-lg font-semibold text-gray-800">{name}</h4>
+              <p className="text-gray-600">Rp {(harga).toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+            
+          <p className="text-gray-600">{description}</p>
+
+          {/* Quantity Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Jumlah</label>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleDecrement}
+                className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                value={quantity}
+                onChange={handleQuantityChange}
+                className="wq-20 text-center border-0 text-lg font-medium focus:ring-0"
+                min="1"
+              />
+              <button 
+                onClick={handleIncrement}
+                className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Additional Notes */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Catatan</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional"
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows="3"
+            />
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-6 border-t flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-6 text-sm py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            className="px-6 text-sm py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => handleAddItem(name, harga, image, description, amountPrice, quantity)}
+            style={{padding: '10px 15px'}}
+          >
+            Tambah ke Keranjang - Rp {(amountPrice).toLocaleString('id-ID')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
