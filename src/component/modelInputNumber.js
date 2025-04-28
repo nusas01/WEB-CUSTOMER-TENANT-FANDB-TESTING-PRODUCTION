@@ -1,15 +1,11 @@
 import "../style/add.css";
 
-export function ModelInputNumberEwallet({paymentMethode, setPaymentMethod, closeModel}) {
-    const handleCloseModel = () => {
-        closeModel(true)
-        setPaymentMethod()
-    }
+export function ModelInputNumberEwallet({channelCode, handleCloseModel}) {
     return (
         <div className="bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-6" style={{position: 'fixed', width: '100%', height: '100%', top: 0, zIndex: '100'}}>
             <div className="container-number-ewallet p-6">
                 <div className="mb-10">
-                    <h2 className="text-3xl font-bold text-gray-800">{paymentMethode}</h2>
+                    <h2 className="text-3xl font-bold text-gray-800">{channelCode}</h2>
                 </div>
                 <div className="text-summery mb-10">
                     <div className="flex" style={{marginBottom: '5px'}}>
@@ -18,7 +14,7 @@ export function ModelInputNumberEwallet({paymentMethode, setPaymentMethod, close
                     </div>
                     <div className="flex">
                         <p style={{marginRight: '5px'}}>2.</p>
-                        <p>Pastikan Nomor yang dimasukkan adalah nomor {paymentMethode}.</p>
+                        <p>Pastikan Nomor yang dimasukkan adalah nomor {channelCode} terdaftar.</p>
                     </div>
                 </div>
                 <div>

@@ -1,25 +1,77 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { cartSlice } from './cartSlice';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
-import sessionStorage from 'redux-persist/lib/storage/session'; // Menggunakan sessionStorage
-import { combineReducers } from 'redux';
+import sessionStorage from 'redux-persist/lib/storage/session';
 
-const rootReducer = combineReducers({
+import { cartSlice } from './cartSlice';
+import {
+  orderTypeSlice,
+} from './reducers'
+import { 
+  getProductsCustomerSlice, 
+  getDataCustomerSlice,
+  getTransactionOnGoingCustomerSlice,
+  getTransactionsHistoryCustomerSlice,
+  getPaymentMethodsCustomerSlice,
+  logoutCustomerSlice,
+  loginStatusCustomerSlice,
+} from './get'
+import {
+  signupCustomerSlice,
+  verificationSignupCustomerSlice,
+  loginCustomerSlice,
+  loginGoogleCustomerSlice,
+  createTransactionCustomerSlice,
+} from './post'
+import {
+  changePasswordCustomerSlice,
+  setPasswordCustomerSlice,
+  setUsernameCustomerSlice,
+} from './patch'
+import {
+  sseTransactionOnGoingCustomerSlice
+} from './sse'
+
+
+// 1. Reducer yang ingin dipersist
+const persistedReducers = combineReducers({
   cart: cartSlice.reducer,
+  productsCustomer: getProductsCustomerSlice.reducer,
+  dataCustomer: getDataCustomerSlice.reducer,
+  paymentMethodsCustomer: getPaymentMethodsCustomerSlice.reducer,
+  orderType: orderTypeSlice.reducer,
+  loginStatusCustomer: loginStatusCustomerSlice.reducer,
 });
 
+// 2. Konfigurasi persist
 const persistConfig = {
-  key: 'root',
-  storage: sessionStorage, 
+  key: 'persisted',
+  storage: sessionStorage,
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+// 3. Reducer yang tidak ingin dipersist
+const nonPersistedReducers = {
+  loginCustomerState: loginCustomerSlice.reducer,
+  loginGoogleCustomerState: loginGoogleCustomerSlice.reducer,
+  signupCustomerState: signupCustomerSlice.reducer,
+  verificationSignupCustomerState: verificationSignupCustomerSlice.reducer,
+  logoutCustomerState: logoutCustomerSlice.reducer,
+  changePasswordCustomerState: changePasswordCustomerSlice.reducer,
+  setPasswordCustomerState: setPasswordCustomerSlice.reducer,
+  setUsernameCustomerState: setUsernameCustomerSlice.reducer,
+  transactionOnGoingCustomerState: getTransactionOnGoingCustomerSlice.reducer,
+  transactionsHistoryCustomerState: getTransactionsHistoryCustomerSlice.reducer,
+  createTransactionCustomerState: createTransactionCustomerSlice.reducer,
+  sseTransactionOnGoingCustomerState: sseTransactionOnGoingCustomerSlice.reducer,
+};
 
-
-export const store = configureStore({
-  reducer: persistedReducer, 
+const rootReducer = combineReducers({
+  persisted: persistReducer(persistConfig, persistedReducers), 
+  ...nonPersistedReducers,
 });
 
+export const store = configureStore({
+  reducer: rootReducer,
+});
 
 export const persistor = persistStore(store);
 

@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import "../App.css"
 import { useSelector } from "react-redux"
-import Cart from "./cart";
-import { UseResponsiveClass } from "../helper/presentationalLayer";
-import { useNavigate } from "react-router-dom";
+import Cart from "./cart"
+import { UseResponsiveClass } from "../helper/presentationalLayer"
+import { useNavigate } from "react-router-dom"
 
 function Navbar({onCart, closeCart, statusCart}) {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     const containerClass = UseResponsiveClass()
-    const cartItems = useSelector((state) => state.cart.items);
+    const cartItems = useSelector((state) => state.persisted.cart.items)
+    const {loggedIn} = useSelector((state) => state.persisted.loginStatusCustomer)
+    console.log(loggedIn)
     // const handleShowCart = () => {
     //     if (statusCart) {
     //         closeCart();
@@ -75,7 +77,9 @@ function Navbar({onCart, closeCart, statusCart}) {
                     </div>
                 )}
                 <div class="auth">
-                    <button onClick={() => navigate("/access")}>Masuk/Daftar</button>
+                    { !loggedIn && (
+                        <button key={String(loggedIn)} onClick={() => navigate("/access")}>Masuk/Daftar</button>
+                    )} 
                 </div>
             </div>
         </nav>

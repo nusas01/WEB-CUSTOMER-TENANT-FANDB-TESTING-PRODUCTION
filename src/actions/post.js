@@ -1,0 +1,148 @@
+import axios from "axios"
+ import {
+    loginStatusCustomerSlice,
+ } from "../reducers/get"
+ import {
+    signupCustomerSlice, 
+    verificationSignupCustomerSlice, 
+    loginCustomerSlice,
+    loginGoogleCustomerSlice,
+    createTransactionCustomerSlice,
+ } from "../reducers/post"
+import store from "../reducers/state"; 
+
+const { setLoadingSignCustomer, signupSuccessCustomer, signupErrorCustomer, resetSignupCustomer } = signupCustomerSlice.actions;
+export const signupCustomer = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY
+        },
+        withCredentials: true,
+    };
+    dispatch(setLoadingSignCustomer(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, data, config);
+        dispatch(signupSuccessCustomer(response.data.success));
+    } catch(error) {
+        const response = {
+            error: error,
+            errorObject: error.response.data,
+        }
+        dispatch(signupErrorCustomer(response));
+    } finally {
+        dispatch(setLoadingSignCustomer(false))
+    }
+};
+
+
+const { signupVerificationSuccessCustomer, signupVerificationFailsCustomer, setLoadingSignupVerificationCustomer } = verificationSignupCustomerSlice.actions;
+export const verificationSignupCustomer = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials : true,
+    };
+    dispatch(setLoadingSignupVerificationCustomer(true));
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_SIGNUP_VERIFICATION_CUSTOMER_URL}`, data, config)
+        dispatch(signupVerificationSuccessCustomer(response.data.success));
+    } catch (error) {
+        console.log(error)
+        const message = {
+            error: error.response.data.error,
+            errorField: error.response.data.ErrorField,
+            message: error.response.data.message,
+        };
+        dispatch(signupVerificationFailsCustomer(message));
+    } finally {
+        dispatch(setLoadingSignupVerificationCustomer(false));
+    }
+}
+
+
+const { loginSuccessCustomer, loginErrorCustomer, setLoginLoadingCustomer } =  loginCustomerSlice.actions
+const { setLoginStatusCustomer } = loginStatusCustomerSlice.actions
+export const loginCustomer = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoginLoadingCustomer(true));
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, data, configJson)
+        const message = {
+            messageLoginSuccess: response.data,
+            statusCodeSuccess: response.status,
+        }
+        dispatch(loginSuccessCustomer(message));
+        dispatch(setLoginStatusCustomer(true))
+    } catch(error) {
+        console.log(error)
+        console.log("Error Detail ErrorFields password:", error.response.data.ErrorFields.password);
+        const message = {
+            errorLogin: error.response.data.error,
+            errPass: error.response.data.ErrorFields.password, 
+            errUsername: error.response.data.ErrorFields.email,
+        }
+        console.log(message)
+        dispatch(loginErrorCustomer(message));
+        console.log("Dispatched loginErrorCustomer"); 
+    }finally {
+        dispatch(setLoginLoadingCustomer(false));
+    }
+}
+
+const { successCreateTransactionCustomer, errorCreateTransactionCustomer, setLoadingCreateTransactionCustomer } = createTransactionCustomerSlice.actions;
+export const createTransactionCustomer = (data) => async (dispatch) => {
+    const state = store.getState().orderType
+    const configJson = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+            ...(state.orderTakeAway === "true"
+            ? {"order_type_take_away": true} 
+            : {"table_id": state.tableId})
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateTransactionCustomer(true));
+    try {
+        const response = await axios.post(`${process.env.CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
+        dispatch(successCreateTransactionCustomer(response.data));
+    } catch(error) {
+        const message = {
+            error: error.response,
+            statusCode: error.response.status,
+        }
+        dispatch(errorCreateTransactionCustomer(message));
+    }finally {
+        dispatch(setLoadingCreateTransactionCustomer(false));
+    }
+}
+
+
+const {loginGoogleErrorCustomer, setLoadingLoginGoogleCustomer} = loginGoogleCustomerSlice.actions
+export const loginGoogleCustomer = () => async (dispatch) => {
+    dispatch(setLoadingLoginGoogleCustomer(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_LOGIN_SIGNUP_GOOGLE_CUSTOMER}`, {}, {
+            headers: {
+                "Content-Type": "application/json",
+                "API_KEY": process.env.REACT_APP_API_KEY,
+            },
+            withCredentials: true,
+        })
+        window.location.href = response.data
+    } catch(error) {
+        console.log(error)
+        dispatch(loginGoogleErrorCustomer(error.response.data.error))
+    } finally {
+        dispatch(setLoadingLoginGoogleCustomer(false))
+    }
+}

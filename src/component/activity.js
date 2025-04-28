@@ -206,9 +206,6 @@ export default function Activity() {
     return (
         <div>
             <div className="container-activity bg-light">
-                <div className="header-activity p-6">
-                        <h2>Activity</h2>
-                </div>
 
                 <div className="body-activity p-6">
                     <div className="container-button-activity">

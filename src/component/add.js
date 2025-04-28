@@ -3,11 +3,10 @@ import { useState } from 'react';
 import { useDispatch } from "react-redux";
 import { addItem, deleteItem, updateItem, clearCart } from "../reducers/cartSlice";
 
-export const AddProductToCart = ({ onClose, name, harga, image, description }) => {
+export const AddProductToCart = ({ onClose, id, name, harga, image, description }) => {
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const amountPrice = quantity * harga
-  console.log(name, harga, image, description)
 
   const handleIncrement = () => setQuantity(prev => prev + 1);
   const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
@@ -15,7 +14,7 @@ export const AddProductToCart = ({ onClose, name, harga, image, description }) =
   const dispatch = useDispatch();
 
   const handleAddItem = (name, harga, image, description, amountPrice, quantity) => {
-      const newItem = {name, harga, image, description, notes, amountPrice, quantity};
+      const newItem = {id, name, harga, image, description, notes, amountPrice, quantity};
       dispatch(addItem(newItem));
       onClose()
   };
@@ -30,7 +29,7 @@ export const AddProductToCart = ({ onClose, name, harga, image, description }) =
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-20">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all">
         {/* Modal Header */}
         <div className="flex justify-between items-center p-6 border-b">

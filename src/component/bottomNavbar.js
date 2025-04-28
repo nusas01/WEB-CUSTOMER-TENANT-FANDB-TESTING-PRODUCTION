@@ -3,14 +3,24 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function BottomNavbar() {
-    const cartItems = useSelector((state) => state.cart.items);
+    const cartItems = useSelector((state) => state.persisted.cart.items);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer)
+
+    const handleActivity = () => {
+        loggedIn ? navigate('/activity') : navigate('/access')
+    }
+
+    const handleProfile = () => {
+        loggedIn ? navigate('/profile') : navigate('/access')
+    }
 
     return (
         <div className="bottom-navbar">
             <div 
-             className={`icon ${location.pathname === "/" ? "active" : ""}`}
+             className={`icon ${location.pathname === "/" ? "active flex flex-col items-center" : "flex flex-col items-center"}`}
             onClick={() => navigate("/")}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
@@ -20,7 +30,7 @@ export default function BottomNavbar() {
                 <p className="size-font">Home</p>
             </div>
             <div 
-            className={`icon ${location.pathname === "/cart" ? "active" : ""}`}
+            className={`icon ${location.pathname === "/cart" ? "active flex flex-col items-center" : "flex flex-col items-center"}`}
             onClick={() => navigate("/cart")} style={{position: 'relative'}}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-bag" viewBox="0 0 16 16">
@@ -34,8 +44,8 @@ export default function BottomNavbar() {
                 <p className="size-font">Keranjang</p>
             </div>
             <div 
-            className={`icon ${location.pathname === "/activity" ? "active" : ""}`}
-            onClick={() => navigate("/activity")}
+            className={`icon ${location.pathname === "/activity" ? "active flex flex-col items-center" : "flex flex-col items-center"}`}
+            onClick={() => handleActivity()}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-card-heading" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
@@ -44,8 +54,8 @@ export default function BottomNavbar() {
                 <p className="size-font">Aktivitas</p>
             </div>
             <div 
-            className={`icon ${location.pathname === "/profile" ? "active" : ""}`} 
-            onClick={() => navigate("/profile")}
+            className={`icon ${location.pathname === "/profile" ? "active flex flex-col items-center" : "flex flex-col items-center"}`} 
+            onClick={() => handleProfile()}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
                 <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>

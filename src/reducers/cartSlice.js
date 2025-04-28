@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { useSelector } from "react-redux";
 
 export const initialCartState = {
-    total: 0, 
     subTotal: 0,
+    tax: 0,
     items: []
 };
 
@@ -12,52 +13,48 @@ export const cartSlice = createSlice({
     reducers: {
         calculateSubTotal: (state) => {
             // Hitung subtotal dengan menjumlahkan harga x jumlah kuantitas dari setiap item
-            state.subTotal = state.items.reduce((acc, item) => acc + item.harga * item.quantity, 0);
+            state.subTotal = state.items.reduce((acc, item) => acc + item.harga * item.quantity, 0)
         },
-        calculateTotal: (state) => {
-            // Jika ingin menghitung total, misalnya dengan menambahkan pajak 10%
-            state.total = state.subTotal * 1.1; // contoh 10% pajak
+        setTaxRate: (state, action) => {
+            state.tax = action.payload
         },
         addItem: (state, action) => {
-            const { name, quantity, amountPrice, harga, notes } = action.payload;
+            const { id, name, quantity, amountPrice, harga, notes } = action.payload;
       
             const existingItem = state.items.find(item => item.name === name);
       
             if (existingItem) {
-              existingItem.quantity += quantity;
-              existingItem.amountPrice += amountPrice;
+              existingItem.quantity += quantity
+              existingItem.amountPrice += amountPrice
               existingItem.notes = existingItem.notes 
-              ? existingItem.notes + ', ' + notes // Gabungkan notes baru
+              ? existingItem.notes + ', ' + notes
               : notes;
             } else {
                 state.items.push(action.payload);
             }
-            // Setelah item ditambahkan, hitung subtotal dan total
             cartSlice.caseReducers.calculateSubTotal(state);
-            cartSlice.caseReducers.calculateTotal(state);
           },
         deleteItem: (state, action) => {
             state.items = state.items.filter(item => item.name !== action.payload);
-            // Setelah item dihapus, hitung ulang subtotal dan total
+
             cartSlice.caseReducers.calculateSubTotal(state);
-            cartSlice.caseReducers.calculateTotal(state);
         },
         updateItem: (state, action) => {
             state.items = state.items.map(item => 
                 item.name === action.payload.name
                 ? {...item, ...action.payload}
                 : item
-            );
+            )
             // Setelah item diupdate, hitung ulang subtotal dan total
-            cartSlice.caseReducers.calculateSubTotal(state);
-            cartSlice.caseReducers.calculateTotal(state);
+            cartSlice.caseReducers.calculateSubTotal(state)
         },
         clearCart: (state) => {
-            state.items = [];
-            state.subTotal = 0;
-            state.total = 0;
+            state.items = []
+            state.subTotal = 0
+            state.tax = 0
+            state.fee = 0
         }
     }
 });
 
-export const { addItem, deleteItem, updateItem, clearCart } = cartSlice.actions;
+export const { addItem, deleteItem, setTaxRate, updateItem, clearCart } = cartSlice.actions;

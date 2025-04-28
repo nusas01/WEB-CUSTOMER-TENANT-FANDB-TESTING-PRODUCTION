@@ -105,14 +105,17 @@ body {
 .container-button-category-mobile {
   margin: auto;
   position: fixed;
-  width: 80%;
-  position: relative;
+  width: 100%;
   display: flex;
   justify-content: center;
+  top: 0;
+  background-color: white;
 }
 
 .container-button-category-mobile button {
-  font-size: 15px;
+  font-size: 16px;
+  padding-top: 13px;
+  padding-bottom: 13px;
 }
 
 
@@ -125,13 +128,14 @@ body {
   align-items: center;
   margin: auto;
   position: relative;
-  padding-top: 210px;
+  padding-top: 150px;
   padding-bottom: 50px;
+  min-height: 100vh;
 }
 
 .container-home-mobile {
   width: 100%;
-  padding-top: 145px;
+  padding-top: 10px;
   padding-left: 10px;
   padding-right: 10px;
 }
@@ -144,8 +148,6 @@ body {
 .container-category {
   margin-bottom: 50px;
 }
-
-
 
 .logo img {
   width: 150px;
@@ -200,33 +202,21 @@ body {
 .product-card {
   cursor: pointer;
   display: flex;
-  background-color: #fff;
   padding: 20px;
   border-radius: 1px;
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
   width: calc(33.333% - 20px); /* Mengatur lebar produk 1/3 dari lebar kontainer */
   position: relative;
   margin-bottom: 20px; /* Jarak antara produk dan baris berikutnya */
 }
 
-.product-card:hover {
-  border: 1px solid #00a650;
-}
-
-.product-title {
-  text-align: start;
-  margin-left: 15px;
-}
-
-.product-card img {
+/* .product-card img {
   width: 120px;
   height: 120px;
   border-radius: 5px;
-}
+} */
 
 .product-card p {
   color: #888;
-  margin-bottom: 20px;
 }
 
 .add-btn {
@@ -243,14 +233,6 @@ body {
 
 .add-btn i {
   font-size: 16px;
-}
-
-.food-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .m-buy {
@@ -296,12 +278,11 @@ body {
   }
   .product-card {
     box-shadow: none;
-    background-color: #fff;
     width: 100%; /* Mengatur lebar produk 1/3 dari lebar kontainer */
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.2);
-    padding: 10px;
+    padding: 15px 10px;
     border-radius: 5px;
     align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) ;
   }
 
   .product-card img {
@@ -310,7 +291,6 @@ body {
   }
   .product-card:hover {
     border: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.123);
   }
   .title-category {
     font-size: 25px;

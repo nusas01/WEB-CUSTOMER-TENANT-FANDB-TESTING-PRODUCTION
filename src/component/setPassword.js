@@ -1,13 +1,112 @@
+import { useEffect, useState } from "react"
 import "../style/loginSignup.css"
 import { useNavigate } from "react-router-dom"
+import { Tuple } from "@reduxjs/toolkit"
+import {setPasswordCustomer} from "../actions/patch"
+import { useSelector, useDispatch } from "react-redux"
+import Spinner from "../helper/spinner"
+import {setPasswordCustomerSlice} from "../reducers/patch"
+import {fetchGetDataCustomer} from "../actions/get"
 
 export default function SetPassword() {
+    const dispatch = useDispatch()
     const navigate = useNavigate();
+    const [password, setPassword] = useState(null)
+    const [repeatPassword, setRepeatPassword] = useState(null)
+    const [alertSuccess, setAlertSuccess] = useState(false)
+    const [alertError, setAlertError] = useState(false)
+    const [spinner, setSpinner] = useState(false)
+    const [data, setData] = useState({
+        password: "",
+        repeatPassword: ""
+    })
+
+    const {resetSetPassCustomer} = setPasswordCustomerSlice.actions
+    const { successSetPass, errorFieldSetPass, errorSetPass, loadingSetPass } = useSelector((state) => state.setPasswordCustomerState)
+
+    useEffect(() => {
+       setSpinner(loadingSetPass)        
+    }, [loadingSetPass])
+
+    useEffect(() => {
+        if (successSetPass) {
+            setData({
+                password: "",
+                repeatPassword: "",
+            })
+            setPassword(null)
+            setRepeatPassword(null)
+            setAlertSuccess(true)
+            dispatch(fetchGetDataCustomer())
+            dispatch(resetSetPassCustomer())
+            setTimeout(() => {
+                setAlertSuccess(false)
+            }, 2000)
+        }
+    }, [successSetPass])
+
+    useEffect(() => {
+        if (errorSetPass) {
+            setAlertError(true)
+            setTimeout(() => {
+                setAlertError(false)
+                dispatch(resetSetPassCustomer())
+            }, 3500)
+        }
+    }, [errorSetPass])
+
+    useEffect(() => {
+        if (errorFieldSetPass) {
+            const errors = errorFieldSetPass || [];
+
+            const errorPassword = errors.find((error) => error.Password)?.Password || null
+            
+            setData({
+                ...data, 
+                repeatPassword: "",
+            })
+
+            setPassword(errorPassword)
+            setRepeatPassword(null)
+            dispatch(resetSetPassCustomer())
+        }
+    }, [errorFieldSetPass])
+    
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setData({
+            ...data,
+            [name]: value
+        })
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        if (data.password !== data.repeatPassword) {
+            setRepeatPassword(true)
+            return
+        }
+
+        setPassword(null)
+        dispatch(setPasswordCustomer(data))
+    }
 
     return (
         <div>
             <div class="container-change-password">
                 <div class="card-change-password">
+                    {alertSuccess && (
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-green-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
+                            Set Password Berhasil
+                        </div>
+                    )}
+
+                    { alertError && (
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-red-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
+                            terjadi error di server kami
+                        </div>
+                    )}
                     <div className="flex" style={{justifyContent: 'space-between'}}>
                         <h1 className="title-change-password">Set Password</h1>
                         <svg 
@@ -19,18 +118,42 @@ export default function SetPassword() {
                         </svg>
                     </div>
                     <div>
-                    <form className="form">
-                        <div style={{position: 'relative'}}>
-                            <input type="email" placeholder="" className="input mb-10" />
-                            <label className="input-label">Password</label>
+                    <form className="form" onSubmit={handleSubmit}>
+                        <div style={{position: 'relative'}} className="mb-10">
+                            <input 
+                                type="password" 
+                                placeholder="" 
+                                className="input" 
+                                name="password"
+                                value={data.password}
+                                onChange={handleChange}
+                                style={{border: password && '1px solid red'}}
+                                required
+                            />
+                            <label className="input-label" style={{color: password && 'red'}}>Password</label>
+                            { password && <p className="text-start mt-1" style={{color: 'red', fontSize: '13px'}}>{password}</p>}
                         </div>
-                        <div style={{position: 'relative'}}>
-                            <input type="email" placeholder="" className="input mb-10" />
-                            <label className="input-label">Repeat Password</label>
+                        <div style={{position: 'relative'}} className="mb-10">
+                            <input 
+                                type="password" 
+                                placeholder="" 
+                                className="input" 
+                                name="repeatPassword"
+                                value={data.repeatPassword}
+                                onChange={handleChange}
+                                style={{border: repeatPassword && '1px solid red'}}
+                                required
+                            />
+                            <label className="input-label" style={{color : repeatPassword && 'red'}}>Repeat Password</label>
+                            {
+                                repeatPassword && <p className="text-start mt-1" style={{color: 'red', fontSize: '13px'}}>Password tidak sama</p>
+                            }
                         </div>
-                        <button className="button">Continue</button>
+                        <button className="button" type="submit">Continue</button>
                     </form>
                     </div>
+
+                    {spinner && <Spinner />}
                 </div>
             </div>
         </div>

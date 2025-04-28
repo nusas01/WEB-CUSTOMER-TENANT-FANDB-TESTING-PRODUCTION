@@ -23,10 +23,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="footer-logo">
-          <p className="nusas">Nusas</p>
-          <p className="food bordered">Food</p>
-        </div>
       </div>
     </footer>
   );
