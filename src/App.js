@@ -18,12 +18,14 @@ import KasirStatistik from './casier/statistik';
 import KasirSettings from './casier/settings';
 import KasirTables from './casier/table';
 import CreateTransaction from './casier/createTransaction';
-import { loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer } from './actions/get';
+import { loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer } from './actions/get';
 import { useDispatch, useSelector } from 'react-redux';
 import PrivateRouteCustomer from './helper/privateRoute';
 import Verification from './component/verification';
 import { useEffect } from 'react';
 import SetUsername from './component/setUsername';
+
+
 
 function App() {
   const dispatch = useDispatch()
@@ -50,6 +52,15 @@ function App() {
     }
   }, [])
 
+
+  // get data transaction on goin 
+  const {dataTransactionOnGoing} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+  useEffect(() => {
+    if (!dataTransactionOnGoing || Object.keys(dataTransactionOnGoing).length === 0) {
+      dispatch(fetchTransactionOnGoingCustomer())
+    }
+  }, [])
+  console.log(dataTransactionOnGoing)
 
   return (
     <Router>
@@ -82,7 +93,6 @@ function App() {
           <SetUsername/>
         )}
 
-        
       </div>
     </Router>
   );

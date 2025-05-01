@@ -9,7 +9,8 @@ export default function Buy() {
     const navigate = useNavigate()
     const location = useLocation()
     const detailOrder = location.state?.detailOrder || {}
-
+    window.scrollTo(0, 0);
+    console.log("channel code is: ", detailOrder.channel_code)
     return (
         <div className="container-activity bg-light">
             <div className="flex p-6" style={{display: 'flex', alignItems: 'center', gap: '30px'}}>
@@ -21,25 +22,60 @@ export default function Buy() {
             <div style={{borderBottom: '1px solid rgba(0, 0, 0, 0.2)'}}>
                     <div className="spase-bettwen p-6">
                         <p>Total Pembayaran</p>
-                        <p>Rp {(detailOrder.amount).toLocaleString("id-ID")}</p>
+                        <p className="text-xl">Rp {detailOrder?.amount != null ? Number(detailOrder.amount).toLocaleString("id-ID") : "-"}</p>
                     </div>
                 </div>
                 <div style={{borderBottom: '20px solid rgba(0, 0, 0, 0.2)'}}>
                     <div className="spase-bettwen p-6">
                         <p>Pembayaran Dalam</p>
                         <div className="container-expire-buy">
-                            <p class="font-green"><CountDown expiry={detailOrder.exp}/></p>
-                            <p>Jatuh tempo {FormatISODate(detailOrder.exp)}</p>
+                            <p class="font-green"><CountDown expiry={detailOrder?.exp || detailOrder?.expires_at}/></p>
+                            {(detailOrder?.exp || detailOrder?.expires_at) ? (
+                                <p>Jatuh tempo {FormatISODate(detailOrder.exp || detailOrder.expires_at)}</p>
+                                ) : (
+                                <p>Jatuh tempo -</p>
+                            )}
                         </div>
                     </div>
                 </div>
-                { detailOrder.methodPembayaran === "QRCode" ? (
-                    <div className="p-6" style={{display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center'}}>
+                { detailOrder.channel_code === "QRIS" ? (
+                    <div className="justify-center items-center" style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
                         <div>
-                            {ImagePaymentMethod(detailOrder.methodPembayaran, "100px", "100px")}
+                            {ImagePaymentMethod(detailOrder?.methodPembayaran || detailOrder?.channel_code, "100px", "100px")}
                         </div>
                         <div>
-                            <QRCodeCanvas size={250} value={detailOrder.unixNumber}/>
+                            <QRCodeCanvas size={250} value={detailOrder?.unixNumber || detailOrder?.qr_code_url}/>
+                        </div>
+                    </div>
+                ) : detailOrder.channel_code === "CASH" ? (
+                    <div>
+                        <div className="p-6 text-xl flex justify-center items-center" style={{borderBottom: '20px solid rgba(0, 0, 0, 0.2)'}}>
+                            <p>CASH</p>
+                        </div>
+                        <div>
+                            <div style={{borderBottom: '1px solid rgba(0, 0, 0, 0.2)'}}>
+                                <p className="p-6">Petunjuk Pembayaran</p>
+                            </div>
+                            <div className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+                                <div className="step-desc">
+                                    <span>1.</span>
+                                    <p>
+                                        Silakan datang langsung ke kasir.
+                                    </p>
+                                </div>
+                                <div className="step-desc">
+                                    <span>2.</span>
+                                    <p>
+                                        Beritahukan kepada kasir bahwa Anda ingin melakukan pembayaran secara <strong>tunai</strong> untuk pesanan Anda, lalu sebutkan <strong>username akun</strong> Anda untuk memudahkan pencarian data.
+                                    </p>
+                                </div>
+                                <div className="step-desc">
+                                    <span>3.</span>
+                                    <p>
+                                        Serahkan uang sejumlah total tagihan kepada kasir. Setelah pembayaran dikonfirmasi, pesanan Anda akan segera diproses oleh sistem.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -47,16 +83,16 @@ export default function Buy() {
                         <div style={{borderBottom: '20px solid rgba(0, 0, 0, 0.2)'}}>
                             <div className="flex">
                                 <div className="p-6">
-                                    {ImagePaymentMethod(detailOrder.methodPembayaran)}
+                                    {ImagePaymentMethod(detailOrder?.methodPembayaran || detailOrder?.channel_code)}
                                 </div>
                                 <div className="m-buy">
                                     <div style={{borderBottom: '1px solid rgba(0, 0, 0, 0.2)'}}>
-                                        <p className="p-6">{detailOrder.methodPembayaran}</p>
+                                        <p className="p-6">{detailOrder?.methodPembayaran || detailOrder?.channel_code}</p>
                                     </div>
                                     <div className="p-6">
                                         <p className="mbc-10">No.Rekening:</p>
                                         <div className="spase-bettwen">
-                                            <p className="font-green" style={{fontSize: '22px'}}>{detailOrder.unixNumber}</p>
+                                            <p className="font-green" style={{fontSize: '22px'}}>{detailOrder?.virtual_account_number || detailOrder?.qr_code_url}</p>
                                             <p className="copy">Salin</p>
                                         </div>
                                     </div>

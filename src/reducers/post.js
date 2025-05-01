@@ -145,15 +145,20 @@ export const createTransactionCustomerSlice = createSlice({
         successCreateTransactionCustomer: (state, action) => {
             state.message = action.payload;
             state.statusCode = 200;
-            state.loading = false;
+            state.error = null
         },
         errorCreateTransactionCustomer: (state, action) => {
             state.error = action.payload.error;
             state.statusCode = action.payload.statusCode;
-            state.loading = false;
+            state.message = null
         }, 
         setLoadingCreateTransactionCustomer: (state, action) => {
             state.loading = action.payload;
+        }, 
+        resetCreateTransactionCustomer: (state) => {
+            state.message = null
+            state.statusCode = null
+            state.error = null
         }
     }
 })

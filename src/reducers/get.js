@@ -60,7 +60,7 @@ export const getDataCustomerSlice = createSlice({
 
 
 const initialGetTransactionsOnGoingCustomer = {
-    data: [],
+    dataTransactionOnGoing: [],
     error: null,
     statusCode: null,
     loading: false,
@@ -73,7 +73,7 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
             state.loading = action.payload;
         },
         fetchSuccessGetTransactionOnGoingCustomer: (state, action) => {
-            state.data = action.payload;
+            state.dataTransactionOnGoing = action.payload;
             state.statusCode = 200;
             state.loading = false;
         },

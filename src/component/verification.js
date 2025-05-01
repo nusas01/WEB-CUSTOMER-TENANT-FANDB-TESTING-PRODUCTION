@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Spinner from "../helper/spinner"
 import { useNavigate } from "react-router-dom"
 import { verificationSignupCustomerSlice } from "../reducers/post"
+import { OrderTypeInvalidAlert } from "./alert"
 
 export default function Verification() {
     const navigate = useNavigate()
@@ -12,7 +13,7 @@ export default function Verification() {
     const [erroCode, setErrorCode] = useState(null)
     const [codeInput, setCodeInput] = useState("")
     const [showAlert, setShowAlert] = useState(false)
-
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
 
     const {resetSignupVerificationCustomer} = verificationSignupCustomerSlice.actions
     const {succes, message, error, ErrorField, loading} = useSelector((state) => state.verificationSignupCustomerState)
@@ -56,6 +57,14 @@ export default function Verification() {
         }
     }, [message, error])
 
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
+
     return (
         <div className="container">
             <div className="card">
@@ -64,6 +73,11 @@ export default function Verification() {
                         {message || "terjadi error di server kami"}
                     </div>
                 )}
+
+                { orderTypeInvalid && (
+                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                )}
+                
                 <h2 className="text-xl font-semibold mb-4">Verification</h2>
                 <p className="text-sm text-gray-600 mb-6">
                 Please enter the verification code sent to your email.

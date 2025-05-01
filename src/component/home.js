@@ -1,108 +1,20 @@
 import "../App.css"
-import Footer from "./footer";
+import Footer from "./footer"
 import Navbar from "./navbar"
-import { AddProductToCart } from "./add";
+import { AddProductToCart } from "./add"
 import { useState, useEffect, useRef } from "react"
-import Cart from "./cart";
-import { UseResponsiveClass } from "../helper/presentationalLayer";
-import { data, useLocation, useNavigate } from "react-router-dom";
-import BottomNavbar from "./bottomNavbar";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProductsCustomer } from "../actions/get";
-import { setOrderTypeContext } from "../reducers/reducers";
-import Spinner from "../helper/spinner";
+import Cart from "./cart"
+import { UseResponsiveClass } from "../helper/presentationalLayer"
+import { data, useLocation, useNavigate } from "react-router-dom"
+import BottomNavbar from "./bottomNavbar"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchProductsCustomer } from "../actions/get"
+import { setOrderTypeContext } from "../reducers/reducers"
+import Spinner from "../helper/spinner"
+import {OrderTypeInvalidAlert} from "./alert"
 
 function Home() {
   const dispatch = useDispatch()
-  // const [products, setProducts] = useState([
-  //   {
-  //     category: 'Makanan',
-  //     items: [
-  //       {
-  //         name: 'Sate Ayam merah maranggi',
-  //         harga: 45000,
-  //         image: 'sate-ayam.png',
-  //         description: 'Sate ayam dengan bumbu kacang.'
-  //       },
-  //       {
-  //         name: 'Nasi Goreng',
-  //         harga: 30000,
-  //         image: 'nasi-goreng.png',
-  //         description: 'Nasi goreng spesial dengan telur dan ayam.'
-  //       },
-  //       {
-  //         name: 'Mie Goreng',
-  //         harga: 25000,
-  //         image: 'mie-goreng.png',
-  //         description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-  //       },
-  //       {
-  //         name: 'Mie Aceh',
-  //         harga: 25000,
-  //         image: 'mie-goreng.png',
-  //         description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-  //       },
-  //       {
-  //         name: 'Nasi Padang',
-  //         harga: 25000,
-  //         image: 'mie-goreng.png',
-  //         description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-  //       },
-  //       {
-  //         name: 'Nasi Padang',
-  //         harga: 25000,
-  //         image: 'mie-goreng.png',
-  //         description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     category: 'Minuman',
-  //     items: [
-  //       {
-  //         name: 'Es Teh Manis',
-  //         harga: 5000,
-  //         image: 'es-teh-manis.png',
-  //         description: 'Es teh manis dingin yang segar.'
-  //       },
-  //       {
-  //         name: 'Kopi Susu',
-  //         harga: 12000,
-  //         image: 'kopi-susu.png',
-  //         description: 'Kopi susu hangat yang nikmat.'
-  //       },
-  //       {
-  //         name: 'Jus Jeruk',
-  //         harga: 8000,
-  //         image: 'jus-jeruk.png',
-  //         description: 'Jus jeruk segar dengan rasa alami.'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     category: 'Tambahan',
-  //     items: [
-  //       {
-  //         name: 'Kerupuk',
-  //         harga: 3000,
-  //         image: 'kerupuk.png',
-  //         description: 'Kerupuk renyah pendamping makan.'
-  //       },
-  //       {
-  //         name: 'Sambal',
-  //         harga: 2000,
-  //         image: 'sambal.png',
-  //         description: 'Sambal pedas dengan rasa khas.'
-  //       },
-  //       {
-  //         name: 'Pencok',
-  //         harga: 4000,
-  //         image: 'pencok.png',
-  //         description: 'Pencok, sambal kacang dengan tempe goreng.'
-  //       }
-  //     ]
-  //   }
-  // ]); 
   const [spinner, setSpinner] = useState(false)
   const { orderTakeAway, tableId } = useSelector((state) => state.persisted.orderType)
 
@@ -232,6 +144,15 @@ function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+
+  const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+  useEffect(() => {
+      if (tableId === null && orderTakeAway === false) {
+        setOrderTypeInvalid(true)
+        return
+    }
+  }, [tableId, orderTakeAway])
   
 
   return (
@@ -261,6 +182,10 @@ function Home() {
           <Cart closeCart={() => setShowModelCart(false)}/>
         </div>
       )}
+
+      { orderTypeInvalid && (
+            <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+        )}
 
       <div className="container-bg">
         <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`} style={isFixed ? {marginTop: '50px'} : {}}>

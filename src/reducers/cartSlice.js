@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { useSelector } from "react-redux";
 
 export const initialCartState = {
     subTotal: 0,
@@ -21,7 +20,7 @@ export const cartSlice = createSlice({
         addItem: (state, action) => {
             const { id, name, quantity, amountPrice, harga, notes } = action.payload;
       
-            const existingItem = state.items.find(item => item.name === name);
+            const existingItem = state.items.find(item => item.id === id);
       
             if (existingItem) {
               existingItem.quantity += quantity
@@ -35,13 +34,13 @@ export const cartSlice = createSlice({
             cartSlice.caseReducers.calculateSubTotal(state);
           },
         deleteItem: (state, action) => {
-            state.items = state.items.filter(item => item.name !== action.payload);
+            state.items = state.items.filter(item => item.id !== action.payload);
 
             cartSlice.caseReducers.calculateSubTotal(state);
         },
         updateItem: (state, action) => {
             state.items = state.items.map(item => 
-                item.name === action.payload.name
+                item.id === action.payload.id
                 ? {...item, ...action.payload}
                 : item
             )
@@ -52,7 +51,6 @@ export const cartSlice = createSlice({
             state.items = []
             state.subTotal = 0
             state.tax = 0
-            state.fee = 0
         }
     }
 });

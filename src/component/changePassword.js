@@ -6,6 +6,7 @@ import Spinner from "../helper/spinner"
 import { useState } from "react"
 import { useEffect } from "react"
 import {changePasswordCustomerSlice} from "../reducers/patch"
+import { OrderTypeInvalidAlert } from "./alert"
 
 
 export default function ChangePassword() {
@@ -17,11 +18,13 @@ export default function ChangePassword() {
     const [lastPassword, setLastPassword] = useState(null)
     const [newPassword, setNewPassword] = useState(null)
     const [repeatPassword, setRepeatPassword] = useState(false)
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [data, setData] = useState({
         last_password: "",
         new_password: "",
         repeatPassword: ""
     })
+
 
     const handleChange = (e) => {
         const {name, value} = e.target
@@ -120,7 +123,13 @@ export default function ChangePassword() {
         return null;
     }
 
-    console.log(errorField?.Password)
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
     
     return (
         <div>   
@@ -137,6 +146,11 @@ export default function ChangePassword() {
                             terjadi error di server kami
                         </div>
                     )}
+
+                    { orderTypeInvalid && (
+                        <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                    )}
+                    
                     <div className="flex" style={{justifyContent: 'space-between'}}>
                         <h1 className="title-change-password">Ganti Password</h1>
                         <svg 

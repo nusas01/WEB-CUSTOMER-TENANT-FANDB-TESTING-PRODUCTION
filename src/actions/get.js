@@ -64,10 +64,10 @@ export const fetchTransactionOnGoingCustomer = () => {
     return async (dispatch) => {
         dispatch(setLoadingGetTransactionOnGoingCustomer(true))
         try {
-            const response = await axios.get(`${process.env.GET_TRANSACTION_ON_GOING_CUSTOMER_URL}?`, { 
+            const response = await axios.get(`${process.env.REACT_APP_GET_TRANSACTION_ON_GOING_CUSTOMER_URL}?`, { 
                 withCredentials: true,
                 headers: {
-                    'API_KEY': process.env.API_KEY
+                    'API_KEY': process.env.REACT_APP_API_KEY
                   },
             })
             dispatch(fetchSuccessGetTransactionOnGoingCustomer(response.data))

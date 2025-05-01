@@ -7,6 +7,7 @@ import { loginCustomerSlice } from "../reducers/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import Spinner from "../helper/spinner";
+import { OrderTypeInvalidAlert } from "./alert";
 
 export default function Profile() {
     const dispatch = useDispatch();
@@ -14,6 +15,7 @@ export default function Profile() {
     const name = 'Raihan Malay';
     const nameParts = name.trim().split(" ")
     const [spinner, setSpinner] = useState(false)
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
   
 
     // Take the first letter from the first two words (first name and last name)
@@ -45,11 +47,21 @@ export default function Profile() {
         setSpinner(loading)
     }, [loading])
 
-    
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
 
     return (
         <div className="container-profile" >
             <div>
+
+                { orderTypeInvalid && (
+                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                )}
 
                 <div className="header-profile">
                     <div className="circle-profile">

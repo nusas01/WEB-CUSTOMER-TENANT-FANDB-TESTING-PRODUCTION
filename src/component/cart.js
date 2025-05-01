@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
 import { useSelector } from "react-redux"
-import { deleteItem, updateItem, setTaxRate, setFee } from "../reducers/cartSlice"
+import { deleteItem, updateItem, setTaxRate, setFee, clearCart } from "../reducers/cartSlice"
 import { useNavigate } from "react-router-dom"
 import { UseResponsiveClass } from "../helper/presentationalLayer"
 import BottomNavbar from "./bottomNavbar"
@@ -12,6 +12,10 @@ import {fetchPaymentMethodsCustomer} from "../actions/get"
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { UndoIcon } from "lucide-react"
 import { orderTypeSlice } from "../reducers/reducers"
+import { OrderTypeInvalidAlert, ErrorAlert } from "./alert"
+import {createTransactionCustomer} from "../actions/post"
+import Spinner from "../helper/spinner"
+import {createTransactionCustomerSlice} from "../reducers/post"
 
 function Cart({ closeCart }) {
     const [notesId, setNotesId] = useState('')
@@ -30,13 +34,16 @@ function Cart({ closeCart }) {
     const [numberEwallet, setNumberEwallet] = useState()
     const [isModelInputNumberEwallet, setIsModelInputNumberEwallet] = useState(false)
     const [spinner, setSpinner] = useState(false)
-    const {dataPaymentMethodCustomer, tax, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer} = useSelector((state) => state.persisted.paymentMethodsCustomer)
-
+    const [eventNotes, setEventNotes] = useState(0)
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+    const [alertError, setAlertError] = useState(false)
+    const {dataPaymentMethodCustomer, taxRate, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer} = useSelector((state) => state.persisted.paymentMethodsCustomer)
+    
     const [dataTransaction, setDataTransaction] = useState({
         payment_method_id: null,
         payment_method: null,
         channel_code: null,
-        amountPrice: null,
+        amount_price: null,
         phone_number_ewallet: null,
         product: []
     })
@@ -114,9 +121,8 @@ function Cart({ closeCart }) {
         setTotalTransaction(subTotal + fee + taxTransaction)
     }
 
-
     useEffect(() => {
-        const taxRate = 0.1 * subTotal
+        const tax = taxRate * subTotal
         var feeRate 
         if (paymentMethod === "EWALLET" || paymentMethod === "QR") {
             feeRate = fee * subTotal
@@ -124,12 +130,13 @@ function Cart({ closeCart }) {
             feeRate = fee
         }
         setFeeTransaction(feeRate)
-        setTaxTransaction(taxRate)
-        setTotalTransaction(subTotal + taxRate + feeRate)
+        setTaxTransaction(tax)
+        setTotalTransaction(subTotal + tax + feeRate)
 
         const mappedProducts = items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
+            notes: item.notes,
         }))
     
         setDataTransaction((prev) => ({
@@ -138,49 +145,72 @@ function Cart({ closeCart }) {
         }))
     }, [subTotal])
 
+    useEffect(() => {
+        const mappedProducts = items.map((item) => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            notes: item.notes,
+        }))
+    
+        setDataTransaction((prev) => ({
+            ...prev,
+            product: mappedProducts,
+        }))
+    }, [eventNotes])
 
-    const handleDeleteItem = (name) => {
-        dispatch(deleteItem(name))
+    useEffect(() => {
+        setDataTransaction((prev) => ({
+            ...prev,
+            amount_price: totalTransaction
+        }))
+    }, [totalTransaction])
+
+
+    const handleDeleteItem = (id) => {
+        dispatch(deleteItem(id))
         setIdModelNotifDelete('')
-        setIsModelInputNumberEwallet(false)
-        setPaymentMethod(null)
-        setChannelCode()
-        setFee(0)
-        setFeeTransaction(0)
-        setIsPaymentMethod(false)
+        if (items.length <= 1) {
+            setIsModelInputNumberEwallet(false)
+            setPaymentMethod(null)
+            setChannelCode()
+            setFee(0)
+            setFeeTransaction(0)
+            setIsPaymentMethod(false)
+        }
     }
 
 
-    const handleQuantityChange = (quantity, name, harga) => {
+    const handleQuantityChange = (quantity, id, harga) => {
         if (quantity === 0 || isNaN(quantity)) {
             quantity = '';
         }
         const amountPrice = quantity * harga;
-        const item = {name, amountPrice, quantity}
+        const item = {id, amountPrice, quantity}
         dispatch(updateItem(item))
     }
 
-    const handleUpdateIncerement = (name, harga, quantity) => {
+    const handleUpdateIncerement = (id, harga, quantity) => {
         quantity = Number(quantity) + 1;
         const amountPrice = quantity * harga;
-        const item = {name, amountPrice, quantity};
+        const item = {id, amountPrice, quantity};
         dispatch(updateItem(item));
     }
 
-    const handleUpdateDecrement = (name, harga, quantity) => {
+    const handleUpdateDecrement = (id, harga, quantity) => {
         quantity = Number(quantity) - 1;
         if (quantity === 0) {
-            setIdModelNotifDelete(name);
+            setIdModelNotifDelete(id);
             quantity = 1;
         }
         const amountPrice = quantity * harga;
-        const item = {name, amountPrice, quantity}
+        const item = {id, amountPrice, quantity}
         dispatch(updateItem(item))
     }
 
-    const handleUpdateNotes = (notes, name) => {
-        const item  = {name, notes}
+    const handleUpdateNotes = (notes, id) => {
+        const item  = {id, notes}
         dispatch(updateItem(item))
+        setEventNotes(eventNotes + 1)
     }
 
     const handleShowNotes = (id) => {
@@ -191,17 +221,110 @@ function Cart({ closeCart }) {
         }
     };
 
+    const handleInputPhoneNumberEwallet = (number) => {
+        setDataTransaction((prev) => ({
+            ...prev,
+            phone_number_ewallet: number,
+        }))
+        setIsModelInputNumberEwallet(false)
+    }
+
     const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
     console.log(tableId, orderTakeAway)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
+
+
+    // handle create transaction
+    const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
+    const {message, statusCode, error, loading} = useSelector((state) => state.createTransactionCustomerState)
+    console.log("error transaction :", error)
+    
+    useEffect(() => {
+        console.log("message transaction :", message)
+        console.log("status transaction :", statusCode)
+        console.log("error transaction :", error)
+    }, [message, statusCode, error])
+
+    useEffect(() => {
+        if (message) {
+            console.log(message)
+            dispatch(clearCart())
+            dispatch(resetCreateTransactionCustomer())
+                
+            if (paymentMethod !== "EWALLET") {
+                navigate("/activity/pembayaran", {state: { detailOrder: message?.data }})
+                return
+            }
+
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const redirectUrl = isMobile ? message.data?.redirect_url_mobile : message.data?.redirect_url_web;
+
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                console.error("Redirect URL not found.");
+            }
+        }   
+    }, [message])
+    console.log("bermalash message: ", message)
+
+    useEffect(() => {
+        if (error) {
+            if (error === "Invalid mobile number format") {
+                setIsModelInputNumberEwallet(true)
+                dispatch(resetCreateTransactionCustomer())
+                return
+            }
+
+            setAlertError(true)
+
+            setTimeout(() => {
+                setAlertError(false)
+                dispatch(resetCreateTransactionCustomer())
+            }, 2500)
+    
+        }
+    }, [error])
+
+    useEffect(() => {
+        setSpinner(loading)
+    }, [loading])
+
+    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
+    
     const handleCreateTransaction = () => {
+        if (!loggedIn) {
+            return navigate("/access")
+        }
+
         if (items.length <= 0) {
             window.scrollTo({ top: 0, behavior: "smooth" })
             return
         }
- 
-        if (tableId === null || orderTakeAway === false) {
-            console.log("Invalid order product, pastika anda scan barcode yang ada di table atau kasir jika ingin take away")
+    
+        if (dataTransaction.payment_method === null || channelCode === null) {
+            setIsPaymentMethod(true)
+            const paymentSection = document.getElementById('payment-method');
+            if (paymentSection) {
+                paymentSection.scrollIntoView({ 
+                    behavior: "smooth",
+                    block: "start" 
+                });
+            }
+            return
         }
+
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+
+        dispatch(createTransactionCustomer(dataTransaction))
     }
 
 
@@ -231,11 +354,27 @@ function Cart({ closeCart }) {
     return (
     <div class="container-main-cart" style={{position: 'relative'}}>
 
+        {/* section alert invalid order type */}
+        { orderTypeInvalid && (
+            <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>   
+        )}
+
         {/* section header of cart */}
         <div class="p-6 border-b" >
                 <h2 class="text-xl font-bold text-gray-800">Keranjang Anda</h2>
                 <p class="text-gray-500 text-sm">keranjang anda disimpan sementara</p>
         </div>
+
+        {/* spinner saat create transction */}
+        { spinner && (
+            <Spinner/>
+        )}
+
+        {/* alert error create transaction */}
+        { alertError && (
+            <ErrorAlert message={error}/>
+        )}
+       
 
         {/* section item cart */}
         <div class="item-container-cart">
@@ -256,22 +395,22 @@ function Cart({ closeCart }) {
                         { notesId === item.name && (
                             <textarea
                             value={item.notes} 
-                            onChange={(e) => handleUpdateNotes(e.target.value, item.name)}
+                            onChange={(e) => handleUpdateNotes(e.target.value, item.id)}
                             className="border-0  cart-notes"
                             placeholder="Optional...."
                             />
                         )}
                         <div class="flex items-center gap-3 mt-2">
                             <div class="flex items-center bg-gray-100 rounded-lg">
-                                <button class="w-10 h-8 hover:bg-gray-200" onClick={() => handleUpdateDecrement(item.name, item.harga, item.quantity)}>-</button>
+                                <button class="w-10 h-8 hover:bg-gray-200" onClick={() => handleUpdateDecrement(item.id, item.harga, item.quantity)}>-</button>
                                 <input 
                                     class="px-4 wq-10 bg-gray-100 text-center border-0 text-lg font-medium focus:ring-0" 
                                     value={item.quantity} 
-                                    onChange={(e) => handleQuantityChange(Number(e.target.value), item.name, item.harga)}
+                                    onChange={(e) => handleQuantityChange(Number(e.target.value), item.id, item.harga)}
                                 />
-                                <button class="w-10 h-8 hover:bg-gray-200" onClick={() => handleUpdateIncerement(item.name, item.harga, item.quantity)}>+</button>
+                                <button class="w-10 h-8 hover:bg-gray-200" onClick={() => handleUpdateIncerement(item.id, item.harga, item.quantity)}>+</button>
                             </div>
-                            <button class="text-red-500 text-sm font-medium" onClick={() => setIdModelNotifDelete(item.name)}>Remove</button>
+                            <button class="text-red-500 text-sm font-medium" onClick={() => setIdModelNotifDelete(item.id)}>Remove</button>
                         </div>
                     </div>
                 </div>
@@ -292,6 +431,7 @@ function Cart({ closeCart }) {
                 <ModelInputNumberEwallet
                 channelCode={channelCode}
                 handleCloseModel={handleCloseModel}
+                handleInputNumber={handleInputPhoneNumberEwallet}
                 />
             )}
         </div>
@@ -320,7 +460,7 @@ function Cart({ closeCart }) {
 
         {/* section payment method */}
         <div class="border-t">
-            <div onClick={() => handleChoicePaymentMethodModel()} className="flex p-6 " style={{margin: 'auto', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'}}>
+            <div onClick={() => handleChoicePaymentMethodModel()} id="payment-method" className="flex p-6 " style={{margin: 'auto', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer'}}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <svg style={{marginRight: '10px'}} xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-coin" viewBox="0 0 16 16">
                     <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z"/>

@@ -40,6 +40,7 @@ const persistedReducers = combineReducers({
   paymentMethodsCustomer: getPaymentMethodsCustomerSlice.reducer,
   orderType: orderTypeSlice.reducer,
   loginStatusCustomer: loginStatusCustomerSlice.reducer,
+  transactionOnGoingCustomer: getTransactionOnGoingCustomerSlice.reducer,
 });
 
 // 2. Konfigurasi persist
@@ -58,7 +59,6 @@ const nonPersistedReducers = {
   changePasswordCustomerState: changePasswordCustomerSlice.reducer,
   setPasswordCustomerState: setPasswordCustomerSlice.reducer,
   setUsernameCustomerState: setUsernameCustomerSlice.reducer,
-  transactionOnGoingCustomerState: getTransactionOnGoingCustomerSlice.reducer,
   transactionsHistoryCustomerState: getTransactionsHistoryCustomerSlice.reducer,
   createTransactionCustomerState: createTransactionCustomerSlice.reducer,
   sseTransactionOnGoingCustomerState: sseTransactionOnGoingCustomerSlice.reducer,

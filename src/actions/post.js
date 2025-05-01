@@ -100,7 +100,7 @@ export const loginCustomer = (data) => async (dispatch) => {
 
 const { successCreateTransactionCustomer, errorCreateTransactionCustomer, setLoadingCreateTransactionCustomer } = createTransactionCustomerSlice.actions;
 export const createTransactionCustomer = (data) => async (dispatch) => {
-    const state = store.getState().orderType
+    const state = store.getState().persisted.orderType
     const configJson = {
         headers: {
             "Content-Type": "application/json",
@@ -113,11 +113,13 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateTransactionCustomer(true));
     try {
-        const response = await axios.post(`${process.env.CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
+        const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
         dispatch(successCreateTransactionCustomer(response.data));
+        console.log("response data create transacrion: ", response.data)
     } catch(error) {
+        console.log(error)
         const message = {
-            error: error.response,
+            error: error.response.data.error,
             statusCode: error.response.status,
         }
         dispatch(errorCreateTransactionCustomer(message));

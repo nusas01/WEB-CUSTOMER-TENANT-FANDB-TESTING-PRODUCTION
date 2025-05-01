@@ -1,16 +1,19 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "../style/activity.css"
 import BottomNavbar from "./bottomNavbar"
 import { useNavigate, useLocation } from "react-router-dom"
 import EmptyComponent from "./empty"
 import notaImage from "../image/nota.png"
 import { FormatISODate } from "../helper/formatdate"
+import {OrderTypeInvalidAlert} from "./alert"
+import { useSelector } from "react-redux"
 
 export default function Activity() {
     const location = useLocation()
     const buttonstatus = location.state || "on going"
     const [buttonActive, setButtonActive] = useState(buttonstatus);
     const navigate = useNavigate();
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [activity, setActivity] = useState([
         {
             date: "Modey,14-02-2025",
@@ -194,18 +197,29 @@ export default function Activity() {
     ]);
     
 
-
     const handleDetail = (detailOrder) => {
-        navigate("/activity/detail", { state: { detailOrder } });
-    };
+        navigate("/activity/detail", { state: { detailOrder } })
+    }
 
     const handlePembayaran = (detailOrder) => {
-        navigate("/activity/pembayaran", {state: { detailOrder }});
+        navigate("/activity/pembayaran", {state: { detailOrder }})
     }
+
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
 
     return (
         <div>
             <div className="container-activity bg-light">
+
+                { orderTypeInvalid && (
+                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                )}
 
                 <div className="body-activity p-6">
                     <div className="container-button-activity">

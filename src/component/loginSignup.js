@@ -9,6 +9,7 @@ import { signupCustomer, loginCustomer, loginGoogleCustomer } from "../actions/p
 import { useLocation, useNavigate } from "react-router-dom";
 import { loginCustomerSlice, signupCustomerSlice, loginGoogleCustomerSlice } from "../reducers/post";
 import Spinner from "../helper/spinner";
+import { OrderTypeInvalidAlert } from "./alert";
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -17,6 +18,8 @@ export default function RegisterPage() {
   const [signup, setSignup] = useState(false)
   const [repeatPassword, setRepeatPassword] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
+  const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+
 
   const [formSignup, setFormSignup] = useState({
     email: '',
@@ -228,6 +231,16 @@ export default function RegisterPage() {
   }
 
 
+  // handle alert error invalid order type jika user bukan scan dari table atau kasir
+  const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+  useEffect(() => {
+      if (tableId === null && orderTakeAway === false) {
+        setOrderTypeInvalid(true)
+        return
+    }
+  }, [tableId, orderTakeAway]) 
+
+
   return (
     <div className="container">
       <div className="card">
@@ -243,6 +256,10 @@ export default function RegisterPage() {
             </div>
         )}
         
+        { orderTypeInvalid && (
+            <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+        )}
+
         <h1 className="title">{signup ? 'Create an account' : 'Welcome back'}</h1>
 
         <form className="form" onSubmit={handleSubmit}>

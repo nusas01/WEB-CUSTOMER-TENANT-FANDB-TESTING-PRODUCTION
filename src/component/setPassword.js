@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from "react-redux"
 import Spinner from "../helper/spinner"
 import {setPasswordCustomerSlice} from "../reducers/patch"
 import {fetchGetDataCustomer} from "../actions/get"
+import {OrderTypeInvalidAlert} from "./alert"
 
 export default function SetPassword() {
     const dispatch = useDispatch()
@@ -16,6 +17,7 @@ export default function SetPassword() {
     const [alertSuccess, setAlertSuccess] = useState(false)
     const [alertError, setAlertError] = useState(false)
     const [spinner, setSpinner] = useState(false)
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [data, setData] = useState({
         password: "",
         repeatPassword: ""
@@ -92,6 +94,14 @@ export default function SetPassword() {
         dispatch(setPasswordCustomer(data))
     }
 
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
+
     return (
         <div>
             <div class="container-change-password">
@@ -107,6 +117,11 @@ export default function SetPassword() {
                             terjadi error di server kami
                         </div>
                     )}
+
+                    { orderTypeInvalid && (
+                        <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                    )}
+                    
                     <div className="flex" style={{justifyContent: 'space-between'}}>
                         <h1 className="title-change-password">Set Password</h1>
                         <svg 
