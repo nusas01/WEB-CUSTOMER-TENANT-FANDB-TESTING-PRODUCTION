@@ -12,18 +12,15 @@ export const getProductsCustomerSlice = createSlice({
     initialState: initialGetProductsCustomerState,
     reducers: {
         setLoadingProducts: (state, action) => {
-            state.loading = action.payload.loading;
-            state.loading = action.payload.hasFetched;
+            state.loading = action.payload;
         },
         successFetchProducts: (state, action) => {
             state.datas = action.payload;
-            state.loading = false;
             state.error = null;
         },
         errorFetchProducts: (state, action) => {
             state.error = action.payload.message;
             state.errorStatusCode = action.payload.statusCode;
-            state.loading = null;
         }
     }
 })
@@ -61,6 +58,7 @@ export const getDataCustomerSlice = createSlice({
 
 const initialGetTransactionsOnGoingCustomer = {
     dataTransactionOnGoing: [],
+    lengthTransactionOnGoing: 0,
     error: null,
     statusCode: null,
     loading: false,
@@ -70,27 +68,47 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
     initialState: initialGetTransactionsOnGoingCustomer,
     reducers: {
         setLoadingGetTransactionOnGoingCustomer: (state, action) => {
-            state.loading = action.payload;
+            state.loading = action.payload
         },
         fetchSuccessGetTransactionOnGoingCustomer: (state, action) => {
-            state.dataTransactionOnGoing = action.payload;
-            state.statusCode = 200;
-            state.loading = false;
+            state.dataTransactionOnGoing = action.payload
+            state.lengthTransactionOnGoing = action.payload.length
+            state.statusCode = 200
+            state.loading = false
         },
         fetchErrorGetTransactionOnGoingCustomer: (state, action) => {
-            state.error = action.payload.error;
-            state.statusCode = action.payload.statusCode;
-            state.loading = false;
-        }
+            state.error = action.payload.error
+            state.statusCode = action.payload.statusCode
+            state.loading = false
+        },
+        removeTransactionOnGoingById: (state, action) => {
+            state.dataTransactionOnGoing = state.dataTransactionOnGoing.filter(
+                (item) => item.id !== action.payload
+            )
+        },
+        updateTransactionOnGoingStatusById: (state, action) => {
+            const updated = state.dataTransactionOnGoing.map(item => {
+                if (String(item.id) === String(action.payload.id)) {
+                    return {
+                        ...item,
+                        order_status: action.payload.order_status,
+                        status_transaction: action.payload.status_transaction,
+                    }
+                }
+                return item
+            })
+            state.dataTransactionOnGoing = updated
+        }        
     }
 })
 
 
 const initialTransactionsHistoryCustomer = {
-    data: [],
+    dataTransactionHistory: [],
     error: null,
     statusCode: null,
-    loading: false,
+    lengthTransactionProses: 0,
+    loadingHistory: false,
     hasMore: false,
     page: 1,
 }
@@ -99,22 +117,20 @@ export const getTransactionsHistoryCustomerSlice = createSlice({
     initialState: initialTransactionsHistoryCustomer,
     reducers: {
         setLoadingGetTransactionHistoryCustomer: (state, action) => {
-            state.loading = action.payload
+            state.loadingHistory = action.payload
         },
         fetchSuccessGetTransactionHistoryCustomer: (state, action) => {
-            const { data, hasMore, page } = action.payload
+            const { data, hasMore, page, lengthTransactionProses } = action.payload
             if (page === 1) {
-                state.data = data;
+                state.dataTransactionHistory = data;
               } else {
-                state.data = [...state.data, ...data]; 
+                state.dataTransactionHistory = [...state.dataTransactionHistory, ...data]; 
               }
             state.page = page
             state.hasMore = hasMore
-            state.statusCode = 200
-            state.loading = false    
+            state.lengthTransactionProses = lengthTransactionProses
         },
         fetchErrorGetTransactionHistoryCustomer: (state, action) => {
-            state.loading = false
             state.error = action.payload.error
             state.statusCode = action.payload.statusCode
         }
@@ -180,6 +196,19 @@ export const loginStatusCustomerSlice = createSlice({
     initialState: initialLoginStatusCustomer,
     reducers: {
         setLoginStatusCustomer: (state, action) => {
+            state.loggedIn = action.payload;
+        }
+    }
+})
+
+const initialLoginStatusInternal = {
+    loggedIn: false,
+}
+export const loginStatusInternalSlice = createSlice({
+    name: 'loginStatusInternalSlice',
+    initialState: initialLoginStatusInternal,
+    reducers: {
+        setLoginStatusInternal: (state, action) => {
             state.loggedIn = action.payload;
         }
     }

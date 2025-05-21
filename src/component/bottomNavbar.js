@@ -17,6 +17,9 @@ export default function BottomNavbar() {
         loggedIn ? navigate('/profile') : navigate('/access')
     }
 
+    const { lengthTransactionOnGoing } = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+    const { lengthTransactionProses } = useSelector((state) => state.persisted.transactionsHistoryCustomer)
+    console.log(lengthTransactionOnGoing + lengthTransactionProses)
     return (
         <div className="bottom-navbar">
             <div 
@@ -44,13 +47,18 @@ export default function BottomNavbar() {
                 <p className="size-font">Keranjang</p>
             </div>
             <div 
-            className={`icon ${location.pathname === "/activity" ? "active flex flex-col items-center" : "flex flex-col items-center"}`}
+            className={`icon  relative ${location.pathname === "/activity" ? "active flex flex-col items-center" : "flex flex-col items-center"}`}
             onClick={() => handleActivity()}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-card-heading" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
                 <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
                 </svg>
+                { ((lengthTransactionOnGoing > 0 || lengthTransactionProses > 0)  && location.pathname !== "/activity") && (
+                    <span className="cart-badge-profile">
+                        {lengthTransactionOnGoing + lengthTransactionProses}
+                    </span>
+                )}
                 <p className="size-font">Aktivitas</p>
             </div>
             <div 

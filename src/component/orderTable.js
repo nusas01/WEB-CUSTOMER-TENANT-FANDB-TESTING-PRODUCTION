@@ -82,21 +82,21 @@ export default function Order() {
 
             <div className="p-5 text-white">
                 <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="p-4 cursor-pointer bg-gray-900 rounded-lg shadow-md">
+                    <div className="p-4 cursor-pointer bg-white rounded-lg shadow-md">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-sm text-gray-400">Total Incoming Amount</h2>
+                            <h2 className="text-sm text-gray-800">Total Incoming Amount</h2>
                             <ArrowDown className="text-green-400" />
                         </div>
-                        <h3 className="text-2xl font-bold">IDR 40.000</h3>
-                        <p className="text-sm text-gray-500">Transactions Count: 3</p>
+                        <h3 className="text-2xl font-bold text-black">IDR 40.000</h3>
+                        <p className="text-sm text-gray-800">Transactions Count: 3</p>
                     </div>
-                    <div className="p-4 cursor-pointer bg-gray-900 rounded-lg shadow-md">
+                    <div className="p-4 cursor-pointer bg-white rounded-lg shadow-md">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-sm text-gray-400">Total Outgoing Amount</h2>
+                            <h2 className="text-sm text-gray-800">Total Outgoing Amount</h2>
                             <ArrowUp className="text-red-400" />
                         </div>
-                        <h3 className="text-2xl font-bold">IDR 20.000</h3>
-                        <p className="text-sm text-gray-500">Transactions Count: 1</p>
+                        <h3 className="text-2xl font-bold text-black">IDR 20.000</h3>
+                        <p className="text-sm text-gray-800">Transactions Count: 1</p>
                     </div>
                 </div>
 
@@ -154,7 +154,7 @@ export default function Order() {
                 {/* Transaction Table */}
                 <div className="rounded-lg shadow-md overflow-hidden">
                         <table className="w-full text-left">
-                        <thead className="bg-gray-900">
+                        <thead className="bg-gray-700">
                             <tr>
                             {["Status", "Type", "Channel", "Account", "Amount", "Reference", "Date", ""].map((header) => (
                                 <th key={header} className="py-3 px-4 text-white font-medium text-sm">{header}</th>

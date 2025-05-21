@@ -2,9 +2,10 @@ import React from 'react'
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState } from "react"
 import { setUsernameCustomer } from "../actions/patch" 
-import Spinner from '../helper/spinner'
+import {SpinnerFixed} from '../helper/spinner'
 import { fetchGetDataCustomer } from '../actions/get'
 import {setUsernameCustomerSlice} from '../reducers/patch'
+import { OrderTypeInvalidAlert } from './alert'
 
 export default function SetUsername() {
     const dispatch = useDispatch()
@@ -13,6 +14,8 @@ export default function SetUsername() {
     const [alertError, setAlertError] = useState(false)
     const [username, setUsername] = useState(null)
     const [spinner, setSpinner] = useState(false)
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+
 
     const {resetSetUsernameCustomer} = setUsernameCustomerSlice.actions
     const {successSetUsername, errorFieldSetUsername, errorSetUsername, loadingSetUsername} = useSelector((state) => state.setUsernameCustomerState)
@@ -59,9 +62,22 @@ export default function SetUsername() {
         setUsername(null)
         dispatch(setUsernameCustomer(data))
     }
+
+
+    // alert invalid type order
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
     
     return (
         <div className="flex flex-col items-center justify-center fixed inset-0 bg-black/30 backdrop-blur-sm z-80">
+            { orderTypeInvalid && (
+                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+            )}
             <div className="animate-in fade-in-zoom-in duration-300 w-full max-w-md p-6">
                 {alertSuccess && (
                     <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[400px] bg-green-500/50 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
@@ -114,7 +130,7 @@ export default function SetUsername() {
                     </form>
                 </div>
 
-                {spinner && <Spinner />}
+                {spinner && <SpinnerFixed />}
             </div>
         </div>
     )

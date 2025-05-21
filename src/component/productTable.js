@@ -23,8 +23,8 @@ export default function ProductsTable() {
             </div>
 
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="p-6 flex justify-between rounded-md items-center shadow-lg bg-gray-900">
-                    <div className="flex text-white space-x-10">
+                <div className="p-6 flex justify-between rounded-md items-center shadow-lg bg-white text-black">
+                    <div className="flex space-x-10">
                         <p>Category : 10</p>
                         <p>Product :  100</p>
                     </div>
@@ -39,7 +39,7 @@ export default function ProductsTable() {
                         />
                     </div>
                     <div className="flex space-x-2">
-                        <div onClick={() => setAddCategory(true)} className="flex text-white gap-2 cursor-pointer px-4 py-1 rounded-md bg-gray-500 hover:bg-gray-600">
+                        <div onClick={() => setAddCategory(true)} className="flex text-white gap-2 cursor-pointer px-4 py-1 rounded-md bg-gray-900 hover:bg-gray-600">
                             <Plus/>
                             Category
                         </div>

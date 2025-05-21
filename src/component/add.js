@@ -37,21 +37,22 @@ export const AddProductToCart = ({ onClose, id, name, harga, image, description 
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-3">
           {/* Product Info */}
           <div className="flex items-center space-x-4">
             <img 
-              src={require("../image/foto1.jpg")} 
+              src={`/image/${image}`} 
               alt="Product" 
-              className="w-20 h-20 rounded-xl object-cover"
+              className="w-full h-48 rounded-xl object-cover"
             />
-            <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
-              <h4 className="text-lg font-semibold text-gray-800">{name}</h4>
-              <p className="text-gray-600">Rp {(harga).toLocaleString('id-ID')}</p>
-            </div>
+            
           </div>
             
-          <p className="text-gray-600">{description}</p>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+              <h4 className="text-lg font-semibold text-gray-800">{name}</h4>
+              <p className="text-gray-600">Rp {(harga).toLocaleString('id-ID')}</p>
+              <p className="text-gray-600">{description}</p>
+          </div>
 
           {/* Quantity Selector */}
           <div className="space-y-2">
@@ -86,7 +87,7 @@ export const AddProductToCart = ({ onClose, id, name, harga, image, description 
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 border rounded-lg text-sm focus:ring-2 h-[50px] focus:ring-blue-500 focus:border-transparent"
               rows="3"
             />
           </div>

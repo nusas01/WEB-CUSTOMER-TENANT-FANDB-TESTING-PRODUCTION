@@ -18,12 +18,12 @@ export const changePasswordCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingPassCustomer(true))
     try {
         const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_CUSTOMER_URL}`, data, config)
-        dispatch(changePassSuccessCustomer(response.data.success))
+        dispatch(changePassSuccessCustomer(response?.data.success))
     } catch(error) {
         const message = {
-            errorField: error.response.data.ErrorFields, 
-            errorMessage: error.response.data.message,
-            error: error.response.data.error,
+            errorField: error.response?.data.ErrorFields, 
+            errorMessage: error.response?.data.message,
+            error: error.response?.data.error,
         };
         dispatch(changePassErrorCustomer(message));
     } finally {
@@ -44,12 +44,12 @@ export const setPasswordCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingSetPassCustomer(true))
     try {
         const response = await axios.patch(`${process.env.REACT_APP_SET_PASSWORD_CUSTOMER_URL}`, data, config)
-        dispatch(setPassSuccessCustomer(response.data.success))
+        dispatch(setPassSuccessCustomer(response?.data.success))
     } catch(error) {
         console.log(error.response)
         const message = {
-            errorField: error.response.data.ErrorFields, 
-            error: error.response.data.error,
+            errorField: error.response?.data.ErrorFields, 
+            error: error.response?.data.error,
         };
         dispatch(setPassErrorCustomer(message));
     } finally {
@@ -70,12 +70,12 @@ export const setUsernameCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingSetUsernameCustomer(true))
     try {
         const response = await axios.patch(`${process.env.REACT_APP_SET_USERNAME_CUSTOMER_URL}`, data, config)
-        dispatch(setUsernameSuccessCustomer(response.data.success))
+        dispatch(setUsernameSuccessCustomer(response?.data.success))
     } catch(error) {
         console.log(error.response)
         const message = {
-            errorField: error.response.data.ErrorFields, 
-            error: error.response.data.error,
+            errorField: error.response?.data.ErrorFields, 
+            error: error.response?.data.error,
         };
         dispatch(setUsernameErrorCustomer(message));
     } finally {

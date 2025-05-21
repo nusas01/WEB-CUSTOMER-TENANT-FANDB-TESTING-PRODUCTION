@@ -218,7 +218,6 @@
 
   .item-container-cart {
     min-height: 67vh;
-    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

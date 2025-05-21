@@ -5,6 +5,7 @@ import sessionStorage from 'redux-persist/lib/storage/session';
 import { cartSlice } from './cartSlice';
 import {
   orderTypeSlice,
+  buttonActivityCustomerSlice,
 } from './reducers'
 import { 
   getProductsCustomerSlice, 
@@ -14,6 +15,7 @@ import {
   getPaymentMethodsCustomerSlice,
   logoutCustomerSlice,
   loginStatusCustomerSlice,
+  loginStatusInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -41,6 +43,9 @@ const persistedReducers = combineReducers({
   orderType: orderTypeSlice.reducer,
   loginStatusCustomer: loginStatusCustomerSlice.reducer,
   transactionOnGoingCustomer: getTransactionOnGoingCustomerSlice.reducer,
+  transactionsHistoryCustomer: getTransactionsHistoryCustomerSlice.reducer,
+  buttonActivityCustomer: buttonActivityCustomerSlice.reducer,
+  loginStatusInternal: loginStatusInternalSlice.reducer,
 });
 
 // 2. Konfigurasi persist
@@ -59,9 +64,7 @@ const nonPersistedReducers = {
   changePasswordCustomerState: changePasswordCustomerSlice.reducer,
   setPasswordCustomerState: setPasswordCustomerSlice.reducer,
   setUsernameCustomerState: setUsernameCustomerSlice.reducer,
-  transactionsHistoryCustomerState: getTransactionsHistoryCustomerSlice.reducer,
   createTransactionCustomerState: createTransactionCustomerSlice.reducer,
-  sseTransactionOnGoingCustomerState: sseTransactionOnGoingCustomerSlice.reducer,
 };
 
 const rootReducer = combineReducers({

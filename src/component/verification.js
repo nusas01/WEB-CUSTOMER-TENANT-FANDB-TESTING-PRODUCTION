@@ -1,7 +1,7 @@
 import { verificationSignupCustomer } from "../actions/post"
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect, useState } from "react"
-import Spinner from "../helper/spinner"
+import {SpinnerFixed} from "../helper/spinner"
 import { useNavigate } from "react-router-dom"
 import { verificationSignupCustomerSlice } from "../reducers/post"
 import { OrderTypeInvalidAlert } from "./alert"
@@ -108,7 +108,7 @@ export default function Verification() {
             </div>
 
                 { spinner && (
-                    <Spinner/>
+                    <SpinnerFixed/>
                 )}
         </div>
     )

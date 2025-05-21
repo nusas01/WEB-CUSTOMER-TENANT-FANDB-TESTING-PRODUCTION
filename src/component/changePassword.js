@@ -2,7 +2,7 @@ import "../style/loginSignup.css"
 import { useNavigate } from "react-router-dom"
 import {changePasswordCustomer} from "../actions/patch"
 import { useDispatch, useSelector } from "react-redux"
-import Spinner from "../helper/spinner"
+import { SpinnerFixed } from "../helper/spinner"
 import { useState } from "react"
 import { useEffect } from "react"
 import {changePasswordCustomerSlice} from "../reducers/patch"
@@ -206,7 +206,7 @@ export default function ChangePassword() {
                         <button className="button" type="submit">Continue</button>
                     </form>
 
-                    {spinner && <Spinner />}
+                    {spinner && <SpinnerFixed />}
                 </div>
             </div>
         </div>

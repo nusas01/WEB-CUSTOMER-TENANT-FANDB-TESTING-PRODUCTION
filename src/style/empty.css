@@ -3,7 +3,7 @@
     flex-direction: column;
     text-align: center;
     justify-content: center;
-    gap: 10px;
+    gap: 2px;
     width: 100%;
     height: 40vh;
     margin: auto;
@@ -13,7 +13,7 @@
     margin: auto;
     height: 100px;
     width: 100px;
-    margin-bottom: 0;
+    margin-bottom: 1px;
 }
 
 .container-elament-empty h1{

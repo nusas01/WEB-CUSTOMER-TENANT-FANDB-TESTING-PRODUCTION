@@ -23,11 +23,11 @@ export const signupCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingSignCustomer(true))
     try {
         const response = await axios.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, data, config);
-        dispatch(signupSuccessCustomer(response.data.success));
+        dispatch(signupSuccessCustomer(response?.data.success));
     } catch(error) {
         const response = {
             error: error,
-            errorObject: error.response.data,
+            errorObject: error.response?.data,
         }
         dispatch(signupErrorCustomer(response));
     } finally {
@@ -48,13 +48,13 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingSignupVerificationCustomer(true));
     try {
         const response = await axios.post(`${process.env.REACT_APP_SIGNUP_VERIFICATION_CUSTOMER_URL}`, data, config)
-        dispatch(signupVerificationSuccessCustomer(response.data.success));
+        dispatch(signupVerificationSuccessCustomer(response?.data.success));
     } catch (error) {
         console.log(error)
         const message = {
-            error: error.response.data.error,
-            errorField: error.response.data.ErrorField,
-            message: error.response.data.message,
+            error: error.response?.data.error,
+            errorField: error.response?.data.ErrorField,
+            message: error.response?.data.message,
         };
         dispatch(signupVerificationFailsCustomer(message));
     } finally {
@@ -77,18 +77,18 @@ export const loginCustomer = (data) => async (dispatch) => {
     try {
         const response = await axios.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, data, configJson)
         const message = {
-            messageLoginSuccess: response.data,
-            statusCodeSuccess: response.status,
+            messageLoginSuccess: response?.data,
+            statusCodeSuccess: response?.status,
         }
         dispatch(loginSuccessCustomer(message));
         dispatch(setLoginStatusCustomer(true))
     } catch(error) {
         console.log(error)
-        console.log("Error Detail ErrorFields password:", error.response.data.ErrorFields.password);
+        console.log("Error Detail ErrorFields password:", error.response?.data.ErrorFields.password);
         const message = {
-            errorLogin: error.response.data.error,
-            errPass: error.response.data.ErrorFields.password, 
-            errUsername: error.response.data.ErrorFields.email,
+            errorLogin: error.response?.data.error,
+            errPass: error.response?.data.ErrorFields.password, 
+            errUsername: error.response?.data.ErrorFields.email,
         }
         console.log(message)
         dispatch(loginErrorCustomer(message));
@@ -114,12 +114,12 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingCreateTransactionCustomer(true));
     try {
         const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
-        dispatch(successCreateTransactionCustomer(response.data));
-        console.log("response data create transacrion: ", response.data)
+        dispatch(successCreateTransactionCustomer(response?.data));
+        console.log("response data create transacrion: ", response?.data)
     } catch(error) {
         console.log(error)
         const message = {
-            error: error.response.data.error,
+            error: error.response?.data.error,
             statusCode: error.response.status,
         }
         dispatch(errorCreateTransactionCustomer(message));
@@ -140,7 +140,7 @@ export const loginGoogleCustomer = () => async (dispatch) => {
             },
             withCredentials: true,
         })
-        window.location.href = response.data
+        window.location.href = response?.data
     } catch(error) {
         console.log(error)
         dispatch(loginGoogleErrorCustomer(error.response.data.error))

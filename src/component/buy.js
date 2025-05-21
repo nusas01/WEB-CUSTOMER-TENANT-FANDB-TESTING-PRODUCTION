@@ -3,16 +3,32 @@ import { useNavigate, useLocation } from "react-router-dom"
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { FormatISODate } from "../helper/formatdate"
 import { CountDown } from "../helper/countDown"
-import {QRCodeCanvas } from 'qrcode.react';
+import {QRCodeCanvas } from 'qrcode.react'
+import { useSelector } from "react-redux"
+import { useState, useEffect } from "react"
+import { OrderTypeInvalidAlert } from "./alert"
 
 export default function Buy() {
     const navigate = useNavigate()
     const location = useLocation()
     const detailOrder = location.state?.detailOrder || {}
+    const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+
     window.scrollTo(0, 0);
-    console.log("channel code is: ", detailOrder.channel_code)
+    
+    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
+
     return (
         <div className="container-activity bg-light">
+            { orderTypeInvalid && (
+                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+            )}
             <div className="flex p-6" style={{display: 'flex', alignItems: 'center', gap: '30px'}}>
                 <svg onClick={() => navigate("/activity")} style={{cursor: 'pointer'}} xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
@@ -29,7 +45,7 @@ export default function Buy() {
                     <div className="spase-bettwen p-6">
                         <p>Pembayaran Dalam</p>
                         <div className="container-expire-buy">
-                            <p class="font-green"><CountDown expiry={detailOrder?.exp || detailOrder?.expires_at}/></p>
+                            <p class="font-green"><CountDown expiry={detailOrder?.exp || detailOrder?.expires_at} transactionId={detailOrder.id}/></p>
                             {(detailOrder?.exp || detailOrder?.expires_at) ? (
                                 <p>Jatuh tempo {FormatISODate(detailOrder.exp || detailOrder.expires_at)}</p>
                                 ) : (
@@ -41,7 +57,7 @@ export default function Buy() {
                 { detailOrder.channel_code === "QRIS" ? (
                     <div className="justify-center items-center" style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
                         <div>
-                            {ImagePaymentMethod(detailOrder?.methodPembayaran || detailOrder?.channel_code, "100px", "100px")}
+                            {ImagePaymentMethod(detailOrder?.channel_code, "100px", "100px")}
                         </div>
                         <div>
                             <QRCodeCanvas size={250} value={detailOrder?.unixNumber || detailOrder?.qr_code_url}/>
@@ -83,16 +99,16 @@ export default function Buy() {
                         <div style={{borderBottom: '20px solid rgba(0, 0, 0, 0.2)'}}>
                             <div className="flex">
                                 <div className="p-6">
-                                    {ImagePaymentMethod(detailOrder?.methodPembayaran || detailOrder?.channel_code)}
+                                    {ImagePaymentMethod(detailOrder?.channel_code)}
                                 </div>
                                 <div className="m-buy">
                                     <div style={{borderBottom: '1px solid rgba(0, 0, 0, 0.2)'}}>
-                                        <p className="p-6">{detailOrder?.methodPembayaran || detailOrder?.channel_code}</p>
+                                        <p className="p-6">{detailOrder?.channel_code}</p>
                                     </div>
                                     <div className="p-6">
                                         <p className="mbc-10">No.Rekening:</p>
                                         <div className="spase-bettwen">
-                                            <p className="font-green" style={{fontSize: '22px'}}>{detailOrder?.virtual_account_number || detailOrder?.qr_code_url}</p>
+                                            <p className="font-green" style={{fontSize: '22px'}}>{detailOrder?.virtual_account_number || detailOrder?.unixNumber}</p>
                                             <p className="copy">Salin</p>
                                         </div>
                                     </div>

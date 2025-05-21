@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Tuple } from "@reduxjs/toolkit"
 import {setPasswordCustomer} from "../actions/patch"
 import { useSelector, useDispatch } from "react-redux"
-import Spinner from "../helper/spinner"
+import {SpinnerFixed} from "../helper/spinner"
 import {setPasswordCustomerSlice} from "../reducers/patch"
 import {fetchGetDataCustomer} from "../actions/get"
 import {OrderTypeInvalidAlert} from "./alert"
@@ -168,7 +168,7 @@ export default function SetPassword() {
                     </form>
                     </div>
 
-                    {spinner && <Spinner />}
+                    {spinner && <SpinnerFixed />}
                 </div>
             </div>
         </div>

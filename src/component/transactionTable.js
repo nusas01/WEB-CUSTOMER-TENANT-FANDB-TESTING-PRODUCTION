@@ -62,13 +62,13 @@ const TransactionTable = () => {
         <div className="p-5 min-h-screen text-white">
             {/* Summary Cards */}
             <div className="mb-6">
-                <div className="p-4 bg-gray-900 rounded-lg shadow-md">
+                <div className="p-4 bg-white rounded-lg shadow-md">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-sm text-gray-400">Total Incoming Amount</h2>
+                    <h2 className="text-sm text-black">Total Incoming Amount</h2>
                     <ArrowDown className="text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold">IDR 40.000</h3>
-                <p className="text-sm text-gray-500">Transactions Count: 3</p>
+                <h3 className="text-2xl text-black font-bold">IDR 40.000</h3>
+                <p className="text-sm text-black">Transactions Count: 3</p>
                 </div>
             </div>
 
@@ -132,7 +132,7 @@ const TransactionTable = () => {
             {/* Transaction Table */}
             <div className="rounded-lg shadow-md overflow-hidden">
                 <table className="w-full text-left">
-                <thead className="bg-gray-900">
+                <thead className="bg-gray-700">
                     <tr>
                     {["Status", "Type", "Channel", "Account", "Amount", "Reference", "Date"].map((header) => (
                         <th key={header} className="py-3 px-4 text-white font-medium text-sm">{header}</th>

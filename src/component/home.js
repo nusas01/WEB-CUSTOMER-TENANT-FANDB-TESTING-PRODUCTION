@@ -10,35 +10,14 @@ import BottomNavbar from "./bottomNavbar"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchProductsCustomer } from "../actions/get"
 import { setOrderTypeContext } from "../reducers/reducers"
-import Spinner from "../helper/spinner"
+import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
 
 function Home() {
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const { orderTakeAway, tableId } = useSelector((state) => state.persisted.orderType)
-
-  console.log(orderTakeAway)
-  console.log(tableId)
-
-
-  // get data  products
-  const { datas, loading, error, errorStatusCode } = useSelector((state) => state.persisted.productsCustomer)
-
-  // get table id or order_tye_take_away = true from query
-  const location = useLocation();
-    if (orderTakeAway === null && tableId === null) {
-      const q = new URLSearchParams(location.search);
-      const orderTakeAways = q.get("order_type_take_away") === "true";
-      const tableIds = q.get("table_id");
-  
-      console.log("🚀 Order Type:", orderTakeAways);
-      console.log("🪑 Table ID:", tableIds);
-  
-      dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
-    }
-
-  const [activeCategory, setActiveCategory] = useState("Makanan");
+  const [activeCategory, setActiveCategory] = useState()
   const [clickedCategory, setClickedCategory] = useState(null);
   const categoryRefs = useRef({});
   const clickedCategoryRef = useRef(clickedCategory);
@@ -47,9 +26,33 @@ function Home() {
   const [productData, setProductData] = useState(null);
   const containerClass = UseResponsiveClass()
   const navigate = useNavigate()
-  console.log(datas)
   const lastActiveCategoryRef = useRef(null);
   const [headerOffset, setHeaderOffset] = useState(140);
+
+  // get data  products
+  const { datas, loading, error, errorStatusCode } = useSelector((state) => state.persisted.productsCustomer)
+  useEffect(() => {
+    setSpinner(loading)
+  }, [loading])
+  console.log(datas)
+
+  useEffect(() => {
+    if (datas.length > 0) {
+      setActiveCategory(datas[0].category_name)
+    }
+  }, [datas, window.location.pathname])
+
+
+  // get table id or order_tye_take_away = true from query
+  const location = useLocation();
+  if (orderTakeAway === null && tableId === null) {
+    const q = new URLSearchParams(location.search);
+    const orderTakeAways = q.get("order_type_take_away") === "true";
+    const tableIds = q.get("table_id");
+
+    dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
+  }
+  
 
   const handleShowModal = (show, product) => {
     setShowModelAddProduct(show);
@@ -165,11 +168,11 @@ function Home() {
         statusCart={showModelCart}
         />
         <div className={containerClass === "container-main-cart" ? "container-button-category" : `flex justify-center shadow-md ${isFixed && "container-button-category-mobile"}`}>
-          {datas.map((item) => (
+          {datas.map((item, index) => (
             <button
               key={item.category}
-              className={`tab ${activeCategory === item.category ? "active" : ""}`}
-              onClick={() => scrollToCategory(item.category)}
+              className={`tab ${activeCategory === item.category_name ? "active" : ""}`}
+              onClick={() => scrollToCategory(item.category_name)}
             >
               {item.category_name}
             </button>
@@ -192,32 +195,53 @@ function Home() {
           {datas.map((item, index) => (
             <div 
               id={item.category}
-              className="container-category"
+              className="container-category min-h-[72vh]"
               key={item.category}
               ref={(el) => (categoryRefs.current[item.category_name] = el)}
             >  
               <h2 className="title-category">{item.category}</h2>
-              <div className="product-grid">
-                {item.products.map((item, index) => (
-                  <div className="product-card shadow-md bg-white" key={index} onClick={() => handleShowModal(true, { id: item.product_id, name: item.name, harga: item.price, image: item.image, description: item.description })}>
-                    <div className="w-[30%]">
-                      <img className="h-32 w-40" src={`/image/${item.image}`} alt="Product"/>
-                    </div>
-                    <div className="text-start grid grid-row-3 ml-3 w-[70%]">
-                      <p className="text-md line-clamp-2" style={{color:'black'}}>{item.name}</p>
-                      <p>{item.description}</p>
-                      <div className="spase-bettwen">
-                        <p style={{color: 'black'}}>Rp {(item.price).toLocaleString("id-ID")}</p>
-                        <button className="add-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-bag-plus-fill" viewBox="0 0 16 16">
-                            <path fillRule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
-                          </svg>
-                        </button>
+              <div className="flex grid grid-cols-1 pb-10 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
+                  {item.products.map((item, index) => (
+                    <div 
+                      className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+                      key={index}
+                      onClick={() => handleShowModal(true, { id: item.product_id, name: item.name, harga: item.price, image: item.image, description: item.description })}
+                    >
+                      <div className="relative h-36 w-full overflow-hidden">
+                        <img 
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                          src={`/image/${item.image}`} 
+                          alt={item.name}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      </div>
+                      
+                      <div className="p-4 space-y-3">
+                        <h3 className="text-md font-semibold text-gray-800 line-clamp-2">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {item.description}
+                        </p>
+                        
+                        <div className="flex justify-between items-center">
+                          <p className="text-md font-bold text-gray-900">
+                            Rp {item.price.toLocaleString("id-ID")}
+                          </p>
+                          <button className="p-1 bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className="h-6 w-6 text-white" 
+                              viewBox="0 0 16 16"
+                            >
+                              <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
             </div>
           ))}
 
@@ -240,7 +264,7 @@ function Home() {
        )}      
 
        { spinner && (
-        <Spinner/>
+        <SpinnerFixed/>
        )}
       
     </div>

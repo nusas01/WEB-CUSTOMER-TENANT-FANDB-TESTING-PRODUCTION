@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { signupCustomer, loginCustomer, loginGoogleCustomer } from "../actions/post";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loginCustomerSlice, signupCustomerSlice, loginGoogleCustomerSlice } from "../reducers/post";
-import Spinner from "../helper/spinner";
+import {SpinnerFixed} from "../helper/spinner";
 import { OrderTypeInvalidAlert } from "./alert";
 
 export default function RegisterPage() {
@@ -384,7 +384,7 @@ export default function RegisterPage() {
 
         {/* spinner */}
           { spinner && (
-            <Spinner/>
+            <SpinnerFixed/>
           )}
       </div>
     </div>

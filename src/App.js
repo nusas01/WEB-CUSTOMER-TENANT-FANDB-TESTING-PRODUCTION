@@ -18,12 +18,13 @@ import KasirStatistik from './casier/statistik';
 import KasirSettings from './casier/settings';
 import KasirTables from './casier/table';
 import CreateTransaction from './casier/createTransaction';
-import { loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer } from './actions/get';
+import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer } from './actions/get';
 import { useDispatch, useSelector } from 'react-redux';
-import PrivateRouteCustomer from './helper/privateRoute';
+import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute';
 import Verification from './component/verification';
 import { useEffect } from 'react';
 import SetUsername from './component/setUsername';
+import {SSETransactionOnGoingCustomer} from './actions/sse'
 
 
 
@@ -33,6 +34,8 @@ function App() {
   // check status login customer 
   dispatch(loginStatusCustomer())
 
+  // check status login internal
+  dispatch(loginStatusInternal())
   
   // get data products 
   const { datas } = useSelector((state) => state.persisted.productsCustomer)
@@ -53,17 +56,37 @@ function App() {
   }, [])
 
 
-  // get data transaction on goin 
+  // get data transaction on going
   const {dataTransactionOnGoing} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
   useEffect(() => {
     if (!dataTransactionOnGoing || Object.keys(dataTransactionOnGoing).length === 0) {
       dispatch(fetchTransactionOnGoingCustomer())
     }
   }, [])
-  console.log(dataTransactionOnGoing)
+
+  useEffect(() => {
+    const pendingTransaction = localStorage.getItem("pendingTransaction");
+    
+    if (pendingTransaction) {
+      dispatch(fetchTransactionOnGoingCustomer(pendingTransaction))
+        .finally(() => {
+          localStorage.removeItem("pendingTransaction")
+        })
+    }
+  }, [])
+
+
+  // get data transaction history
+  const {dataTransactionHistory} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
+  useEffect(() => {
+    if (!dataTransactionHistory || Object.keys(dataTransactionHistory).length === 0) {
+      dispatch(fetchTransactionHistoryCustomer(1))
+  }  
+  }, [])
 
   return (
     <Router>
+      <SSETransactionOnGoingCustomer/>
       <div>
         <Routes>
           <Route path='/' element={<Home/>}/>
@@ -79,14 +102,16 @@ function App() {
             <Route path='/activity/pembayaran' element={<Buy/>}/> 
           </Route>
 
-          <Route path="/internal/admin/kasir/transaction" element={<KasirTransaction/>}/>
-          <Route path="/internal/admin/kasir/transaction/create" element={<CreateTransaction/>}/>
-          <Route path="/internal/admin/kasir/orders" element={<KasirOrders/>}/>
-          <Route path="/internal/admin/kasir/order/details" element={<OrderDetails/>}/>
-          <Route path="/internal/admin/kasir/products" element={<KasirProducts/>}/>
-          <Route path="/internal/admin/kasir/tables" element={<KasirTables/>}/>
-          <Route path="/internal/admin/kasir/statistiks" element={<KasirStatistik/>}/>
-          <Route path="/internal/admin/kasir/settings" element={<KasirSettings/>}/>
+          <Route element={<PrivateRouteInternal/>}>
+            <Route path="/internal/admin/kasir/transaction" element={<KasirTransaction/>}/>
+            <Route path="/internal/admin/kasir/transaction/create" element={<CreateTransaction/>}/>
+            <Route path="/internal/admin/kasir/orders" element={<KasirOrders/>}/>
+            <Route path="/internal/admin/kasir/order/details" element={<OrderDetails/>}/>
+            <Route path="/internal/admin/kasir/products" element={<KasirProducts/>}/>
+            <Route path="/internal/admin/kasir/tables" element={<KasirTables/>}/>
+            <Route path="/internal/admin/kasir/statistiks" element={<KasirStatistik/>}/>
+            <Route path="/internal/admin/kasir/settings" element={<KasirSettings/>}/>
+          </Route>
         </Routes>
 
         { data.username === "" && statusCode === 200 && (

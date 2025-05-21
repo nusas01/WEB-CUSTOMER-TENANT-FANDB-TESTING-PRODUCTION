@@ -2,200 +2,50 @@ import { useState, useEffect } from "react"
 import "../style/activity.css"
 import BottomNavbar from "./bottomNavbar"
 import { useNavigate, useLocation } from "react-router-dom"
-import EmptyComponent from "./empty"
+import { EmptyComponent, EmptyHistory} from "./empty"
 import notaImage from "../image/nota.png"
 import { FormatISODate } from "../helper/formatdate"
 import {OrderTypeInvalidAlert} from "./alert"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
+import historyIcon from "../image/nota.png"
+import { CountDown } from "../helper/countDown"
+import {fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer} from "../actions/get"
+import { SpinnerRelative } from "../helper/spinner"
+import { buttonActivityCustomerSlice } from "../reducers/reducers"
+import { da } from "date-fns/locale"
+
 
 export default function Activity() {
+    const dispatch = useDispatch()
     const location = useLocation()
-    const buttonstatus = location.state || "on going"
-    const [buttonActive, setButtonActive] = useState(buttonstatus);
     const navigate = useNavigate();
+    const buttonstatus = location.state || "on going"
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
-    const [activity, setActivity] = useState([
-        {
-            date: "Modey,14-02-2025",
-            detail: [
-                {
-                    Id: 7971373683,
-                    methodPembelian: "Dine In",
-                    amount: 150000,
-                    status: "One Proses",
-                    methodPembayaran: 'BCA',
-                    statusPembayaran: 'Gagal',
-                    amountItem: 4,
-                    clock: '4:55 PM',
-                    notes: "banyakin sambelnya",
-                    items: [
-                        {
-                            name: 'Sate Ayam merah maranggi',
-                            harga: 45000,
-                            image: 'sate-ayam.png',
-                            description: 'Sate ayam dengan bumbu kacang.'
-                          },
-                          {
-                            name: 'Nasi Goreng',
-                            harga: 30000,
-                            image: 'nasi-goreng.png',
-                            description: 'Nasi goreng spesial dengan telur dan ayam.'
-                          }
-                    ]
-                },
-                {
-                    Id: 79732324423,
-                    methodPembelian: "Take Away",
-                    amount: 50000,
-                    status: "Fineshid",
-                    methodPembayaran: 'QRCode',
-                    statusPembayaran: 'Succesfully',
-                    amountItem: 4,
-                    clock: '5:55 PM',
-                    notes: 'banyakin sayurnya dan micinnya dikit aja',
-                    items: [
-                        {
-                            name: 'Sate Ayam merah maranggi',
-                            harga: 45000,
-                            image: 'sate-ayam.png',
-                            description: 'Sate ayam dengan bumbu kacang.'
-                          },
-                          {
-                            name: 'Nasi Goreng',
-                            harga: 30000,
-                            image: 'nasi-goreng.png',
-                            description: 'Nasi goreng spesial dengan telur dan ayam.'
-                          }
-                    ]
-                }
-            ]
-        },
-    ])
-
-    const [pendingTransactions, setPendingTransactions] = useState(
-        [
-            {
-                Id: 7971373683,
-                methodPembelian: "Dine In",
-                amount: 150000,
-                status: "Pending",
-                methodPembayaran: 'BCA',
-                statusPembayaran: 'Pending',
-                amountItem: 4,
-                clock: '4:55 PM',
-                notes: "Banyakin sambelnya",
-                expiryTime: "2025-09-24T14:04:00Z", // Waktu kadaluarsa pembayaran
-                paymentDetails: {
-                    type: "Bank Transfer",
-                    data: "1234567890", // Nomor VA untuk transfer bank
-                },
-                items: [
-                    {
-                        name: 'Sate Ayam Merah Maranggi',
-                        harga: 45000,
-                        image: 'sate-ayam.png',
-                        description: 'Sate ayam dengan bumbu kacang.'
-                    },
-                    {
-                        name: 'Nasi Goreng',
-                        harga: 30000,
-                        image: 'nasi-goreng.png',
-                        description: 'Nasi goreng spesial dengan telur dan ayam.'
-                    }
-                ]
-            },
-            {
-                Id: 79732324423,
-                methodPembelian: "Take Away",
-                amount: 50000,
-                status: "On Proces",
-                methodPembayaran: 'DANA',
-                statusPembayaran: 'successfully',
-                amountItem: 4,
-                clock: '5:55 PM',
-                notes: 'Banyakin sayurnya dan micinnya dikit aja',
-                expiryTime: "2023-11-05T18:45:00Z", // Waktu kadaluarsa pembayaran
-                paymentDetails: {
-                    type: "E-Wallet",
-                    data: "https://dana.id/payment/redirect/79732324423" // Link redirect ke pembayaran
-                },
-                items: [
-                    {
-                        name: 'Sate Ayam Merah Maranggi',
-                        harga: 45000,
-                        image: 'sate-ayam.png',
-                        description: 'Sate ayam dengan bumbu kacang.'
-                    },
-                    {
-                        name: 'Nasi Goreng',
-                        harga: 30000,
-                        image: 'nasi-goreng.png',
-                        description: 'Nasi goreng spesial dengan telur dan ayam.'
-                    }
-                ]
-            },
-            {
-                Id: 7978912345,
-                methodPembelian: "Dine In",
-                amount: 100000,
-                status: "On Progres",
-                methodPembayaran: 'QRCode',
-                statusPembayaran: 'successfully',
-                amountItem: 2,
-                clock: '6:30 PM',
-                notes: 'Pedas level 3',
-                expiryTime: "2024-06-15T08:30:00Z", // Waktu kadaluarsa pembayaran
-                paymentDetails: {
-                    type: "QRIS",
-                    data: "00020101021226600017ID.CO.QRIS.WARUNG0105112345678952040000530398654061000005802ID5913Warung Makan6013Jakarta Selatan62100507ABCD12346304E0B6" // Data QRIS untuk pembayaran
-                },
-                items: [
-                    {
-                        name: 'Mie Ayam Special',
-                        harga: 35000,
-                        image: 'mie-ayam.png',
-                        description: 'Mie ayam dengan topping ayam cincang dan pangsit.'
-                    },
-                    {
-                        name: 'Es Teh Manis',
-                        harga: 10000,
-                        image: 'es-teh.png',
-                        description: 'Teh manis dengan es batu segar.'
-                    }
-                ]
-            },
-            {
-                Id: 7978912345,
-                methodPembelian: "Dine In",
-                amount: 100000,
-                status: "Pending",
-                methodPembayaran: 'QRCode',
-                statusPembayaran: 'Pending',
-                amountItem: 2,
-                clock: '6:30 PM',
-                notes: 'Pedas level 3',
-                expiryTime: "2025-02-20T12:00:00Z", // Waktu kadaluarsa pembayaran
-                paymentDetails: {
-                    type: "QRIS",
-                    data: "00020101021226600017ID.CO.QRIS.WARUNG0105112345678952040000530398654061000005802ID5913Warung Makan6013Jakarta Selatan62100507ABCD12346304E0B6" // Data QRIS untuk pembayaran
-                },
-                items: [
-                    {
-                        name: 'Mie Ayam Special',
-                        harga: 35000,
-                        image: 'mie-ayam.png',
-                        description: 'Mie ayam dengan topping ayam cincang dan pangsit.'
-                    },
-                    {
-                        name: 'Es Teh Manis',
-                        harga: 10000,
-                        image: 'es-teh.png',
-                        description: 'Teh manis dengan es batu segar.'
-                    }
-                ]
-            }
-    ]);
+    const [spinner, setSpinner] = useState(false)
+   
     
+    // get data transaction on goin 
+    const {dataTransactionOnGoing, lengthTransactionOnGoing, loading} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+    useEffect(() => {
+        setSpinner(loading)
+    }, [loading])
+    console.log("data transaction on goin: ", dataTransactionOnGoing)
+
+    // get data transaction history or finished
+    const {dataTransactionHistory, loadingHistory, lengthTransactionProses} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
+    console.log("apa yang terjadi terjadi: ", dataTransactionHistory)
+    useEffect(() => {
+        setSpinner(loadingHistory)
+    }, [loadingHistory])
+    
+
+    // get data button active status
+    const {setButtonActivity} = buttonActivityCustomerSlice.actions
+    const {buttonActive} = useSelector((state) => state.persisted.buttonActivityCustomer)
+    const handleButtonActivity = (data) => {
+        dispatch(setButtonActivity(data))
+    }
+
 
     const handleDetail = (detailOrder) => {
         navigate("/activity/detail", { state: { detailOrder } })
@@ -213,6 +63,7 @@ export default function Activity() {
         }
     }, [tableId, orderTakeAway])
 
+
     return (
         <div>
             <div className="container-activity bg-light">
@@ -224,140 +75,211 @@ export default function Activity() {
                 <div className="body-activity p-6">
                     <div className="container-button-activity">
                         <button 
-                            onClick={() => setButtonActive("on going")}
+                            onClick={() => handleButtonActivity("on going")}
                             className={buttonActive !== "on going" ? "button-activity" : "button-activity-active"}
                         >
-                            <p className="cart-badge-profile">
-                                2
-                            </p>
+                            { lengthTransactionOnGoing > 0 && buttonActive !== "on going" && (
+                                <p className="cart-badge-profile">
+                                    {lengthTransactionOnGoing}
+                                </p>
+                            )}
                             On Going 
                         </button>
                         <button 
-                            onClick={() => setButtonActive("history")}
+                            onClick={() => handleButtonActivity("history")}
                             className={buttonActive !== "history" ? "button-activity" : "button-activity-active"}
                         >
+                            {lengthTransactionProses > 0 && buttonActive !== "history" && (
+                                <p className="cart-badge-profile">
+                                    {lengthTransactionProses}
+                                </p>
+                            )}   
                             History
                         </button>
                     </div>
-                    {/* detail activity */}
-                    { buttonActive === 'history' && activity.length > 0 && activity.map((act) => (
-                    <div>
-                        <div className="date-activity">
-                            <span>Today</span>
-                            <span>{act.date}</span>
-                        </div>
-                        { act.detail.map((htr) => (
-                            <div 
-                            onClick={() => handleDetail({
-                                date: act.date,
-                                id: htr.Id,
-                                methodPembelian: htr.methodPembelian,
-                                amount: htr.amount,
-                                status: htr.status,
-                                methodPembayaran: htr.methodPembayaran,
-                                statusPembayaran: htr.statusPembayaran,
-                                amountItem: htr.amountItem,
-                                clock: htr.clock,
-                                notes: htr.notes,
-                                items: htr.items,
-                            })}
-                            className="fill-container-body-activity"
-                            >
-                                <div className="object-fill-container-body-activity width-1">
-                                    <span className="desc-activity">{htr.methodPembelian}</span>
-                                    <span className="detail-desc">{htr.amountItem} items</span>
-                                </div>
-                                <div className="object-fill-container-body-activity width-2">
-                                    <span className="desc-activity" style={{fontSize: '15px'}}>{(htr.amount).toLocaleString()} IDR</span>
-                                    <span className="detail-desc">{htr.Id}</span>
-                                </div>
-                                <div className="object-fill-container-body-activity width-3">
-                                    <spann className="desc-status">{htr.status}</spann>
-                                    <span className="detail-desc">{htr.clock}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    ))}
 
-                    {/* belom bayar section */}
+                    {spinner && (
+                        <SpinnerRelative h="h-[70vh]"/>
+                    )}
+
+                    {/* HISTORY */}
+                    {buttonActive === 'history' && !spinner && (
+                        Object.entries(dataTransactionHistory).length > 0 ? (
+                            Object.entries(dataTransactionHistory).map(([date, transactions], actIndex) => (
+                                <div key={actIndex} className="mb-8">
+                                  <div className="flex items-center gap-3 mb-4">
+                                    <div className="h-px bg-gray-200 flex-1"></div>
+                                    <span className="text-sm font-medium text-gray-500">
+                                      {new Date(date).toDateString() === new Date().toDateString()
+                                        ? "Today"
+                                        : new Date(date).toLocaleDateString('en-ID', {
+                                            weekday: 'short',
+                                            day: 'numeric',
+                                            month: 'short',
+                                          })}
+                                    </span>
+                                    <div className="h-px bg-gray-200 flex-1"></div>
+                                  </div>
+                              
+                                  {transactions.map((trx, htrIndex) => (
+                                    <div
+                                      key={htrIndex}
+                                      onClick={() =>
+                                        handleDetail({
+                                            id: trx.id,
+                                            created_at: trx.created_at,
+                                            items: trx.order,
+                                            subTotal: trx.sub_total,
+                                            fee: trx.payment_method_fee,
+                                            tax: trx.tax,
+                                            amount: trx.amount_price,
+                                            methodPembayaran: trx.payment_method_type,
+                                            channel_code: trx.channel_code,
+                                            statusPembayaran: trx.order_status,
+                                            notes: "lupa kasih notes",
+                                        })
+                                      } 
+                                      className="bg-white rounded-xl p-4  mb-3 shadow-sm hover:shadow-md transition-shadow
+                                                 border border-gray-100 cursor-pointer grid grid-cols-3 gap-4"
+                                    >
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium text-gray-800">{trx.order_type}</span>
+                                        </div>
+                                        <span className="text-sm text-gray-500 block">{trx.quantity} items</span>
+                                      </div>
+                              
+                                      <div className="space-y-1 flex justify-center items-center">
+                                        <span className="block font-semibold text-gray-900">
+                                          {trx.amount_price.toLocaleString()} IDR
+                                        </span>
+                                      </div>
+                              
+                                      <div className="space-y-2 text-right">
+                                        <span className={`inline-block px-2  py-1  rounded text-xs italic bg-green-100 text-green-800'}`}>
+                                          {trx.order_status}
+                                        </span>
+                                        <span className="block text-sm text-gray-500">
+                                          {new Date(trx.created_at).toLocaleTimeString('en-ID', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))                          
+                            ) : (
+                                <EmptyHistory gambar={historyIcon} title={"Belom Ada Transaction"} desc={"Kamu belum pernah membuat transaksi. Mulai belanja dan lihat aktivitasmu di sini!"}/>
+                        )
+                    )}
+
+
+                    {/* TRANSACTION ON GOING */}
                     <div>
-                        { buttonActive === 'on going' && pendingTransactions.length > 0 && (
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '50px'}}>
-                                {pendingTransactions.map((data) => (
-                                    <div className="container-belum-bayar p-6 bg-light">
-                                        <p style={{textAlign: 'end', margin: '5px 0'}}>
-                                            {data.statusPembayaran === 'Pending' ? 'Belum Bayar' : data.status}
-                                        </p>
-                                        <div className=" ">
-                                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                                                { data.items.map((item) => (
-                                                    <div className="container-item flex">
-                                                        <img src={require("../image/foto1.jpg")} style={{width: '60px', height: '60px'}}/>
-                                                        <div className="item-information">
-                                                            <div className="item-title">
-                                                                <p>{item.name}</p>
-                                                            </div>
-                                                            <div className="spase-bettwen font-17 text-gray-500">
-                                                                <p>Rp {(item.harga).toLocaleString("id-ID")}</p>
-                                                                <p>x2</p>
+                        {buttonActive === 'on going' && !spinner &&  (
+                            Array.isArray(dataTransactionOnGoing) && dataTransactionOnGoing.length > 0 ? (
+                                <div style={{display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '50px'}}>
+                                    {dataTransactionOnGoing.map((data, index) => (
+                                        <div key={index} className="container-belum-bayar p-6 bg-light">
+                                            <p class="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
+                                            <div className="flex justify-end">
+                                                { data.status_transaction === "PENDING" ? (
+                                                    <p style={{margin: '5px 0'}}>
+                                                        Belum Bayar
+                                                    </p>
+                                                ):(
+                                                        <p
+                                                            style={{ margin: "5px 0" }}
+                                                            className={`inline-block px-4 py-2 rounded text-xs italic 
+                                                                ${data.order_status === "PROSES" ? "bg-red-100 text-red-900" : ""}
+                                                                ${data.order_status === "PROGRES" ? "bg-yellow-100 text-yellow-900" : ""}
+                                                                ${data.order_status === "FINISHED" ? "bg-green-100 text-green-900" : ""}
+                                                            `}
+                                                            >
+                                                            {data.order_status}
+                                                        </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                                    {data.order.map((item, idx) => (
+                                                        <div key={idx} className="container-item flex">
+                                                            <img
+                                                                src={`/image/${item.product.image}`} // sesuaikan path folder gambar kamu
+                                                                style={{width: '100px', height: '100px'}}
+                                                                className="object-cover"
+                                                                alt={item.product.name}
+                                                            />
+                                                            <div className="item-information">
+                                                                <div className="item-title">
+                                                                    <p>{item.product.name}</p>
+                                                                </div>
+                                                                <div className="spase-bettwen font-17 text-gray-500">
+                                                                    <p>Rp {(item.product.price).toLocaleString("id-ID")}</p>
+                                                                    <p>x{item.quantity}</p>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                                <div>
-                                                    <div className="spase-bettwen" style={{padding: '15px 0'}}>
-                                                        <p>{data.amountItem} item</p>
-                                                        <p>{data.status === 'Pending' ? `Jumlah Harus Dibayar : Rp${(data.amount).toLocaleString("id-ID")}` : `Rp${(data.amount).toLocaleString('id-ID')}`}</p>
-                                                    </div>
-                                                    <div className="spase-bettwen">
-                                                        {data.status === 'Pending'  && (<p>Bayar sebelum {FormatISODate(data.expiryTime)}</p>)}
-                                                        {data.status === 'Pending'  && (<button onClick={() => handlePembayaran({
-                                                            amount: data.amount,
-                                                            methodPembayaran: data.methodPembayaran,
-                                                            exp: data.expiryTime,
-                                                            unixNumber: data.paymentDetails.data,
-                                                        })}
-                                                        className="text-white transition-colors button-on-going" 
-                                                        style={{backgroundColor: 'red'}}
-                                                        >
-                                                            Bayar Sekarang
-                                                        </button>)}
-                                                    </div>
-                                                    {data.status === 'Finished' && (
-                                                        <div style={{display: 'flex', justifyContent: 'end'}}>
-                                                            <button className="bg-blue-600 text-white transition-colors button-on-going" style={{alignItems: 'end'}}>Diterima</button>
+                                                    ))}
+
+                                                    <div>
+                                                        <div className="spase-bettwen" style={{padding: '15px 0'}}>
+                                                            <p>{data.order.length} item</p>
+                                                            { data.status_transaction === "PAID" ? (
+                                                                <p>Pesanan Anda Sedang Kami Proses</p>
+                                                            ) : (
+                                                                <p>Jumlah Harus Dibayar : Rp{(data.amount_price).toLocaleString("id-ID")}</p>
+                                                            )}
                                                         </div>
-                                                    )}
+
+                                                        {data.status_transaction !== 'PAID' && (
+                                                            <div className="spase-bettwen">
+                                                                <p>Bayar sebelum {FormatISODate(data.expires_at)}</p>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (data.payment_method_type === "EWALLET") {
+                                                                            {localStorage.setItem("pendingTransaction", data.id)}
+                                                                            window.location.href = data.payment_reference; // atau URL redirect yang sesuai
+                                                                        } else {
+                                                                            handlePembayaran({
+                                                                                id: data.id,
+                                                                                amount: data.amount_price,
+                                                                                methodPembayaran: data.payment_method_type,
+                                                                                exp: data.expires_at,
+                                                                                unixNumber: data.payment_reference,
+                                                                                channel_code: data.channel_code,
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                    className="text-white transition-colors button-on-going"
+                                                                    style={{backgroundColor: 'red'}}
+                                                                >
+                                                                    Bayar Sekarang
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                        {data.status_transaction === 'FINISHED' && (
+                                                            <div style={{display: 'flex', justifyContent: 'end'}}>
+                                                                <button className="bg-blue-600 text-white transition-colors button-on-going">
+                                                                    Diterima
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>    
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyHistory gambar={historyIcon} title={"Belum Ada Transaksi"} desc={"Kamu belum memiliki transaksi yang sedang berlangsung. Mulai belanja dan lihat aktivitasmu di sini!"}/>
+                            )
                         )}
                     </div>
-
-                    {/* section cart */}
-                    { activity.length < 1 && buttonActive === 'history' && (
-                        <div>
-                            <EmptyComponent
-                            gambar={notaImage}
-                            title={"Mulai Belanja Sekarang!"}
-                            desc={"Anda belum memiliki aktivitas belanja. Yuk, jelajahi menu dan lakukan pesanan pertama Anda."}
-                            />
-                        </div>
-                    )}
-
-                    { pendingTransactions.length < 1 && buttonActive === 'on going' && (
-                        <div>
-                            <EmptyComponent
-                            gambar={notaImage}
-                            title={"Mulai Belanja Sekarang!"}
-                            desc={"Anda belum memiliki aktivitas belanja. Yuk, jelajahi menu dan lakukan pesanan pertama Anda."}
-                            />
-                        </div>
-                    )}
 
                 </div>
                 <BottomNavbar/>

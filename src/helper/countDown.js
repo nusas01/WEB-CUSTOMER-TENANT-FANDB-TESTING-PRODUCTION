@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
+import {getTransactionOnGoingCustomerSlice} from "../reducers/get"
+import { useDispatch } from "react-redux"
 
-export const CountDown = ({ expiry }) => {
+
+const { removeTransactionOnGoingById } = getTransactionOnGoingCustomerSlice.actions
+export const CountDown = ({ expiry, transactionId }) => {
+  const dispatch = useDispatch();
+
   const calculateTimeLeft = () => {
     const now = new Date();
     const expTime = new Date(expiry);
     const diff = expTime - now;
 
-    if (diff <= 0) return "Waktu habis";
+    if (diff <= 0) return null;
 
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -19,13 +25,18 @@ export const CountDown = ({ expiry }) => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const time = calculateTimeLeft();
+      if (time === null) {
+        clearInterval(timer);
+        dispatch(removeTransactionOnGoingById(transactionId)); // dispatch di sini
+        setTimeLeft("Waktu habis");
+      } else {
+        setTimeLeft(time);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [expiry]);
+  }, [expiry, dispatch, transactionId]);
 
-  return (
-    <p>{timeLeft}</p>
-  );
+  return <p>{timeLeft}</p>;
 };

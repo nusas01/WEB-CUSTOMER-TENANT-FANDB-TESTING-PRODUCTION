@@ -8,7 +8,9 @@ import {
     getPaymentMethodsCustomerSlice,
     loginCustomerSlice,
     loginStatusCustomerSlice,
+    loginStatusInternalSlice
  } from "../reducers/get.js";
+ import {groupByDate} from "../helper/groupData.js"
 
 const {setLoadingProducts, successFetchProducts, errorFetchProducts} = getProductsCustomerSlice.actions;
 export const fetchProductsCustomer = () => {
@@ -21,7 +23,7 @@ export const fetchProductsCustomer = () => {
                     'API_KEY': process.env.REACT_APP_API_KEY
                 },
             })
-            dispatch(successFetchProducts(response.data))
+            dispatch(successFetchProducts(response?.data))
         } catch(error) {
             const message = {
                 message: error.response.message,
@@ -45,8 +47,7 @@ export const fetchGetDataCustomer = () => {
                     'API_KEY': process.env.REACT_APP_API_KEY
                 },
             })
-            console.log("response get data customer:", response.data)
-            dispatch(fetchSuccessGetDataCustomer(response.data))
+            dispatch(fetchSuccessGetDataCustomer(response?.data))
         } catch(error) {
             const message = {
                 message: error.response.message,
@@ -84,20 +85,23 @@ export const fetchTransactionOnGoingCustomer = () => {
 }
 
 const {setLoadingGetTransactionHistoryCustomer, fetchSuccessGetTransactionHistoryCustomer, fetchErrorGetTransactionHistoryCustomer} = getTransactionsHistoryCustomerSlice.actions;
-export const fetchTransactionHistoryCustomer = (page = 1) => {
+export const fetchTransactionHistoryCustomer = (page) => {
     return async (dispatch, getState) => {
       dispatch(setLoadingGetTransactionHistoryCustomer(true))
       try {
-        const response = await axios.get(`${process.env.GET_TRANSACTION_HISTORY_URL}?page=${page}`, {
+        const response = await axios.get(`${process.env.REACT_APP_GET_TRANSACTION_HISTORY_URL}?page=${page}`, {
           withCredentials: true,
           headers: {
-            'API_KEY': process.env.API_KEY
+            'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
+        console.log(response)
+        const rawData = response?.data?.data || [];
+        const hasMore = response?.data.hasMore
+        const grouped = groupByDate(rawData);
+        const countProses = rawData.filter(trx => trx.order_status === "PROSES").length
   
-        const { data, hasMore } = response.data
-  
-        dispatch(fetchSuccessGetTransactionHistoryCustomer({ data, hasMore, page }))
+        dispatch(fetchSuccessGetTransactionHistoryCustomer({ data: grouped, hasMore, page, lengthTransactionProses: countProses }))
       } catch (error) {
         const message = {
           error: error.response?.data?.message || "Unknown error",
@@ -122,8 +126,8 @@ export const fetchPaymentMethodsCustomer = () => {
           },
         })
         console.log(response)
-        dispatch(fetchSuccessGetPaymentMethodsCustomer(response.data))
-        dispatch(setTaxRate(response.data.tax_rate))
+        dispatch(fetchSuccessGetPaymentMethodsCustomer(response?.data))
+        dispatch(setTaxRate(response?.data.tax_rate))
       } catch (error) {
         const message = {
           error: error.response?.data?.error || "Unknown error",
@@ -149,7 +153,7 @@ export const logoutCustomer = () => {
                     "API_KEY": process.env.REACT_APP_API_KEY,
                 }
             })
-            dispatch(logoutSuccessCustomer(response.data.success))
+            dispatch(logoutSuccessCustomer(response?.data.success))
             dispatch(setLoginStatusCustomer(false))
             dispatch(resetGetDataCustomer())
         } catch(error) {
@@ -169,7 +173,7 @@ export const loginStatusCustomer = () => {
                         "API_KEY": process.env.REACT_APP_API_KEY,
                     }
                 })
-                dispatch(setLoginStatusCustomer(response.data.loggedIn))
+                dispatch(setLoginStatusCustomer(response?.data.loggedIn))
             } catch (error) {
                 dispatch(setLoginStatusCustomer(false))
                 console.log(error)
@@ -177,3 +181,20 @@ export const loginStatusCustomer = () => {
     }
 }
 
+const {setLoginStatusInternal} = loginStatusInternalSlice.actions
+export const loginStatusInternal = () => {
+    return async (dispatch) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_LOGIN_STATUS_INTERNAL}`, {
+                withCredentials: true,
+                headers: {
+                    "API_KEY": process.env.REACT_APP_API_KEY,
+                }
+            })
+            dispatch(setLoginStatusInternal(response?.data.loggedIn))
+        } catch (error) {
+            dispatch(setLoginStatusInternal(false))
+            console.log(error)
+        }
+    }
+}
