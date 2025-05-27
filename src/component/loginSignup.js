@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import "../style/loginSignup.css";
 import { useDispatch, useSelector } from "react-redux";
-import { signupCustomer, loginCustomer, loginGoogleCustomer } from "../actions/post";
+import { signupCustomer, loginCustomer, loginGoogleCustomer, loginInternal } from "../actions/post";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loginCustomerSlice, signupCustomerSlice, loginGoogleCustomerSlice } from "../reducers/post";
 import {SpinnerFixed} from "../helper/spinner";
@@ -19,7 +19,9 @@ export default function RegisterPage() {
   const [repeatPassword, setRepeatPassword] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
   const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+  const location = useLocation()
 
+  const isInternal = location.pathname.startsWith('/internal')
 
   const [formSignup, setFormSignup] = useState({
     email: '',
@@ -57,8 +59,6 @@ export default function RegisterPage() {
     })
     }
   }, [signup])
-
-
 
 
   // handle signup dan handle perilakunya
@@ -107,8 +107,6 @@ export default function RegisterPage() {
   }, [errorObject])
 
 
-
-
   // handle login dan perilakunya 
   // ketika berhasil login redirect ke enpoint root
   const { messageLoginSuccess, loadingLogin, statusCodeSuccess, errorLogin, errPass, errUsername } = useSelector((state) => state.loginCustomerState) || {}
@@ -144,6 +142,23 @@ export default function RegisterPage() {
   }
 
 
+  // handle response login internal 
+  const { messageLoginSuccessInternal, loadingLoginInternal, statusCodeSuccessInternal, errorLoginInternal, errPassInternal, errEmailInternal } = useSelector((state) => state.loginInternalState) || {}
+  useEffect(() => {
+    setSpinner(loadingLoginInternal)
+  }, [loadingLoginInternal])  
+
+  useEffect(() => {
+    if (messageLoginSuccessInternal) {
+      navigate('/internal/admin/kasir/transaction')
+
+      setFormLogin({
+          email: '',
+          password: '',
+      })
+    }
+  }, [messageLoginSuccessInternal])
+
 
   // handle submit login and signup
   const handleSubmit = (e) => {
@@ -164,13 +179,16 @@ export default function RegisterPage() {
         })
       )
     } else {
-      dispatch(loginCustomer(formLogin));
+      if (isInternal) {
+        dispatch(loginInternal(formLogin))
+      } else {
+        dispatch(loginCustomer(formLogin))
+      }
     }
   }
 
 
   // handle receive data from verification code 
-  const location = useLocation()
   const [showAlertVerification, setShowAlertVerificationSuccess] = useState(false)
   const data = location.state?.data
 
@@ -234,9 +252,11 @@ export default function RegisterPage() {
   // handle alert error invalid order type jika user bukan scan dari table atau kasir
   const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
   useEffect(() => {
+    if (!isInternal) {
       if (tableId === null && orderTakeAway === false) {
-        setOrderTypeInvalid(true)
-        return
+          setOrderTypeInvalid(true)
+          return
+      }
     }
   }, [tableId, orderTakeAway]) 
 
@@ -252,7 +272,7 @@ export default function RegisterPage() {
 
         { showAlertError && (
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-red-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
-                "terjadi error di server kami"
+                terjadi error di server kami
             </div>
         )}
         
@@ -263,7 +283,7 @@ export default function RegisterPage() {
         <h1 className="title">{signup ? 'Create an account' : 'Welcome back'}</h1>
 
         <form className="form" onSubmit={handleSubmit}>
-          <div style={{ position: 'relative' }} className="mb-10">
+           <div style={{ position: 'relative' }} className="mb-10">
             <input
               type="email"
               placeholder=""
@@ -274,17 +294,30 @@ export default function RegisterPage() {
               required
               style={{
                 borderColor: !signup
-                  ? errUsername ? 'red' : ''
-                  : emailErrSign ? 'red' : ''
+                  ? (isInternal ? (errEmailInternal ? 'red' : '') : (errUsername ? 'red' : ''))
+                  : (emailErrSign ? 'red' : '')
               }}
             />
-            <label className="input-label"  style={{ color: !signup ? errUsername ? 'red' : '' : emailErrSign ? 'red' : ''}}>
+
+            <label
+              className="input-label"
+              style={{
+                color: !signup
+                  ? (isInternal ? (errEmailInternal ? 'red' : '') : (errUsername ? 'red' : ''))
+                  : (emailErrSign ? 'red' : '')
+              }}
+            >
               Email Address
             </label>
-            { !signup ? (
-              <p className="text-start mt-1" style={{color: 'red', fontSize: '13px'}}>{errUsername}</p>
+
+            {!signup ? (
+              <p className="text-start mt-1" style={{ color: 'red', fontSize: '13px' }}>
+                {isInternal ? errEmailInternal : errUsername}
+              </p>
             ) : (
-              <p className="text-start mt-1" style={{color: 'red', fontSize: '13px'}}>{emailErrSign}</p>
+              <p className="text-start mt-1" style={{ color: 'red', fontSize: '13px' }}>
+                {emailErrSign}
+              </p>
             )}
           </div>
 
@@ -316,17 +349,33 @@ export default function RegisterPage() {
               required
               style={{
                 borderColor: !signup
-                  ? errPass ? 'red' : ''
-                  : passwordErrSign ? 'red' : ''
+                  ? (isInternal ? (errPassInternal ? 'red' : '') : (errPass ? 'red' : ''))
+                  : (passwordErrSign ? 'red' : '')
               }}
             />
-            <label className="input-label"  style={{color: !signup ? errPass ? 'red' : '' : passwordErrSign ? 'red' : ''}}>Password</label>
-            { !signup ? (
-              <p className="text-start" style={{color: 'red', fontSize: '13px'}}>{errPass}</p>
+            
+            <label
+              className="input-label"
+              style={{
+                color: !signup
+                  ? (isInternal ? (errPassInternal ? 'red' : '') : (errPass ? 'red' : ''))
+                  : (passwordErrSign ? 'red' : '')
+              }}
+            >
+              Password
+            </label>
+
+            {!signup ? (
+              <p className="text-start" style={{ color: 'red', fontSize: '13px' }}>
+                {isInternal ? errPassInternal : errPass}
+              </p>
             ) : (
-              <p className="text-start" style={{color: 'red', fontSize: '13px'}}>{passwordErrSign}</p>
+              <p className="text-start" style={{ color: 'red', fontSize: '13px' }}>
+                {passwordErrSign}
+              </p>
             )}
           </div>
+
 
           {signup && (
             <div style={{ position: 'relative' }} className="mb-10">

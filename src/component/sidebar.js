@@ -1,14 +1,52 @@
-import { useState } from "react";
-import { ScanBarcode, Ticket, Box, Settings, LogOut, ChartNoAxesCombined, ChevronRight, Menu, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, use } from "react"
+import { ScanBarcode, Ticket, Box, Settings, LogOut, ChartNoAxesCombined, ChevronRight, Menu, X } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { logoutInternal } from "../actions/get"
+import {logoutInternalSlice} from "../reducers/get"
+import {SpinnerFixed} from "../helper/spinner"
+import { se } from "date-fns/locale"
+
 
 const Sidebar = ({activeMenu}) => {
   const navigate = useNavigate()
-  const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch()
+  const [isOpen, setIsOpen] = useState(false)
+  const [spinner, setSpinner] = useState(false)
+  const [showAlertError, setShowAlertError] = useState(false)
 
   const handleNavigate = (value) => {
     navigate(value)
   }
+
+  
+  // handle response logout
+  const {resetLogoutInternal} = logoutInternalSlice.actions
+  const {message, error, loadingLogout} = useSelector((state) => state.logoutInternalState)
+  
+  const handleLogout = async () => {
+      await dispatch(logoutInternal())
+      window.location.href = "/"
+  }
+
+  useEffect(() => {
+    if (message) {
+      dispatch(resetLogoutInternal())
+    }
+  }, [message])
+
+  useEffect(() => {
+    setSpinner(loadingLogout)
+  }, [loadingLogout])
+
+  useEffect(() => {
+    if (error) {
+      setShowAlertError(true)
+      setTimeout(() => {
+        setShowAlertError(false)
+      }, 2000)
+    }
+  }, [error])
 
   return (  
     <>
@@ -45,30 +83,30 @@ const Sidebar = ({activeMenu}) => {
         {/* Navigation */}
         <nav className="flex-1 px-3 pt-2">
           <ul className="space-y-2">
-            <div onClick={() => handleNavigate('/internal/admin/kasir/transaction')} className="flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer" style={activeMenu === 'Transaction' ? {backgroundColor: '#6B7280'}: {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/transaction')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Transaction' && 'bg-gray-200'}`}>
                 <NavItem Icon={ScanBarcode} title="Transactions" />
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/kasir/orders')} className="flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer" style={activeMenu === 'Orders' ? {backgroundColor: '#6B7280'} : {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/orders')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Orders' && 'bg-gray-200'}`}>
                 <NavItem Icon={Ticket} title="Orders" />
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/kasir/products')} className="flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer" style={activeMenu === "Product" ? {backgroundColor: '#6B7280'} : {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/products')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === "Product" && 'bg-gray-200'}`}>
                 <NavItem Icon={Box} title="Products" />
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/kasir/tables')} className="flex py-3 justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg" style={activeMenu === "table" ? {backgroundColor: '#6B7280'} : {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/tables')} className={`flex py-3 justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "table" && 'bg-gray-200'}`}>
                 <div className="flex items-center ml-3 space-x-2">
                   <svg  xmlns="http://www.w3.org/2000/svg"  width="26"  height="26"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-databricks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01" /></svg>
                   <p>Tables</p>
                 </div>
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/kasir/statistiks')} className="flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg" style={activeMenu === "statistik" ? {backgroundColor: '#6B7280'} : {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/statistiks')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "statistik" && 'bg-gray-200'}">`}>
                 <NavItem Icon={ChartNoAxesCombined} title="Statistiks" />
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/kasir/settings')} className="flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg" style={activeMenu === "settings" ? {backgroundColor: '#6B7280'} : {}}>
+            <div onClick={() => handleNavigate('/internal/admin/kasir/settings')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "settings" && 'bg-gray-200'}`}>
                 <NavItem Icon={Settings} title="Settings" />
                 <ChevronRight/>
             </div>
@@ -77,17 +115,29 @@ const Sidebar = ({activeMenu}) => {
 
         {/* Footer */}
         <div className="p-4 border-t space-y-2">
-            <div className="rounded-lg bg-gray-900 hover:bg-gray-500 text-white">
+            <div onClick={() => handleLogout()} className="rounded-lg bg-gray-900 hover:bg-gray-500 text-white">
                 <NavItem Icon={LogOut} title="Logout" />
             </div>
         </div>
       </div>
+
+      { showAlertError && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-red-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
+              terjadi error di server kami
+          </div>
+      )}
+
+      {/* spinner */}
+      { spinner && (
+        <SpinnerFixed/>
+      )}
 
       {/* Overlay Background (Mobile) */}
       {isOpen && <div className="fixed inset-0 bg-black/50 md:hidden" onClick={() => setIsOpen(false)} />}
     </>
   );
 };
+
 
 const NavItem = ({ Icon, title }) => (
   <div className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition">

@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Sidebar from "../component/sidebar"
 import TransactionTable from "../component/transactionTable"
-import Order from "../component/orderTable"
+
 
 export default function KasirTransaction() {
     const [activeMenu, setActiveMenu] = useState("Transaction")
+    
 
     return (
         <div className="flex">

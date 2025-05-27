@@ -16,6 +16,12 @@ import {
   logoutCustomerSlice,
   loginStatusCustomerSlice,
   loginStatusInternalSlice,
+  logoutInternalSlice,
+  transactionCashOnGoingInternalSlice,
+  transactionNonCashOnGoingInternalSlice,
+  checkTransactionNonCashInternalSlice,
+  transactionHistoryInternalSlice,
+  dataFilteringTransactionHistorySlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -23,15 +29,17 @@ import {
   loginCustomerSlice,
   loginGoogleCustomerSlice,
   createTransactionCustomerSlice,
+  loginInternalSlice,
 } from './post'
 import {
   changePasswordCustomerSlice,
   setPasswordCustomerSlice,
   setUsernameCustomerSlice,
+  buyTransactionCashOnGoingInternalSlice,
 } from './patch'
 import {
-  sseTransactionOnGoingCustomerSlice
-} from './sse'
+  statusExpiredTokenSlice
+} from './expToken'
 
 
 // 1. Reducer yang ingin dipersist
@@ -46,6 +54,10 @@ const persistedReducers = combineReducers({
   transactionsHistoryCustomer: getTransactionsHistoryCustomerSlice.reducer,
   buttonActivityCustomer: buttonActivityCustomerSlice.reducer,
   loginStatusInternal: loginStatusInternalSlice.reducer,
+  transactionCashOnGoingInternal: transactionCashOnGoingInternalSlice.reducer,
+  transactionNonCashOnGoingInternal: transactionNonCashOnGoingInternalSlice.reducer,
+  transactionHistoryInternal: transactionHistoryInternalSlice.reducer,
+  dataFilteringTransactionHistoryState: dataFilteringTransactionHistorySlice.reducer,
 });
 
 // 2. Konfigurasi persist
@@ -65,6 +77,11 @@ const nonPersistedReducers = {
   setPasswordCustomerState: setPasswordCustomerSlice.reducer,
   setUsernameCustomerState: setUsernameCustomerSlice.reducer,
   createTransactionCustomerState: createTransactionCustomerSlice.reducer,
+  loginInternalState: loginInternalSlice.reducer,
+  logoutInternalState: logoutInternalSlice.reducer,
+  checkTransactionNonCashInternalState: checkTransactionNonCashInternalSlice.reducer,
+  buyTransactionCashOnGoingInternalState: buyTransactionCashOnGoingInternalSlice.reducer,
+  statusExpiredTokenState: statusExpiredTokenSlice.reducer, 
 };
 
 const rootReducer = combineReducers({

@@ -56,6 +56,10 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
       </div>
     )
   }
+
+  export const AlertSucces = ({ message }) => {
+    
+  }
   
 
 

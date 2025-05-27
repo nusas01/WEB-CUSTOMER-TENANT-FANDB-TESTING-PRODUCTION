@@ -35,6 +35,7 @@ function Home() {
     setSpinner(loading)
   }, [loading])
   console.log(datas)
+  console.log("ioiiiofioeuou: ", error)
 
   useEffect(() => {
     if (datas.length > 0) {

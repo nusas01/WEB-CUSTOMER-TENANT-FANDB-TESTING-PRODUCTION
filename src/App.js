@@ -1,41 +1,46 @@
-import logo from './logo.svg';
-import Cart from './component/cart';
-import './App.css';
-import Home from './component/home';
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import RegisterPage from './component/loginSignup';
-import Profile from './component/profile';
-import ChangePassword from './component/changePassword';
-import SetPassword from './component/setPassword';
-import Activity from './component/activity';
-import DetailActivity from './component/detailActivity';
-import Buy from './component/buy';
-import KasirTransaction from './casier/transaction';
-import KasirOrders from './casier/order';
-import OrderDetails from './casier/orderdetails';
+import logo from './logo.svg'
+import Cart from './component/cart'
+import './App.css'
+import Home from './component/home'
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import RegisterPage from './component/loginSignup'
+import Profile from './component/profile'
+import ChangePassword from './component/changePassword'
+import SetPassword from './component/setPassword'
+import Activity from './component/activity'
+import DetailActivity from './component/detailActivity'
+import Buy from './component/buy'
+import KasirTransaction from './casier/transaction'
+import KasirOrders from './casier/order'
+import OrderDetails from './casier/orderdetails'
 import KasirProducts from './casier/product'
-import KasirStatistik from './casier/statistik';
-import KasirSettings from './casier/settings';
-import KasirTables from './casier/table';
-import CreateTransaction from './casier/createTransaction';
-import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer } from './actions/get';
-import { useDispatch, useSelector } from 'react-redux';
-import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute';
-import Verification from './component/verification';
-import { useEffect } from 'react';
-import SetUsername from './component/setUsername';
-import {SSETransactionOnGoingCustomer} from './actions/sse'
-
-
+import KasirStatistik from './casier/statistik'
+import KasirSettings from './casier/settings'
+import KasirTables from './casier/table'
+import CreateTransaction from './casier/createTransaction'
+import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer } from './actions/get'
+import { useDispatch, useSelector } from 'react-redux'
+import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute'
+import Verification from './component/verification'
+import { use, useEffect } from 'react'
+import SetUsername from './component/setUsername'
+import SSEContainer from './actions/sse'
+import ServiceRenewalNotice from './component/serviceRenewal'
 
 function App() {
   const dispatch = useDispatch()
-
+  
   // check status login customer 
   dispatch(loginStatusCustomer())
-
+  
   // check status login internal
   dispatch(loginStatusInternal())
+
+  const { loggedIn: loggedInCustomer } = useSelector((state) => state.persisted.loginStatusCustomer)
+  const { loggedIn: loggedInInternal } = useSelector((state) => state.persisted.loginStatusInternal)
+
+  console.log("SSEContainer rendered", { loggedInCustomer, loggedInInternal })
+
   
   // get data products 
   const { datas } = useSelector((state) => state.persisted.productsCustomer)
@@ -84,15 +89,28 @@ function App() {
   }  
   }, [])
 
+
+  // handle expired token
+  const { statusExpiredToken } = useSelector((state) => state.statusExpiredTokenState)
+
+  useEffect(() => {
+    if (statusExpiredToken) {
+      localStorage.clear()
+      
+      window.location.href = '/service/renewal'
+    }
+  }, [statusExpiredToken])
+
   return (
     <Router>
-      <SSETransactionOnGoingCustomer/>
       <div>
+        <SSEContainer />
         <Routes>
           <Route path='/' element={<Home/>}/>
           <Route path='/cart' element={<Cart/>}/>
           <Route path='/access' element={<RegisterPage/>}/>
           <Route path='/verification' element={<Verification/>}/>
+          <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
           <Route element={<PrivateRouteCustomer/>}>
             <Route path='/profile' element={<Profile/>}/>
             <Route path='/changepassword' element={<ChangePassword/>}/> 
@@ -102,6 +120,7 @@ function App() {
             <Route path='/activity/pembayaran' element={<Buy/>}/> 
           </Route>
 
+          <Route path='/internal/access' element={<RegisterPage/>}/>
           <Route element={<PrivateRouteInternal/>}>
             <Route path="/internal/admin/kasir/transaction" element={<KasirTransaction/>}/>
             <Route path="/internal/admin/kasir/transaction/create" element={<CreateTransaction/>}/>

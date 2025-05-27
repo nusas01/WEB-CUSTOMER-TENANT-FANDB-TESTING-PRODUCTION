@@ -101,3 +101,31 @@ export const setUsernameCustomerSlice = createSlice({
         }
     }
 })
+
+
+const initialBuyTransactionCashOnGoingInternalState = {
+    successBuyTransactionCashOnGoing: null,
+    errorBuyTransactionCashOnGoing: null,
+    loadingBuyTransactionCashOnGoing: false,
+}
+export const buyTransactionCashOnGoingInternalSlice = createSlice({
+    name: 'setUsernameCustomer',
+    initialState: initialBuyTransactionCashOnGoingInternalState,
+    reducers: {
+        setLoadingBuyTransactionCashOnGoingInternal: (state, action) => {
+            state.loadingBuyTransactionCashOnGoing = action.payload
+        },
+        setSuccessBuyTransactionCashOnGoingInternal: (state, action) => {
+            state.successBuyTransactionCashOnGoing = action.payload
+            state.errorBuyTransactionCashOnGoing = null
+        },
+        setErrorBuyTransactionCashOnGoinInternal: (state, action) => {
+            state.errorBuyTransactionCashOnGoing = action.payload
+            state.successBuyTransactionCashOnGoing = null
+        },
+        resetBuyTransactionCashOnGoingInternal: (state) => {
+            state.successBuyTransactionCashOnGoing = null
+            state.errorBuyTransactionCashOnGoing = null
+        }
+    }
+})

@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit"
 
 const initialGetProductsCustomerState = {
     datas: [],
@@ -12,15 +12,15 @@ export const getProductsCustomerSlice = createSlice({
     initialState: initialGetProductsCustomerState,
     reducers: {
         setLoadingProducts: (state, action) => {
-            state.loading = action.payload;
+            state.loading = action.payload
         },
         successFetchProducts: (state, action) => {
-            state.datas = action.payload;
-            state.error = null;
+            state.datas = action.payload
+            state.error = null
         },
         errorFetchProducts: (state, action) => {
-            state.error = action.payload.message;
-            state.errorStatusCode = action.payload.statusCode;
+            state.error = action.payload.message
+            state.errorStatusCode = action.payload.statusCode
         }
     }
 })
@@ -187,7 +187,6 @@ export const logoutCustomerSlice = createSlice({
 })
 
 
-
 const initialLoginStatusCustomer = {
     loggedIn: false,
 }
@@ -196,8 +195,8 @@ export const loginStatusCustomerSlice = createSlice({
     initialState: initialLoginStatusCustomer,
     reducers: {
         setLoginStatusCustomer: (state, action) => {
-            state.loggedIn = action.payload;
-        }
+            state.loggedIn = action.payload
+        },
     }
 })
 
@@ -213,3 +212,223 @@ export const loginStatusInternalSlice = createSlice({
         }
     }
 })
+
+
+const initialLogoutInternalState = {
+    message: null, 
+    error: null,
+    loadingLogout: false,
+}
+export const logoutInternalSlice = createSlice({
+    name: 'logout',
+    initialState: initialLogoutInternalState,
+    reducers: {
+        logoutSuccessInternal: (state, action) => {
+            state.message = action.payload
+            state.error = null
+        },
+        logoutErrorInternal: (state, action) => {
+            state.error = action.payload
+            state.message = null
+        },
+        setLoadingLogoutInternal: (state, action) => {
+            state.loadingLogout = action.payload
+        }, 
+        resetLogoutInternal: (state) => {
+            state.message = null
+            state.error = null
+        }
+    }
+})
+
+const initialTransactionCashOnGoingInternalState = {
+    dataTransactionCashInternal: [],
+    errorTransactionCashInternal: null,
+    loadingTransactionCashInternal: false,
+}
+export const transactionCashOnGoingInternalSlice = createSlice({
+    name: 'transactionCashOnGoingInternal',
+    initialState: initialTransactionCashOnGoingInternalState,
+    reducers: {
+        setLoadingTransactionCashInternal: (state, action) => {
+            state.loadingTransactionCashInternal = action.payload
+        },
+        fetchSuccessTransactionCashInternal: (state, action) => {
+            state.dataTransactionCashInternal = action.payload
+            state.errorTransactionCashInternal = null
+            state.loadingTransactionCashInternal = false
+        },
+        fetchErrorTransactionCashInternal: (state, action) => {
+            state.errorTransactionCashInternal = action.payload
+            state.loadingTransactionCashInternal = false
+        }, 
+        removeTransactionCashOnGoingInternalById: (state, action) => {
+            state.dataTransactionCashInternal = state.dataTransactionCashInternal.filter(
+                (item) => item.id !== action.payload
+            )
+        },
+        updateStatusTransactionCashOnGoingInternalById: (state, action) => {
+            const updated = state.dataTransactionCashInternal.map(item => {
+                if (String(item.id) === String(action.payload.id)) {
+                    return {
+                        ...item,
+                        status_transaction: action.payload.status_transaction,
+                    }
+                }
+                return item
+            })
+            state.dataTransactionCashInternal = updated
+        },
+        addTransactionCashOnGoingInternal: (state, action) => {
+            state.dataTransactionCashInternal.push(action.payload)
+        }
+    }
+})
+
+
+const initialTransactionNonCashOnGoingInternalState = {
+    dataTransactionNonCashInternal: [],
+    errorTransactionNonCashInternal: null,
+    loadingTransactionNonCashInternal: false,
+}
+export const transactionNonCashOnGoingInternalSlice  = createSlice({
+    name: 'transactionNonCashOnGoingInternal',
+    initialState: initialTransactionNonCashOnGoingInternalState,
+    reducers: {
+        setLoadingTransactionNonCashInternal: (state, action) => {
+            state.loadingTransactionNonCashInternal = action.payload
+        },
+        fetchSuccessTransactionNonCashInternal: (state, action) => {
+            state.dataTransactionNonCashInternal = action.payload
+            state.errorTransactionNonCashInternal = null
+            state.loadingTransactionNonCashInternal = false
+        },
+        fetchErrorTransactionNonCashInternal: (state, action) => {
+            state.errorTransactionNonCashInternal = action.payload
+            state.loadingTransactionNonCashInternal = false
+        },
+        removeTransactionNonCashOnGoingInternalById: (state, action) => {
+            state.dataTransactionNonCashInternal = state.dataTransactionNonCashInternal.filter(
+                (item) => item.id !== action.payload
+            )
+        },
+        updateStatusTransactionNonCashOnGoingInternalById: (state, action) => {
+            const updated = state.dataTransactionNonCashInternal.map(item => {
+                if (String(item.id) === String(action.payload.id)) {
+                    return {
+                        ...item,
+                        status_transaction: action.payload.status_transaction,
+                    }
+                }
+                return item
+            })
+            state.dataTransactionNonCashInternal = updated
+        }, 
+        addTransactionNonCashOnGoingInternal: (state, action) => {
+            state.dataTransactionNonCashInternal.push(action.payload)
+        }
+    }
+})
+
+const dataFilteringTransactionHistoryState = {
+    method: null,
+    status: '',
+    startDate: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
+    page: 0,
+} 
+export const dataFilteringTransactionHistorySlice = createSlice({
+    name: "dataFilteringHistory",  
+    initialState: dataFilteringTransactionHistoryState,
+    reducers: {
+        setData: (state, action) => {
+            state.method = action.payload.method
+            state.status = action.payload.status
+            state.startDate = action.payload.startDate
+            state.endDate = action.payload.endDate
+            state.startTime = action.payload.startTime
+            state.endTime = action.payload.endTime
+            state.page = action.payload.page
+        }, 
+        setIncrementPage: (state) => {
+            state.page += 1
+        },
+        resetData : (state) => {
+            state.method = null
+            state.status = ''
+            state.startDate = ''
+            state.endDate = ''
+            state.startTime = ''
+            state.endTime = ''
+            state.page = 0
+        }
+    }
+})
+
+
+const intitalTransactionHistoryState = {
+    dataTransactionHistoryInternal: [],
+    errorTransactionHistoryInternal: null,
+    statusCodeTransactionHistoryInternal: null,
+    loadingTransactionHistoryInternal: false,
+}
+export const transactionHistoryInternalSlice = createSlice({
+    name: 'transactionHistoryInternal',
+    initialState: intitalTransactionHistoryState,
+    reducers: {
+        setLoadingTransactionHistoryInternal: (state, action) => {
+            state.loadingTransactionHistoryInternal = action.payload
+        },
+        fetchSuccessTransactionHistoryInternal: (state, action) => {
+            state.dataTransactionHistoryInternal = action.payload.data
+            state.statusCodeTransactionHistoryInternal = 200
+            state.errorTransactionHistoryInternal = null
+            state.loadingTransactionHistoryInternal = false
+        },
+        fetchErrorTransactionHistoryInternal: (state, action) => {
+            state.errorTransactionHistoryInternal = action.payload.error
+            state.statusCodeTransactionHistoryInternal = action.payload.statusCode
+            state.loadingTransactionHistoryInternal = false
+        },
+        resetTransactionHitoryInternal: (state) => {  
+            state.errorTransactionHistoryInternal = null
+            state.dataTransactionHistoryInternal = []
+        }
+    }
+})
+
+
+const initialCheckTransactionNonCashInternalState = {
+    checkTransactionNonCashId: null,
+    statusCheckTransactionNonCash: null, 
+    errorCheckTransactionNonCash: null,
+    loadingCheckTransactionNonCash: false,
+}
+export const checkTransactionNonCashInternalSlice = createSlice({
+    name: 'checkTransactionNonCashInternal',
+    initialState: initialCheckTransactionNonCashInternalState,
+    reducers: {
+        checkTransactionNonCashSuccess: (state, action) => {
+            state.checkTransactionNonCashId = action.payload.checkTransactionNonCashId;
+            state.statusCheckTransactionNonCash = action.payload.statusCheckTransactionNonCash;
+            state.errorCheckTransactionNonCash = null;
+            state.loadingCheckTransactionNonCash = false;
+        },
+        checkTransactionNonCashError: (state, action) => {
+            state.errorCheckTransactionNonCash = action.payload.error;
+            state.statusCheckTransactionNonCash = null;
+            state.loadingCheckTransactionNonCash = false;
+        },
+        setLoadingCheckTransactionNonCash: (state, action) => {
+            state.loadingCheckTransactionNonCash = action.payload;
+        },
+        resetCheckTransactionNonCash: (state) => {
+            state.checkTransactionNonCashId = null;
+            state.statusCheckTransactionNonCash = null;
+            state.errorCheckTransactionNonCash = null;
+        }
+    }
+})
+

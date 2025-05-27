@@ -162,3 +162,42 @@ export const createTransactionCustomerSlice = createSlice({
         }
     }
 })
+
+
+const initialLoginInternalState = {
+    messageLoginSuccessInternal: null,
+    loadingLoginInternal: false,
+    statusCodeSuccessInternal: null,
+    errorLoginInternal: null, 
+    errPassInternal: null,
+    errEmailInternal: null,
+}
+export const loginInternalSlice = createSlice({
+    name: 'loginInternal',
+    initialState: initialLoginInternalState,
+    reducers: {
+        loginSuccessInternal: (state, action) => {
+            state.messageLoginSuccessInternal = action.payload.messageLoginSuccess;
+            state.statusCodeSuccessInternal = action.payload.statusCodeSuccess;
+            state.errorLoginInternal = null;
+            state.errPassInternal = null;
+            state.errEmailInternal = null;
+        },
+        loginErrorInternal: (state, action) => {
+            state.errorLoginInternal = action.payload.errorLogin;
+            state.errPassInternal = action.payload.errPass;
+            state.errEmailInternal = action.payload.errEmail;
+            state.statusCodeSuccessInternal = null;
+        },
+        setLoginLoadingInternal: (state, action) => {
+            state.loadingLoginInternal = action.payload;
+        },
+        setLoginStateNullInternal: (state, action) => {
+            state.messageLoginSuccessInternal = null;
+            state.statusCodeSuccessInternal = null;
+            state.errorLoginInternal = null;
+            state.errPassInternal = null;
+            state.errEmailInternal = null;
+        }
+    }
+})
