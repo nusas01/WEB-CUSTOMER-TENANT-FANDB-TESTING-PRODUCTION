@@ -65,7 +65,7 @@ export default function OrderDetails() {
             </div>
 
             <div className="flex justify-center py-8 items-center space-x-10">
-                <button onClick={() => navigate('/internal/admin/kasir/orders')} className="px-16 py-2 bg-gray-200 text-black font-semibold rounded-md hover:bg-gray-300 transition">
+                <button onClick={() => navigate('/internal/admin/orders')} className="px-16 py-2 bg-gray-200 text-black font-semibold rounded-md hover:bg-gray-300 transition">
                     CANCEL
                 </button>
                 <button className="px-16 py-2 bg-[#00A67620] text-black font-semibold rounded-md hover:bg-[#00A67630] transition">

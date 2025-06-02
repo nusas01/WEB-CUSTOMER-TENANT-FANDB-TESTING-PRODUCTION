@@ -5,7 +5,7 @@ import { data, useNavigate } from "react-router-dom"
 import FilterPanel from "./dateFilter"
 import Order from "../component/orderTable"
 import { useDispatch, useSelector } from "react-redux"
-import { SpinnerRelative } from "../helper/spinner"
+import { SpinnerRelative, SpinnerFixed } from "../helper/spinner"
 import { 
     fetchTransactionCashOnGoingInternal,
     fetchTransactionNonCashOnGoingInternal, 
@@ -27,55 +27,47 @@ import {
     transactionHistoryInternalSlice,
 } from "../reducers/get" 
 import { useEffect } from "react"
-import { FormatDate } from "../helper/formatdate";
-import { formatDate } from "date-fns";
-import { CountDownRemoveData } from "../helper/countDown";
-import { ErrorAlert } from "./alert";
-import { da } from "date-fns/locale";
+import { FormatDate } from "../helper/formatdate"
+import { formatDate } from "date-fns"
+import { CountDownRemoveData } from "../helper/countDown"
+import { da } from "date-fns/locale"
+import {ConfirmationModal, CashPaymentModal, ErrorAlert} from "./alert"
 
 const TransactionTable = () => {
   const panelRef = useRef(null)
   const [search, setSearch] = useState("")
   const [dateFilter, setDateFilter] = useState(false)
   const navigate = useNavigate()
-  const [filterTransaction, setFilterTransaction] = useState("methodCash")
-  const [filterTimeTransaction, setFilterTimeTransaction] = useState("onGoing")
-  const [error, setError] = useState(null)    
-
+  const [filterTransaction, setFilterTransaction] = useState("methodCash")   
+  const [validationErrors, setValidationErrors] = useState({})
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
+  const [spinnerRelatif, setSpinnerRelatif] = useState(false)
+  const [isFetchedOnce, setIsFetchedOnce] = useState(false)
+
+   const [initialFetchDone, setInitialFetchDone] = useState({
+    cash: false,
+    nonCash: false,
+    history: false
+  });
 
 
-
-   // handle close component saat click outside
-   useEffect(() => {
-        function handleClickOutside(event) {
-            if (panelRef.current && !panelRef.current.contains(event.target)) {
-                setDateFilter(false); // ubah dateFilter ke false jika klik di luar
-            }
-        }
-
-        if (dateFilter) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [dateFilter]);
 
     // get transaction cash on going
     const { removeTransactionCashOnGoingInternalById } = transactionCashOnGoingInternalSlice.actions
     const {dataTransactionCashInternal, errorTransactionCashInternal, loadingTransactionCashInternal} = useSelector((state) => state.persisted.transactionCashOnGoingInternal)
     useEffect(() => {
-        setSpinner(loadingTransactionCashInternal)
+        setSpinnerRelatif(loadingTransactionCashInternal)
     }, [loadingTransactionCashInternal])
 
     useEffect(() => {
-        if (!dataTransactionCashInternal || Object.keys(dataTransactionCashInternal).length === 0) {
-            dispatch(fetchTransactionCashOnGoingInternal())
-        }
-    }, [dataTransactionCashInternal])
+    if (!loadingTransactionCashInternal && 
+        !initialFetchDone.cash && 
+        (!dataTransactionCashInternal || dataTransactionCashInternal.length === 0)) {
+      dispatch(fetchTransactionCashOnGoingInternal());
+      setInitialFetchDone(prev => ({...prev, cash: true}));
+    }
+  }, [dataTransactionCashInternal, loadingTransactionCashInternal, initialFetchDone.cash]);
 
 
 
@@ -86,55 +78,96 @@ const TransactionTable = () => {
     const {dataTransactionNonCashInternal, errorTransactionNonCashInternal, loadingTransactionNonCashInternal} = useSelector((state) => state.persisted.transactionNonCashOnGoingInternal)
 
     useEffect(() => {
-        setSpinner(loadingTransactionNonCashInternal)
+        setSpinnerRelatif(loadingTransactionNonCashInternal)
     }, [loadingTransactionNonCashInternal])
 
     useEffect(() => {
-        if (filterTransaction === "methodNonCash" && (!dataTransactionNonCashInternal || Object.keys(dataTransactionNonCashInternal).length === 0)) {
+        if (filterTransaction === "methodNonCash" && 
+            !loadingTransactionNonCashInternal && 
+            !initialFetchDone.nonCash && 
+            (!dataTransactionNonCashInternal || dataTransactionNonCashInternal.length === 0)) {
         dispatch(fetchTransactionNonCashOnGoingInternal());
+        setInitialFetchDone(prev => ({...prev, nonCash: true}));
         }
-    }, [filterTransaction, dataTransactionNonCashInternal]);
+    }, [filterTransaction, dataTransactionNonCashInternal, loadingTransactionNonCashInternal, initialFetchDone.nonCash]);
 
 
 
 
 
     // buy transaction cash on going
+    const [ openModelBuyPaymentCash, setOpenModelBuyPaymentCash ] = useState(false)
     const { resetBuyTransactionCashOnGoingInternal } = buyTransactionCashOnGoingInternalSlice.actions
-    const { successBuyTransactionCashOnGoing, errorBuyTransactionCashOnGoing, loadingBuyTransactionCashOnGoing } = useSelector((state) => state.buyTransactionCashOnGoingInternalState)
-
-    const handleBuyTransaction = (transactionId) => {
+    const { successBuyTransactionCashOnGoing, errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing, loadingBuyTransactionCashOnGoing } = useSelector((state) => state.buyTransactionCashOnGoingInternalState)
+    const [ allertSuccessBuyTransactionCash, setAllertSuccessBuyTransactionCash] = useState(false)
+    const [ allertErrorBuyTransactionCash, setAllertErrorBuyTransactionCash] = useState(false)
+    const [dataPaymentCash, setDataPaymentCash] = useState({
+        transaction_id: null,
+        amount_price: 0,
+        money_received: 0,
+        open: false,
+    })
+    
+    const handleBuyTransaction = () => {
         const data = {
-            transaction_id: transactionId,
+            transaction_id: dataPaymentCash.transaction_id,
+            money_received: dataPaymentCash.money_received,
         }
         dispatch(buyTransactionCashOnGoingInternal(data))
     }
 
     useEffect(() => {
-        if (errorBuyTransactionCashOnGoing) {
-            setError(errorBuyTransactionCashOnGoing) 
-
-            const timer = setTimeout(() => {
-                dispatch(resetBuyTransactionCashOnGoingInternal())
-                setError(null)
-            }, 200)
-
-            return () => clearTimeout(timer)
+        if (successBuyTransactionCashOnGoing) {
+            setDataPaymentCash({
+                transaction_id: null,
+                amount_price: 0,
+                money_received: 0,
+                open: false, 
+            })
+            dispatch(removeTransactionCashOnGoingInternalById(successBuyTransactionCashOnGoing.id))
+            setAllertSuccessBuyTransactionCash(true)
         }
-    }, [errorBuyTransactionCashOnGoing])
+    }, [successBuyTransactionCashOnGoing])
+
+    useEffect(() => {
+        if (errorBuyTransactionCashOnGoing || errorFieldBuyTransactionCashOnGoing) { 
+            setDataPaymentCash({
+                transaction_id: null,
+                amount_price: 0, 
+                money_received: 0,
+                open: false, 
+            })
+            setAllertErrorBuyTransactionCash(true)
+        }
+    }, [errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing])
 
     useEffect(() => {
         setSpinner(loadingBuyTransactionCashOnGoing)
+        if (loadingBuyTransactionCashOnGoing) {
+            setDataPaymentCash((prev) => ({
+                ...prev,
+                open: false,
+            }))
+        }
     }, [loadingBuyTransactionCashOnGoing])
+
+    const handleOpenModelPaymentCash = (transactionId, amountPrice) => {
+        setDataPaymentCash({
+            open: true,
+            transaction_id: transactionId,
+            amount_price: amountPrice
+        })
+    }
 
 
 
 
 
     // check Transaction non cash to thired party
-    const { updateStatusTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
     const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
     const { checkTransactionNonCashId, statusCheckTransactionNonCash, errorCheckTransactionNonCash, loadingCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
+    const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
+    const [allertErrorCheckTransactionNonCash, setAllertErrorCheckTransactionNonCash] = useState(false)
 
     const handleCheckTransactionNonCash = (transactionId) => {
         const data = {
@@ -145,14 +178,10 @@ const TransactionTable = () => {
 
     useEffect(() => {
         if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
-            const data = {
-                id: checkTransactionNonCashId,
-                status_transaction: statusCheckTransactionNonCash,
-            }
-            dispatch(updateStatusTransactionNonCashOnGoingInternalById(data))
-            dispatch(resetCheckTransactionNonCash())
-        } else {
-            dispatch(resetCheckTransactionNonCash())
+            dispatch(removeTransactionNonCashOnGoingInternalById(checkTransactionNonCashId))
+            setAllertSuccessCheckTransactionNonCash(true)
+        } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
+            setAllertErrorCheckTransactionNonCash(true)
         }
     }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
 
@@ -160,13 +189,11 @@ const TransactionTable = () => {
         setSpinner(loadingCheckTransactionNonCash)
     }, [loadingCheckTransactionNonCash])
 
-
     useEffect(() => {
         if (errorCheckTransactionNonCash) {
-            setError(errorCheckTransactionNonCash)
+            setAllertErrorCheckTransactionNonCash(true)
         }
     }, [errorCheckTransactionNonCash])
-
 
 
 
@@ -174,7 +201,12 @@ const TransactionTable = () => {
     // handle history transaction by selecting filter
     const {resetTransactionHitoryInternal} = transactionHistoryInternalSlice.actions
     const {setData, setIncrementPage, resetData} = dataFilteringTransactionHistorySlice.actions
-    const {method, status, startDate, endDate, startTime, endTime , page} = useSelector((state) => state.dataFilteringTransactionHistoryState)
+    const {method, status, startDate, endDate, startTime, endTime , page} = useSelector((state) => state.persisted.dataFilteringTransactionHistoryState)
+    const {dataTransactionHistoryInternal, loadingTransactionHistoryInternal} = useSelector((state) => state.persisted.transactionHistoryInternal)
+
+    useEffect(() => {
+        setSpinnerRelatif(loadingTransactionHistoryInternal)
+    }, [loadingTransactionHistoryInternal])
 
     const [filters, setFilters] = useState({
         method: null,
@@ -186,15 +218,30 @@ const TransactionTable = () => {
         dateError: null
     });
 
-    console.log("filters", filters)
+
+    // handle untuk ketika data filter transaction masih ada maka set button ke button filter
+    useEffect(() => {
+        if (method) {
+            setFilterTransaction("methodFilterTransaction")
+            setFilters({
+                method: method,
+                status: status,
+                startDate: startDate,
+                endDate: endDate,
+                startTime: startTime,
+                endTime: endTime,
+            })
+        }
+    }, [method])
+
 
     // Handlers untuk update state
     const handleMethodChange = (method) => {
-        setFilters(prev => ({...prev, method}));
+        setFilters(prev => ({...prev, method}))
     };
 
     const handleStatusChange = (status) => {
-        setFilters(prev => ({...prev, status}));
+        setFilters(prev => ({...prev, status}))
     };
 
     const handleDateChange = (type, value) => {
@@ -202,11 +249,11 @@ const TransactionTable = () => {
         ...prev,
         [type]: value,
         dateError: null // Reset error saat date diubah
-        }));
-    };
+        }))
+    }
 
     const handleTimeChange = (type, value) => {
-        setFilters(prev => ({...prev, [type]: value}));
+        setFilters(prev => ({...prev, [type]: value}))
     };
 
     const handleClear = () => {
@@ -219,6 +266,8 @@ const TransactionTable = () => {
         endTime: '',
         dateError: null
         });
+        dispatch(resetTransactionHitoryInternal())
+        dispatch(resetData())
     };
 
     const loadMoreHistoryTransaction = () => {
@@ -236,17 +285,48 @@ const TransactionTable = () => {
     }
 
     const handleApply = () => {
+        const newErrors = {}
+        
+        if (!filters.method) {
+            newErrors.method = 'Payment method is required'
+        }
+        
+        if (!filters.status) {
+            newErrors.status = 'Transaction status is required'
+        }
+
+        if (!filters.startDate) {
+            newErrors.startDate = 'Start date is required'
+        } 
+        if (!filters.endDate) { 
+            newErrors.endDate = 'End date is required'
+        }
+        
+        if (!filters.startTime) {
+            newErrors.startTime = 'Start time is required'
+        }
+
+        if (!filters.endTime) { 
+            newErrors.endTime = 'End time is required'
+        }
+        
+        // Jika ada error, tampilkan dan berhenti
+        if (Object.keys(newErrors).length > 0) {
+            setValidationErrors(newErrors)
+            return
+        }
+        
         // Validasi tanggal
         if (filters.startDate && filters.endDate) {
-        const start = new Date(filters.startDate)
-        const end = new Date(filters.endDate)
-        const diffTime = Math.abs(end - start)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        
-        if (diffDays > 92) {
-            setFilters(prev => ({...prev, dateError: 'Maksimal rentang tanggal 92 hari'}))
-            return;
-        }
+            const start = new Date(filters.startDate)
+            const end = new Date(filters.endDate)
+            const diffTime = Math.abs(end - start)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            
+            if (diffDays > 92) {
+                setFilters(prev => ({...prev, dateError: 'Maksimal rentang tanggal 92 hari'}))
+                return
+            }
         }
         
         const data = {
@@ -255,18 +335,135 @@ const TransactionTable = () => {
             startDate: filters.startDate,
             endDate: filters.endDate,
             startTime: filters.startTime,
-            endTime: filters.endDate,
+            endTime: filters.endTime,
             page: 1
         }
 
         dispatch(resetData())
         dispatch(resetTransactionHitoryInternal())
         dispatch(setData(data))
+        
+        // Reset status fetch history dan lakukan fetch
+        setInitialFetchDone(prev => ({...prev, history: false}))
+        
+        if (!initialFetchDone.history) {
         dispatch(fetchTransactionHistory(data))
-        // Lakukan apply filter disini
-        console.log('Applied filters:', filters)
-    };
+        setInitialFetchDone(prev => ({...prev, history: true}))
+        }
+        
+        setFilterTransaction("methodFilterTransaction")
+        setDateFilter(false)
+        setValidationErrors({})
+    }
 
+
+
+    // handle button
+     const handleMethodNonCashTransaction = () => {
+        setFilterTransaction("methodNonCash")
+        dispatch(resetData())
+        dispatch(resetTransactionHitoryInternal())
+        setFilters({
+        method: null,
+        status: null,
+        startDate: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
+        dateError: null
+        })
+    }
+
+    const handleMethodCashTransaction = () => {
+        setFilterTransaction("methodCash")
+        dispatch(resetData())
+        dispatch(resetTransactionHitoryInternal())
+        setFilters({
+        method: null,
+        status: null,
+        startDate: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
+        dateError: null
+        })
+    }
+
+
+    // handle search 
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const handleSearch = (e) => {
+    setSearchTerm(e.target.value)
+    }
+
+    // Fungsi untuk memfilter data berdasarkan kondisi
+    const getFilteredData = () => {
+    let data = []
+    
+    if (filterTransaction === "methodCash") {
+        data = dataTransactionCashInternal || []
+    } else if (filterTransaction === "methodNonCash") {
+        data = dataTransactionNonCashInternal || []
+    } else if (filterTransaction === "methodFilterTransaction") {
+        data = dataTransactionHistoryInternal || []
+    }
+
+    
+    // Filter data berdasarkan kata kunci
+    const lowercasedSearch = searchTerm.toLowerCase()
+    return data.filter(item => 
+        (item.status_transaction?.toLowerCase().includes(lowercasedSearch)) ||
+        (item.channel_code?.toLowerCase().includes(lowercasedSearch)) ||
+        (item.username?.toLowerCase().includes(lowercasedSearch)) ||
+        (item.table?.toString().includes(searchTerm)) 
+    )
+    }
+
+    const filteredData = getFilteredData()
+
+
+
+
+    // handle close component saat click outside
+   useEffect(() => {
+        function handleClickOutside(event) {
+            if (panelRef.current && !panelRef.current.contains(event.target)) {
+                setDateFilter(false)
+                setOpenModelBuyPaymentCash(false)
+            }
+        }
+
+        if (dateFilter || dataPaymentCash) {
+            document.addEventListener("mousedown", handleClickOutside)
+            setValidationErrors({})
+            setDataPaymentCash({
+                transaction_id: null,
+                amount_price: 0,
+                money_received: 0,
+            })
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [dateFilter, openModelBuyPaymentCash])
+
+
+
+    const handleCloseConfirmationModalError = () => {
+        setAllertErrorBuyTransactionCash(false)
+        setAllertErrorCheckTransactionNonCash(false)
+        dispatch(resetBuyTransactionCashOnGoingInternal()) 
+        dispatch(resetCheckTransactionNonCash())
+    }
+
+    const handleCloseConfirmationModalSuccess = () => {
+        setAllertSuccessBuyTransactionCash(false)
+        setAllertSuccessCheckTransactionNonCash(false)
+        dispatch(resetBuyTransactionCashOnGoingInternal()) 
+        dispatch(resetCheckTransactionNonCash())
+    }
 
   return (
     <div>
@@ -288,21 +485,16 @@ const TransactionTable = () => {
                 </div>
             </div>
 
-            {/* create transactions or create order */}
-            <div onClick={() => navigate("/internal/admin/kasir/transaction/create")} className="text-white h-10 rounded-md text-center cursor-pointer mb-6 font-semibold text-md py-2 transition-all duration-300 bg-gray-900 hover:bg-gray-800 shadow-lg hover:shadow-xl">
-                <button>Transaction</button>
-            </div>
-
-
+            
             {/* Filter & Search */}
             <div className="flex justify-between items-center mb-4">
                 
                 <div className="flex items-center space-x-3">
-                    <button className={`flex items-center h-10 text-gray-700 border  border-black  px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => setFilterTransaction("methodCash")}>
+                    <button className={`flex items-center h-10 text-gray-700 border  border-black  px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => handleMethodCashTransaction()}>
                         Method Cash
                     </button>
 
-                    <button className={`flex items-center h-10 text-gray-700 border  border-black px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodNonCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => setFilterTransaction("methodNonCash")}>
+                    <button className={`flex items-center h-10 text-gray-700 border  border-black px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodNonCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => handleMethodNonCashTransaction()}>
                         Method Non Cash
                     </button>
                 </div>
@@ -311,19 +503,19 @@ const TransactionTable = () => {
                     {/* button show card select history */}
                    <div
                         onClick={() => setDateFilter(true)}
-                        className="w-[220px] h-10 flex items-center bg-white justify-between border border-gray-300 rounded-md px-1 relative cursor-pointer hover:shadow-sm transition-all"
+                        className={`w-[220px] h-10 flex items-center ${ filterTransaction === "methodFilterTransaction" ? 'bg-gray-900' : 'bg-white'} justify-between border border-gray-300 rounded-md px-1 relative cursor-pointer hover:shadow-sm transition-all`}
                         >
                         <div className="flex w-[80%] justify-between text-gray-800">
                             <div className="flex flex-col items-center">
-                                <span className="text-sm text-gray-700">27/05/2025</span>
-                                <span className="text-xs text-gray-500">12:00 AM</span>
+                                <span className={`text-sm ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'} `}>27/05/2025</span>
+                                <span className={`text-xs ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`}>12:00 AM</span>
                             </div>
                             <div className="flex flex-col items-center">
-                                <span className="text-sm text-gray-700">27/05/2025</span>
-                                <span className="text-xs text-gray-500">12:00 AM</span>
+                                <span className={`text-sm ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'}`}>27/05/2025</span>
+                                <span className={`text-xs ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`}>12:00 AM</span>
                             </div>
                         </div>
-                        <CalendarRange className="text-black" size={20} />
+                        <CalendarRange className={`${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`} size={20} />
                     </div>
                     
                     {/* Input option and date to select history */}
@@ -353,6 +545,9 @@ const TransactionTable = () => {
                                 showStatusFilter={true}
                                 showDateFilter={true}
                                 showTimeFilter={true}
+
+
+                                validationErrors={validationErrors}
                             />
                         </div>
                     )}
@@ -365,6 +560,8 @@ const TransactionTable = () => {
                     <input
                         type="text"
                         placeholder="Search..."
+                        value={searchTerm}
+                        onChange={handleSearch}
                         className="w-full pl-10 pr-4 py-1 h-10 border placeholder-black text-black border-black rounded-md focus:outline-none focus:ring-2  focus:border-black-100 transition-all"
                     />
                     {/* Icon Search */}
@@ -372,8 +569,7 @@ const TransactionTable = () => {
 
                 <div className="flex space-x-2">
                     <button 
-                    className={`flex items-center gap-2 h-10 px-4 py-1 rounded-md text-gray-700 border border-black ${filterTimeTransaction == "onGoing" ? "bg-gray-900 text-white" : "bg-white"}`}
-                    onClick={() => setFilterTimeTransaction("onGoing")}
+                    className={`flex items-center gap-2 h-10 px-4 py-1 rounded-md text-gray-700 border border-black ${filterTransaction !== "methodFilterTransaction" ? "bg-gray-900 text-white" : "bg-white"}`}
                     >
                         <History/>
                         On Going
@@ -382,24 +578,38 @@ const TransactionTable = () => {
             </div>
 
             {/* Transaction Table */}
-            <div className="rounded-lg shadow-md overflow-hidden w-full">
+            <div className="rounded-lg shadow-md overflow-hidden relative w-full">
+                 {spinnerRelatif ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+                    <SpinnerRelative />
+                    </div>
+                ) : null}
                 <table className="w-full text-left">
-                    {(dataTransactionCashInternal && filterTransaction === "methodCash") || (dataTransactionNonCashInternal && filterTransaction !== "methodCash") ? (
+                    {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") ? (
                     <>
                         <thead className="bg-gray-900">
                         <tr>
-                            {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date", "Buy"].map((header) => (
-                            <th 
+                            {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date"]
+                            .concat(filterTransaction === 'methodFilterTransaction' ? [] : ["Buy"])
+                            .map((header) => (
+                                <th 
                                 key={header} 
                                 className="py-3 px-4 text-white font-medium text-sm border-b border-gray-200"
-                            >
+                                >
                                 {header}
-                            </th>
-                            ))}
+                                </th>
+                            ))
+                            }
                         </tr>
                         </thead>
                         <tbody>
-                        {(filterTransaction === "methodCash" ? dataTransactionCashInternal : dataTransactionNonCashInternal)?.map((t, index) => (
+                       {( filteredData?.length > 0 ? filteredData : 
+                        (filterTransaction === "methodCash"
+                            ? dataTransactionCashInternal
+                            : filterTransaction === "methodNonCash"
+                            ? dataTransactionNonCashInternal
+                            : dataTransactionHistoryInternal
+                        ))?.map((t, index) => (
                             <tr 
                             key={index} 
                             className="bg-white text-black border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -407,7 +617,7 @@ const TransactionTable = () => {
                             {filterTransaction === "methodCash" ? (
                                 <td className="hidden">
                                 <CountDownRemoveData 
-                                    expiry={t.expires_at} 
+                                    expiry={t?.expires_at} 
                                     transactionId={t.id} 
                                     remove={removeTransactionCashOnGoingInternalById}
                                 />
@@ -415,7 +625,7 @@ const TransactionTable = () => {
                             ) : (
                                 <td className="hidden">
                                 <CountDownRemoveData 
-                                    expiry={t.expires_at} 
+                                    expiry={t?.expires_at} 
                                     transactionId={t.id} 
                                     remove={removeTransactionNonCashOnGoingInternalById}
                                 />
@@ -431,16 +641,18 @@ const TransactionTable = () => {
                                 {t.table === 0 ? t.order_type : t.table}
                             </td>
                             <td className="py-3 px-4">{FormatDate(t.created_at)}</td>
-                            <td className="py-3 px-4">
-                                <button 
-                                // onClick={() => filterTransaction === "methodCash" 
-                                //     ? handleBuyTransaction(t.id) 
-                                //     : handleCheckPayment(t.id)}
-                                className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 transition-colors"
-                                >
-                                {filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
-                                </button>
-                            </td>
+                            { filterTransaction !== "methodFilterTransaction" && (
+                                <td className="py-3 px-4">
+                                    <button 
+                                    onClick={() => filterTransaction === "methodCash" 
+                                        ? handleOpenModelPaymentCash(t.id, t.amount_price)
+                                        : handleCheckTransactionNonCash(t.id)}
+                                    className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 transition-colors"
+                                    >
+                                    { filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
+                                    </button>
+                                </td>
+                            )}
                             </tr>
                         ))}
                         </tbody>
@@ -465,7 +677,7 @@ const TransactionTable = () => {
                             </p>
                             <button 
                                 className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center"
-                                // onClick={handleFilterChange}
+                                onClick={() => setDateFilter(true)}
                             >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -480,10 +692,53 @@ const TransactionTable = () => {
                 </table>
             </div>
 
-            {/* alert error */}
-            { error && (
-                <ErrorAlert message={error}/>
+            { spinner && (
+                <SpinnerFixed/>
             )}
+
+            {/* alert success confirmation modal  */}
+            {  (allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
+                <ConfirmationModal 
+                onClose={handleCloseConfirmationModalSuccess} 
+                title={"Success!"}  
+                message={
+                    allertSuccessBuyTransactionCash
+                        ? "Pembayaran tunai telah berhasil diproses"
+                        : "Verifikasi pembayaran non-tunai berhasil"
+                }
+                type={"success"}
+                />
+            )}
+
+
+            {/* alert error confirmation modal  */}
+            { (allertErrorBuyTransactionCash || allertErrorCheckTransactionNonCash) && (
+                <ConfirmationModal
+                onClose={handleCloseConfirmationModalError}
+                title={"Gagal!"}
+                    message={
+                        allertErrorBuyTransactionCash
+                            ? "Pembayaran tunai telah gagal diproses"
+                            : "Verifikasi pembayaran non-tunai gagal"
+                }
+                type={"error"}
+                />
+            )}
+
+            {/* Model payment cash*/}
+            { dataPaymentCash.open && ( 
+                 <CashPaymentModal 
+                    ref={panelRef} 
+                    data={{
+                        transaction_id: dataPaymentCash.transaction_id,
+                        amount_price: dataPaymentCash.amount_price,
+                    }} 
+                    setData={setDataPaymentCash}
+                    onClose={() => setDataPaymentCash({ open: false, transactionId: null, amountPrice: 0 })}
+                    onBayar={handleBuyTransaction}
+                />
+            )}
+
         </div>
     </div>
   );

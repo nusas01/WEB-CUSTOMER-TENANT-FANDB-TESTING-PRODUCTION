@@ -35,216 +35,220 @@ export default function CreateTransaction() {
 
     return (
         <div>
-            {/* header  */}
-            <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
-                <p className="font-semibold mx-4 text-lg">Transaction</p>
-            </div>
+            
 
-            <div className="w-[80%] flex m-auto h-full my-5">
-                <div className="bg-white w-[80%] shadow-lg rounded-lg p-5 self-stretch">
-                    <div className="flex justify-between items-center">
-                        <p className="text-lg">Products</p>
-                        <div onClick={() => setAddProduct(true)} className="rounded-lg px-5 flex space-x-2 py-1 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white">
-                            <Plus/>
-                            <p>Product</p>
+            <div>
+                {/* header  */}
+                <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
+                    <p className="font-semibold mx-4 text-lg">Transaction</p>
+                </div>
+
+                <div className="w-[80%] flex m-auto h-full my-5">
+                    <div className="bg-white w-[80%] shadow-lg rounded-lg p-5 self-stretch">
+                        <div className="flex justify-between items-center">
+                            <p className="text-lg">Products</p>
+                            <div onClick={() => setAddProduct(true)} className="rounded-lg px-5 flex space-x-2 py-1 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white">
+                                <Plus/>
+                                <p>Product</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="overflow-hidden mt-5">
-                        <table className="w-full text-left">
-                            <thead className="rounded-lg bg-gray-100">
-                                <tr>
-                                {["Image", "Product", "Quantity", "Price", "Cost"].map((header) => (
-                                    <th key={header} className="py-3 px-4 font-medium text-sm">{header}</th>
-                                ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products1.map((t, index) => (
-                                    <tr key={index} className="bg-white text-black border-gray-700 hover:bg-gray-100 transition">
-                                    <td className="py-3 px-4 ]"><img src={require("../image/443acfe1-aaf4-4c06-9858-74a80fb5c6fa.jpg")} className="w-[55px] h-[55px]"/></td>
-                                    <td className="py-3 px-4">{t.name}</td>
-                                    <td className="py-3 px-4">{t.quantity}</td>
-                                    <td className="py-3 px-4">{t.price}</td>
-                                    <td className="py-3 px-4">{t.amount}</td>
+                        <div className="overflow-hidden mt-5">
+                            <table className="w-full text-left">
+                                <thead className="rounded-lg bg-gray-100">
+                                    <tr>
+                                    {["Image", "Product", "Quantity", "Price", "Cost"].map((header) => (
+                                        <th key={header} className="py-3 px-4 font-medium text-sm">{header}</th>
+                                    ))}
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr className="border-t border-gray-700 border-b">
-                                    <td colSpan="4" className="py-3 px-4 font-medium">Subtotal</td>
-                                    <td className="font-medium">IDR 20000</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {products1.map((t, index) => (
+                                        <tr key={index} className="bg-white text-black border-gray-700 hover:bg-gray-100 transition">
+                                        <td className="py-3 px-4 ]"><img src={require("../image/443acfe1-aaf4-4c06-9858-74a80fb5c6fa.jpg")} className="w-[55px] h-[55px]"/></td>
+                                        <td className="py-3 px-4">{t.name}</td>
+                                        <td className="py-3 px-4">{t.quantity}</td>
+                                        <td className="py-3 px-4">{t.price}</td>
+                                        <td className="py-3 px-4">{t.amount}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="border-t border-gray-700 border-b">
+                                        <td colSpan="4" className="py-3 px-4 font-medium">Subtotal</td>
+                                        <td className="font-medium">IDR 20000</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
 
-                    <div className="flex justify-between mt-5">
-                        <p>Fulfillment Cost</p>
-                        <div className="bg-blue-100 rounded-lg p-5">
-                            <div className="flex space-x-80 justify-between">
-                                <p>Subtotal</p>
-                                <p>150.000</p>
+                        <div className="flex justify-between mt-5">
+                            <p>Fulfillment Cost</p>
+                            <div className="bg-blue-100 rounded-lg p-5">
+                                <div className="flex space-x-80 justify-between">
+                                    <p>Subtotal</p>
+                                    <p>150.000</p>
+                                </div>
+                                <div className="flex justify-between">
+                                    <p>Payment Fee</p>
+                                    <p>2.000</p>
+                                </div>
+                                <div className="flex justify-between">
+                                    <p>pajak</p>
+                                    <p>5.000</p>
+                                </div>
+                                <div className="flex text-lg font-semibold justify-between">
+                                    <p>Total</p>
+                                    <p>IDR 157.000</p>
+                                </div>
                             </div>
-                            <div className="flex justify-between">
-                                <p>Payment Fee</p>
-                                <p>2.000</p>
-                            </div>
-                            <div className="flex justify-between">
-                                <p>pajak</p>
-                                <p>5.000</p>
-                            </div>
-                            <div className="flex text-lg font-semibold justify-between">
-                                <p>Total</p>
-                                <p>IDR 157.000</p>
-                            </div>
+                        </div>
+
+                        <div className="rounded-lg justify-center px-5 flex space-x-2 py-1 cursor-pointer mt-5 bg-gray-800 hover:bg-gray-900 text-white">
+                            <p>Buy</p>
                         </div>
                     </div>
 
-                    <div className="rounded-lg justify-center px-5 flex space-x-2 py-1 cursor-pointer mt-5 bg-gray-800 hover:bg-gray-900 text-white">
-                        <p>Buy</p>
-                    </div>
-                </div>
+                    <div className="w-[25%] ml-5 self-stretch">
+                        <div className="h-[145px] bg-white shadow-lg rounded-lg p-5">
+                            <p className="mb-2">Choose Order Type</p>
 
-                <div className="w-[25%] ml-5 self-stretch">
-                    <div className="h-[145px] bg-white shadow-lg rounded-lg p-5">
-                        <p className="mb-2">Choose Order Type</p>
-
-                        {/* Dine In */}
-                        <label
-                            className={`cursor-pointer flex items-center gap-3 py-1 rounded-lg transition-all`}
-                        >
-                            {/* Custom Radio Button */}
-                            <div
-                            className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
-                                ${selected === "dine-in" ? "border-blue-500" : "border-gray-400"}
-                            `}
-                            >
-                            {selected === "dine-in" && (
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            )}
-                            </div>
-
-                            {/* Label + Description */}
-                            <div className="flex flex-col tetx-sm">
-                                Dine In
-                            </div>
-
-                            {/* Hidden Input */}
-                            <input
-                            type="radio"
-                            name="orderType"
-                            value="dine-in"
-                            checked={selected === "dine-in"}
-                            onChange={() => setSelected("dine-in")}
-                            className="hidden"
-                            />
-                        </label>
-
-                        {/* Take Away */}
-                        <label
-                            className={`cursor-pointer flex items-center gap-3 py-2 rounded-lg transition-all`}
-                        >
-                            {/* Custom Radio Button */}
-                            <div
-                            className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
-                                ${selected === "take-away" ? "border-blue-500" : "border-gray-400"}
-                            `}
-                            >
-                            {selected === "take-away" && (
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            )}
-                            </div>
-
-                            {/* Label + Description */}
-                            <div className="flex flex-col text-sm">
-                                Take Away
-                            </div>
-
-                            {/* Hidden Input */}
-                            <input
-                            type="radio"
-                            name="orderType"
-                            value="take-away"
-                            checked={selected === "take-away"}
-                            onChange={() => setSelected("take-away")}
-                            className="hidden"
-                            />
-                        </label>
-                    </div>
-
-                    <div className="mt-5 bg-white shadow-lg rounded-lg p-5">
-                        <p>Choose Payment Method</p>
-                        <div className="mt-4 space-y-2">
-                            {/* virtual account */}
+                            {/* Dine In */}
                             <label
                                 className={`cursor-pointer flex items-center gap-3 py-1 rounded-lg transition-all`}
                             >
                                 {/* Custom Radio Button */}
                                 <div
                                 className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
-                                    ${paymentMethod === "va" ? "border-blue-500" : "border-gray-400"}
+                                    ${selected === "dine-in" ? "border-blue-500" : "border-gray-400"}
                                 `}
                                 >
-                                {paymentMethod === "va" && (
+                                {selected === "dine-in" && (
                                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                                 )}
                                 </div>
 
                                 {/* Label + Description */}
-                                <div className="flex items-center space-x-5 tetx-sm">
-                                    <p>Virtual Account</p>
-                                    <img src={require("../image/BCA.png")} alt="BCA" className="w-12 h-10"/>
+                                <div className="flex flex-col tetx-sm">
+                                    Dine In
                                 </div>
 
                                 {/* Hidden Input */}
                                 <input
                                 type="radio"
                                 name="orderType"
-                                value="va"
-                                checked={paymentMethod === "va"}
-                                onChange={() => setPaymentMethod("va")}
+                                value="dine-in"
+                                checked={selected === "dine-in"}
+                                onChange={() => setSelected("dine-in")}
                                 className="hidden"
                                 />
                             </label>
 
-                            {/* qris */}
+                            {/* Take Away */}
                             <label
-                                className={`cursor-pointer flex items-center gap-3 py-1 rounded-lg transition-all`}
+                                className={`cursor-pointer flex items-center gap-3 py-2 rounded-lg transition-all`}
                             >
                                 {/* Custom Radio Button */}
                                 <div
                                 className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
-                                    ${paymentMethod === "qr" ? "border-blue-500" : "border-gray-400"}
+                                    ${selected === "take-away" ? "border-blue-500" : "border-gray-400"}
                                 `}
                                 >
-                                {paymentMethod === "qr" && (
+                                {selected === "take-away" && (
                                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                                 )}
                                 </div>
 
                                 {/* Label + Description */}
-                                <div className="flex items-center space-x-5 tetx-sm">
-                                    <p>Qris</p>
-                                    <img src={require("../image/QRIS.png")} alt="QRIS" className="w-12 h-10"/>
+                                <div className="flex flex-col text-sm">
+                                    Take Away
                                 </div>
 
                                 {/* Hidden Input */}
                                 <input
                                 type="radio"
                                 name="orderType"
-                                value="qr"
-                                checked={paymentMethod === "qr"}
-                                onChange={() => setPaymentMethod("qr")}
+                                value="take-away"
+                                checked={selected === "take-away"}
+                                onChange={() => setSelected("take-away")}
                                 className="hidden"
                                 />
                             </label>
                         </div>
+
+                        <div className="mt-5 bg-white shadow-lg rounded-lg p-5">
+                            <p>Choose Payment Method</p>
+                            <div className="mt-4 space-y-2">
+                                {/* virtual account */}
+                                <label
+                                    className={`cursor-pointer flex items-center gap-3 py-1 rounded-lg transition-all`}
+                                >
+                                    {/* Custom Radio Button */}
+                                    <div
+                                    className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
+                                        ${paymentMethod === "va" ? "border-blue-500" : "border-gray-400"}
+                                    `}
+                                    >
+                                    {paymentMethod === "va" && (
+                                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    )}
+                                    </div>
+
+                                    {/* Label + Description */}
+                                    <div className="flex items-center space-x-5 tetx-sm">
+                                        <p>Virtual Account</p>
+                                        <img src={require("../image/BCA.png")} alt="BCA" className="w-12 h-10"/>
+                                    </div>
+
+                                    {/* Hidden Input */}
+                                    <input
+                                    type="radio"
+                                    name="orderType"
+                                    value="va"
+                                    checked={paymentMethod === "va"}
+                                    onChange={() => setPaymentMethod("va")}
+                                    className="hidden"
+                                    />
+                                </label>
+
+                                {/* qris */}
+                                <label
+                                    className={`cursor-pointer flex items-center gap-3 py-1 rounded-lg transition-all`}
+                                >
+                                    {/* Custom Radio Button */}
+                                    <div
+                                    className={`w-5 h-5 flex items-center justify-center border-2 rounded-full transition-all
+                                        ${paymentMethod === "qr" ? "border-blue-500" : "border-gray-400"}
+                                    `}
+                                    >
+                                    {paymentMethod === "qr" && (
+                                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    )}
+                                    </div>
+
+                                    {/* Label + Description */}
+                                    <div className="flex items-center space-x-5 tetx-sm">
+                                        <p>Qris</p>
+                                        <img src={require("../image/QRIS.png")} alt="QRIS" className="w-12 h-10"/>
+                                    </div>
+
+                                    {/* Hidden Input */}
+                                    <input
+                                    type="radio"
+                                    name="orderType"
+                                    value="qr"
+                                    checked={paymentMethod === "qr"}
+                                    onChange={() => setPaymentMethod("qr")}
+                                    className="hidden"
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* add product */}
+                {addProduct && <AddProduct onClose={() => setAddProduct(false)}/>}
             </div>
-
-            {/* add product */}
-            {addProduct && <AddProduct onClose={() => setAddProduct(false)}/>}
         </div>
     )
 }

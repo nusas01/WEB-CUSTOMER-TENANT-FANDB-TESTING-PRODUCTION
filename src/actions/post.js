@@ -2,6 +2,7 @@ import axios from "axios"
  import {
     loginStatusCustomerSlice,
     loginStatusInternalSlice,
+    getAllCreateTransactionInternalSlice,
  } from "../reducers/get"
  import {
     signupCustomerSlice, 
@@ -10,6 +11,7 @@ import axios from "axios"
     loginGoogleCustomerSlice,
     createTransactionCustomerSlice,
     loginInternalSlice,
+    createTransactionInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -208,3 +210,32 @@ export const loginInternal = (data) => async (dispatch) => {
     }
 }
 
+const { addGetAllCreateTransactionInternal } = getAllCreateTransactionInternalSlice.actions
+const { successCreateTransactionInternal, errorCreateTransactionInternal, setLoadingCreateTransactionInternal } = createTransactionInternalSlice.actions;
+export const createTransactionInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateTransactionInternal(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
+        const message = {
+            data: response.data?.data,
+            success: response.data?.success,
+        }
+        dispatch(successCreateTransactionInternal(message))
+        dispatch(addGetAllCreateTransactionInternal(message.data))
+        console.log("response data create transacrion internal: ", response?.data)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        dispatch(errorCreateTransactionInternal(error.response?.data?.error));
+    }finally {
+        dispatch(setLoadingCreateTransactionInternal(false));
+    }
+}

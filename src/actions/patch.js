@@ -110,15 +110,16 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
     dispatch(setLoadingBuyTransactionCashOnGoingInternal(true))
     try {
         const response = await axios.patch(`${process.env.REACT_APP_BUY_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessBuyTransactionCashOnGoingInternal(response?.data.success))
+        dispatch(setSuccessBuyTransactionCashOnGoingInternal(response.data))
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
         console.log(error.response)
         const message = {
-            errorField: error.response?.data.ErrorFields, 
-            error: error.response?.data.error,
+            errorField: error.response?.data?.ErrorFields || "something error in our server", 
+            error: error.response?.data.error || "something error in our server",
         };
         dispatch(setErrorBuyTransactionCashOnGoinInternal(message));
     } finally {

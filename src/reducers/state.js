@@ -22,6 +22,7 @@ import {
   checkTransactionNonCashInternalSlice,
   transactionHistoryInternalSlice,
   dataFilteringTransactionHistorySlice,
+  getAllCreateTransactionInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -30,6 +31,7 @@ import {
   loginGoogleCustomerSlice,
   createTransactionCustomerSlice,
   loginInternalSlice,
+  createTransactionInternalSlice,
 } from './post'
 import {
   changePasswordCustomerSlice,
@@ -58,6 +60,7 @@ const persistedReducers = combineReducers({
   transactionNonCashOnGoingInternal: transactionNonCashOnGoingInternalSlice.reducer,
   transactionHistoryInternal: transactionHistoryInternalSlice.reducer,
   dataFilteringTransactionHistoryState: dataFilteringTransactionHistorySlice.reducer,
+  getAllCreateTransactionInternal: getAllCreateTransactionInternalSlice.reducer
 });
 
 // 2. Konfigurasi persist
@@ -82,6 +85,7 @@ const nonPersistedReducers = {
   checkTransactionNonCashInternalState: checkTransactionNonCashInternalSlice.reducer,
   buyTransactionCashOnGoingInternalState: buyTransactionCashOnGoingInternalSlice.reducer,
   statusExpiredTokenState: statusExpiredTokenSlice.reducer, 
+  createTransactionInternalState: createTransactionInternalSlice.reducer,
 };
 
 const rootReducer = combineReducers({

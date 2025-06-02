@@ -71,7 +71,7 @@ export default function Order() {
 
     const navigate = useNavigate()
     const handleNavigate = () => {
-        navigate("/internal/admin/kasir/order/details")
+        navigate("/internal/admin/order/details")
     }
     return (
         <div>

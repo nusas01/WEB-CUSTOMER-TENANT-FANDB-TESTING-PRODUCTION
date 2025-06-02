@@ -150,7 +150,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (messageLoginSuccessInternal) {
-      navigate('/internal/admin/kasir/transaction')
+      navigate('/internal/admin/transaction')
 
       setFormLogin({
           email: '',

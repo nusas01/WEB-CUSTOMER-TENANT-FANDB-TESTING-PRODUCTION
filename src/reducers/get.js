@@ -382,7 +382,7 @@ export const transactionHistoryInternalSlice = createSlice({
             state.loadingTransactionHistoryInternal = action.payload
         },
         fetchSuccessTransactionHistoryInternal: (state, action) => {
-            state.dataTransactionHistoryInternal = action.payload.data
+            state.dataTransactionHistoryInternal = action.payload
             state.statusCodeTransactionHistoryInternal = 200
             state.errorTransactionHistoryInternal = null
             state.loadingTransactionHistoryInternal = false
@@ -411,8 +411,8 @@ export const checkTransactionNonCashInternalSlice = createSlice({
     initialState: initialCheckTransactionNonCashInternalState,
     reducers: {
         checkTransactionNonCashSuccess: (state, action) => {
-            state.checkTransactionNonCashId = action.payload.checkTransactionNonCashId;
-            state.statusCheckTransactionNonCash = action.payload.statusCheckTransactionNonCash;
+            state.checkTransactionNonCashId = action.payload.transaction_id;
+            state.statusCheckTransactionNonCash = action.payload.status_payment_gateway;
             state.errorCheckTransactionNonCash = null;
             state.loadingCheckTransactionNonCash = false;
         },
@@ -432,3 +432,34 @@ export const checkTransactionNonCashInternalSlice = createSlice({
     }
 })
 
+// get all transaction pending yang di buat oleh kasir 
+const initialGetAllCreateTransactionInternal = {
+    dataGetAllCreateTransactionInternal: [], 
+    errorGetAllCreateTransactionInternal: null,
+    loadingGetAllCreateTransactionInternal: null, 
+} 
+export const getAllCreateTransactionInternalSlice = createSlice({
+    name: 'getAllCreateTransactionInternal', 
+    initialState: initialGetAllCreateTransactionInternal, 
+    reducers: {
+        fetchSuccessGetAllCreateTransactionInternal: (state, action) => {
+            state.dataGetAllCreateTransactionInternal = action.payload
+            state.errorGetAllCreateTransactionInternal = null 
+        },
+        fetchErrorGetAllCreateTransactionInternal: (state, action) => {
+            state.errorGetAllCreateTransactionInternal = action.payload
+            state.dataGetAllCreateTransactionInternal = []
+        },
+        setLoadingFetchGetAllCreateTransactionInternal: (state, action) => {
+            state.loadingGetAllCreateTransactionInternal = action.payload
+        },
+        addGetAllCreateTransactionInternal: (state, action) => {
+            state.dataGetAllCreateTransactionInternal.push(action.payload)
+        }, 
+        removeTransactionOnGoingById: (state, action) => {
+            state.dataGetAllCreateTransactionInternal = state.dataGetAllCreateTransactionInternal.filter(
+                (item) => item.id !== action.payload
+            )
+        },
+    }
+})

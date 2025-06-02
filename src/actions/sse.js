@@ -57,7 +57,8 @@ const useSSE = (url, onMessage) => {
 const { updateTransactionOnGoingStatusById } = getTransactionOnGoingCustomerSlice.actions;
 const SSETransactionOnGoingCustomer = () => {
     const dispatch = useDispatch()
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_ON_GOING_URL}?API_KEY=${process.env.REACT_APP_API_KEY}`
+    const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_ON_GOING_URL}?API_KEY=${encodedApiKey}`
 
     useSSE(url, (data) => {
         dispatch(updateTransactionOnGoingStatusById(data))
@@ -72,7 +73,8 @@ const SSETransactionOnGoingCustomer = () => {
 const { addTransactionCashOnGoingInternal } = transactionCashOnGoingInternalSlice.actions;
 const SSETransactionCashOnGoingInternal = () => {
     const dispatch = useDispatch()
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${process.env.REACT_APP_API_KEY}`
+    const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${encodedApiKey}`
 
     useSSE(url, (data) => {
         dispatch(addTransactionCashOnGoingInternal(data))
@@ -87,7 +89,8 @@ const SSETransactionCashOnGoingInternal = () => {
 const { addTransactionNonCashOnGoingInternal } = transactionNonCashOnGoingInternalSlice.actions;
 const SSETransactionNonCashOnGoingInternal = () => {
     const dispatch = useDispatch()
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_NON_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${process.env.REACT_APP_API_KEY}`
+    const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_NON_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${encodedApiKey}`
 
     useSSE(url, (data) => {
         dispatch(addTransactionNonCashOnGoingInternal(data))

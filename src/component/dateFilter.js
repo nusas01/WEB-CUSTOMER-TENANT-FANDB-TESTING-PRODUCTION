@@ -26,6 +26,9 @@ function FilterPanel({
   showStatusFilter = true,
   showDateFilter = true,
   showTimeFilter = true,
+
+
+  validationErrors,
 }) {
   const [isDropdownOpenMethod, setIsDropdownOpenMethod] = useState(false);
   const [isDropdownOpenStatus, setIsDropdownOpenStatus] = useState(false);
@@ -76,6 +79,11 @@ function FilterPanel({
               </svg>
             </button>
 
+            {/* Tampilkan error jika ada */}
+            {validationErrors.method && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.method}</p>
+            )}
+
             {isDropdownOpenMethod && (
               <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
                 <div className="py-1">
@@ -112,6 +120,11 @@ function FilterPanel({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+
+            {/* Tampilkan error jika ada */}
+            {validationErrors.status && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.status}</p>
+            )}
 
             {isDropdownOpenStatus && (
               <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
@@ -155,6 +168,17 @@ function FilterPanel({
                 className="border rounded-md px-2 text-gray-700 py-1.5 text-sm min-w-0"
               />
             </div>
+
+            {/* Tampilkan error jika ada */}
+            <div className="flex flex-wrap gap-x-4">
+              {validationErrors.startDate && (
+                <p className="text-red-500 text-xs">{validationErrors.startDate}</p>
+              )}
+              {validationErrors.endDate && (
+                <p className="text-red-500 text-xs">{validationErrors.endDate}</p>
+              )}
+            </div>
+
             <div className={`text-xs ${dateError ? 'text-red-500' : 'text-gray-500'}`}>
               {dateError || 'Maksimum rentang tanggal yang dapat diatur 92 hari'}
             </div>
@@ -179,6 +203,16 @@ function FilterPanel({
                 onChange={(e) => onEndTimeChange(e.target.value)}
                 className="border rounded-md text-gray-700 px-2 py-1.5 text-sm flex-1"
               />
+            </div>
+
+            {/* Tampilkan error jika ada */}
+            <div className="flex flex-wrap gap-x-4">
+              {validationErrors.startTime && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.startTime}</p>
+              )}
+              {validationErrors.endTime && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.endTime}</p>
+              )}
             </div>
           </div>
         )}

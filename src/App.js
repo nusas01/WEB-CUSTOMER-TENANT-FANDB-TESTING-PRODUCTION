@@ -26,6 +26,7 @@ import { use, useEffect } from 'react'
 import SetUsername from './component/setUsername'
 import SSEContainer from './actions/sse'
 import ServiceRenewalNotice from './component/serviceRenewal'
+import Cashier from './casier/cashier'
 
 function App() {
   const dispatch = useDispatch()
@@ -122,14 +123,15 @@ function App() {
 
           <Route path='/internal/access' element={<RegisterPage/>}/>
           <Route element={<PrivateRouteInternal/>}>
-            <Route path="/internal/admin/kasir/transaction" element={<KasirTransaction/>}/>
-            <Route path="/internal/admin/kasir/transaction/create" element={<CreateTransaction/>}/>
-            <Route path="/internal/admin/kasir/orders" element={<KasirOrders/>}/>
-            <Route path="/internal/admin/kasir/order/details" element={<OrderDetails/>}/>
-            <Route path="/internal/admin/kasir/products" element={<KasirProducts/>}/>
-            <Route path="/internal/admin/kasir/tables" element={<KasirTables/>}/>
-            <Route path="/internal/admin/kasir/statistiks" element={<KasirStatistik/>}/>
-            <Route path="/internal/admin/kasir/settings" element={<KasirSettings/>}/>
+            <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
+            <Route path='/internal/admin/cashier' element={<Cashier/>}/>
+            <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/>
+            <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
+            <Route path="/internal/admin/order/details" element={<OrderDetails/>}/>
+            <Route path="/internal/admin/products" element={<KasirProducts/>}/>
+            <Route path="/internal/admin/tables" element={<KasirTables/>}/>
+            <Route path="/internal/admin/statistiks" element={<KasirStatistik/>}/>
+            <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
           </Route>
         </Routes>
 

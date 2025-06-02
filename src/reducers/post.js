@@ -201,3 +201,34 @@ export const loginInternalSlice = createSlice({
         }
     }
 })
+
+const initialCreateTransactionInternalState = {
+    successCreateTransactionInternal: null,
+    dataSuccessCreateTransactionInternal: null,
+    errorCreateTransactionInternal: null,
+    setLoadingCreateTransactionInternal: false,
+}
+export const createTransactionInternalSlice = createSlice({
+    name: "createTransactionInternal",
+    initialState: initialCreateTransactionInternalState,
+    reducers: {
+        successCreateTransactionInternal: (state, action) => {
+            state.dataSuccessCreateTransactionInternal = action.payload.data
+            state.successCreateTransactionInternal = action.payload.success
+            state.errorCreateTransactionInternal = null
+        },
+        errorCreateTransactionInternal: (state, action) => {
+            state.errorCreateTransactionInternal = action.payload
+            state.dataSuccessCreateTransactionInternal = null
+            state.successCreateTransactionInternal = null
+        }, 
+        setLoadingCreateTransactionCustomer: (state, action) => {
+            state.setLoadingCreateTransactionInternal = action.payload
+        }, 
+        resetCreateTransactionCustomer: (state) => {
+            state.dataSuccessCreateTransactionInternal = null
+            state.successCreateTransactionInternal = null
+            state.errorCreateTransactionInternal = null
+        }
+    }
+})
