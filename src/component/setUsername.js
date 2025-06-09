@@ -130,7 +130,7 @@ export default function SetUsername() {
                     </form>
                 </div>
 
-                {spinner && <SpinnerFixed />}
+                {spinner && <SpinnerFixed colors={'fill-green-500'}/>}
             </div>
         </div>
     )

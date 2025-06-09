@@ -1,5 +1,8 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle } from "lucide-react"
+import { CheckCircle, XCircle, AlertTriangle } from "lucide-react"
+import { useRef } from "react"
+import { X } from 'lucide-react'
+import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
 
 export const OrderTypeInvalidAlert = ({ onClose }) => {
     return (
@@ -50,15 +53,16 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
   }
 
 
-  export const ErrorAlert = ({ message }) => {
-    return (
-      <div className="fixed w-full z-50">
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-200 w-full max-w-sm h-[50px] px-4 py-2 flex items-center justify-center border-l-4 border-red-600 text-white rounded-sm shadow-md">
-          <p className="text-md md:text-base text-center">{message}</p>
-        </div>
+export const ErrorAlert = ({ message }) => {
+  return (
+    <div className="absolute top-10 w-full flex justify-center px-4">
+      <div className="flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3 shadow-md">
+        <AlertTriangle className="text-red-600 w-5 h-5 flex-shrink-0" />
+        <p className="text-sm text-red-800">{message}</p>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
 
 export const ConfirmationModal = ({
@@ -185,28 +189,92 @@ export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar },
 })
 
 
-export const SuccessAlertPaymentCash = ({ kembalian, onClose }) =>  {
+export const SuccessAlertPaymentCash = ({ kembalian, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-4">
-      <div className="bg-gray-800 text-white rounded-2xl p-6 w-full max-w-md shadow-lg text-center">
-        <CheckCircle className="h-16 w-16 text-green-400 mx-auto" />
-        <h3 className="text-lg font-semibold mt-4">Pembayaran Berhasil</h3>
-        <p className="text-sm text-gray-300 mt-2">
+      <div className="bg-green-50 text-center rounded-lg p-6 w-full max-w-md shadow-inner border border-green-300">
+        <CheckCircle size={48} className="text-green-500 mx-auto mb-2" />
+        <p className="text-lg font-bold text-green-700">Pembayaran Berhasil!</p>
+        <p className="text-sm text-green-600 mt-1">
           Kembalian:{" "}
-          <span className="text-green-300 font-bold">
+          <span className="text-green-700 font-semibold">
             Rp {kembalian.toLocaleString("id-ID")}
           </span>
         </p>
         <button
           onClick={onClose}
-          className="mt-6 px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 rounded-md"
+          className="mt-6 px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-md"
         >
           Tutup
         </button>
       </div>
     </div>
-  );
+  )
 }
+
+export const PaymentSuccessMessage = ({
+  data,
+  message,
+  subMessage,
+  onClose,
+}) => {
+  const modalRef = useRef(null)
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto p-6 md:p-8 relative transform transition-all duration-300 scale-100 opacity-100"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200"
+          aria-label="Tutup modal"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Gambar metode pembayaran, center dan beri ukuran yang pas */}
+        {data.channel_code && (
+          <div className="flex justify-center mb-4">
+            <ImagePaymentMethod key={data.channel_code}/>
+          </div>
+        )}
+
+        <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">{message}</h3>
+
+        <div className="space-y-2 text-center mb-4">
+          {data.email && (
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Email:</span> {data.email}
+            </p>
+          )}
+        </div>
+
+        <div className="p-6 border border-green-300 rounded-lg bg-green-50 shadow-inner flex flex-col items-center">
+          <CheckCircle size={48} className="text-green-500 mb-2" />
+          <p className="text-lg font-bold text-green-700">Pembayaran Berhasil!</p>
+          <p className="text-sm text-green-600 mt-1">{subMessage}</p>
+          {data.amount_price !== undefined && (
+            <p className="mt-4 text-base font-semibold text-gray-700">
+              Total: Rp {data.amount_price.toLocaleString("id-ID")}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
   
 
 

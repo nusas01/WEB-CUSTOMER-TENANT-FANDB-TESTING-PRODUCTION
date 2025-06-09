@@ -133,7 +133,7 @@ const Sidebar = ({activeMenu}) => {
 
       {/* spinner */}
       { spinner && (
-        <SpinnerFixed/>
+        <SpinnerFixed  colors={'fill-green-500'}/>
       )}
 
       {/* Overlay Background (Mobile) */}

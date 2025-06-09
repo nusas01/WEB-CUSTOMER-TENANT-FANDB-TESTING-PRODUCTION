@@ -2,7 +2,7 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import sessionStorage from 'redux-persist/lib/storage/session';
 
-import { cartSlice } from './cartSlice';
+import { cartSlice, cartCashierSlice } from './cartSlice';
 import {
   orderTypeSlice,
   buttonActivityCustomerSlice,
@@ -23,6 +23,7 @@ import {
   transactionHistoryInternalSlice,
   dataFilteringTransactionHistorySlice,
   getAllCreateTransactionInternalSlice,
+  getPaymentMethodsInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -42,6 +43,9 @@ import {
 import {
   statusExpiredTokenSlice
 } from './expToken'
+import {
+  paymentSuccessTransactionCashierSlice
+} from './notif'
 
 
 // 1. Reducer yang ingin dipersist
@@ -60,14 +64,15 @@ const persistedReducers = combineReducers({
   transactionNonCashOnGoingInternal: transactionNonCashOnGoingInternalSlice.reducer,
   transactionHistoryInternal: transactionHistoryInternalSlice.reducer,
   dataFilteringTransactionHistoryState: dataFilteringTransactionHistorySlice.reducer,
-  getAllCreateTransactionInternal: getAllCreateTransactionInternalSlice.reducer
-});
+  getAllCreateTransactionInternal: getAllCreateTransactionInternalSlice.reducer,
+  paymentMethodsInternal: getPaymentMethodsInternalSlice.reducer,
+})
 
 // 2. Konfigurasi persist
 const persistConfig = {
   key: 'persisted',
   storage: sessionStorage,
-};
+}
 
 // 3. Reducer yang tidak ingin dipersist
 const nonPersistedReducers = {
@@ -86,17 +91,19 @@ const nonPersistedReducers = {
   buyTransactionCashOnGoingInternalState: buyTransactionCashOnGoingInternalSlice.reducer,
   statusExpiredTokenState: statusExpiredTokenSlice.reducer, 
   createTransactionInternalState: createTransactionInternalSlice.reducer,
-};
+  cartCashierState: cartCashierSlice.reducer,
+  paymentSuccessTransactionCashierState: paymentSuccessTransactionCashierSlice.reducer,
+}
 
 const rootReducer = combineReducers({
   persisted: persistReducer(persistConfig, persistedReducers), 
   ...nonPersistedReducers,
-});
+})
 
 export const store = configureStore({
   reducer: rootReducer,
-});
+})
 
-export const persistor = persistStore(store);
+export const persistor = persistStore(store)
 
-export default store;
+export default store

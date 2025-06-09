@@ -211,7 +211,7 @@ export const loginInternal = (data) => async (dispatch) => {
 }
 
 const { addGetAllCreateTransactionInternal } = getAllCreateTransactionInternalSlice.actions
-const { successCreateTransactionInternal, errorCreateTransactionInternal, setLoadingCreateTransactionInternal } = createTransactionInternalSlice.actions;
+const { successCreateTransactionInternal, errorCreateTransactionInternal, setLoadingCreateTransactionInternal } = createTransactionInternalSlice.actions
 export const createTransactionInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
@@ -223,19 +223,22 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     dispatch(setLoadingCreateTransactionInternal(true))
     try {
         const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
         const message = {
             data: response.data?.data,
             success: response.data?.success,
         }
         dispatch(successCreateTransactionInternal(message))
-        dispatch(addGetAllCreateTransactionInternal(message.data))
-        console.log("response data create transacrion internal: ", response?.data)
+        if (message.data.channel_code !== 'CASH') {
+            dispatch(addGetAllCreateTransactionInternal(message.data))
+        }
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        dispatch(errorCreateTransactionInternal(error.response?.data?.error));
+        dispatch(errorCreateTransactionInternal(error.response?.data?.error))
+        console.log("response data create transacrion internal: ", error)
     }finally {
-        dispatch(setLoadingCreateTransactionInternal(false));
+        dispatch(setLoadingCreateTransactionInternal(false))
     }
 }

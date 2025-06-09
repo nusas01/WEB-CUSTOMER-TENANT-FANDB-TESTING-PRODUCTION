@@ -161,13 +161,11 @@ const TransactionTable = () => {
 
 
 
-
-
     // check Transaction non cash to thired party
     const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
-    const { checkTransactionNonCashId, statusCheckTransactionNonCash, errorCheckTransactionNonCash, loadingCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
+    const { checkTransactionNonCashId, statusCheckTransactionNonCash, loadingCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
     const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
-    const [allertErrorCheckTransactionNonCash, setAllertErrorCheckTransactionNonCash] = useState(false)
+    const [allertPendingCheckTransactionNonCash, setAllertPendingCheckTransactionNonCash] = useState(false)
 
     const handleCheckTransactionNonCash = (transactionId) => {
         const data = {
@@ -181,19 +179,13 @@ const TransactionTable = () => {
             dispatch(removeTransactionNonCashOnGoingInternalById(checkTransactionNonCashId))
             setAllertSuccessCheckTransactionNonCash(true)
         } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
-            setAllertErrorCheckTransactionNonCash(true)
+            setAllertPendingCheckTransactionNonCash(true)
         }
     }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
 
     useEffect(() => {
         setSpinner(loadingCheckTransactionNonCash)
     }, [loadingCheckTransactionNonCash])
-
-    useEffect(() => {
-        if (errorCheckTransactionNonCash) {
-            setAllertErrorCheckTransactionNonCash(true)
-        }
-    }, [errorCheckTransactionNonCash])
 
 
 
@@ -254,7 +246,7 @@ const TransactionTable = () => {
 
     const handleTimeChange = (type, value) => {
         setFilters(prev => ({...prev, [type]: value}))
-    };
+    }
 
     const handleClear = () => {
         setFilters({
@@ -409,7 +401,8 @@ const TransactionTable = () => {
         data = dataTransactionHistoryInternal || []
     }
 
-    
+    console.log(dataTransactionNonCashInternal)
+
     // Filter data berdasarkan kata kunci
     const lowercasedSearch = searchTerm.toLowerCase()
     return data.filter(item => 
@@ -422,38 +415,50 @@ const TransactionTable = () => {
 
     const filteredData = getFilteredData()
 
-
-
-
-    // handle close component saat click outside
-   useEffect(() => {
+    // Handle click outside dateFilter panel
+    useEffect(() => {
         function handleClickOutside(event) {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
-                setDateFilter(false)
-                setOpenModelBuyPaymentCash(false)
+            setDateFilter(false)   
             }
         }
 
-        if (dateFilter || dataPaymentCash) {
+        if (dateFilter) {
             document.addEventListener("mousedown", handleClickOutside)
-            setValidationErrors({})
-            setDataPaymentCash({
-                transaction_id: null,
-                amount_price: 0,
-                money_received: 0,
-            })
         }
 
         return () => {
             document.removeEventListener("mousedown", handleClickOutside)
         }
-    }, [dateFilter, openModelBuyPaymentCash])
+    }, [dateFilter])  
 
+    // Handle click outside modal bayar
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (panelRef.current && !panelRef.current.contains(event.target)) {
+                setOpenModelBuyPaymentCash(false)
+                handleCloseConfirmationModalError()
+                handleCloseConfirmationModalSuccess()
+                setValidationErrors({})
+                setDataPaymentCash({
+                    transaction_id: null,
+                    amount_price: 0,
+                    money_received: 0,
+                })
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+       
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
 
 
     const handleCloseConfirmationModalError = () => {
         setAllertErrorBuyTransactionCash(false)
-        setAllertErrorCheckTransactionNonCash(false)
+        setAllertPendingCheckTransactionNonCash(false)
         dispatch(resetBuyTransactionCashOnGoingInternal()) 
         dispatch(resetCheckTransactionNonCash())
     }
@@ -578,23 +583,26 @@ const TransactionTable = () => {
             </div>
 
             {/* Transaction Table */}
-            <div className="rounded-lg shadow-md overflow-hidden relative w-full">
+            <div className="rounded-lg shadow-md bg-white overflow-hidden min-h-[400px] p-4 relative w-full">
                  {spinnerRelatif ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
                     <SpinnerRelative />
                     </div>
                 ) : null}
+                { (dataTransactionCashInternal.length > 0 || dataTransactionNonCashInternal.length > 0) && (
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Daftar Transaksi</h2>
+                )}
                 <table className="w-full text-left">
                     {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") ? (
-                    <>
-                        <thead className="bg-gray-900">
+                        <>
+                        <thead className="bg-gray-100 z-10">
                         <tr>
                             {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date"]
                             .concat(filterTransaction === 'methodFilterTransaction' ? [] : ["Buy"])
                             .map((header) => (
                                 <th 
                                 key={header} 
-                                className="py-3 px-4 text-white font-medium text-sm border-b border-gray-200"
+                                className="py-3 px-4 text-white font-medium text-sm border-b border-gray-200py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap"
                                 >
                                 {header}
                                 </th>
@@ -612,42 +620,41 @@ const TransactionTable = () => {
                         ))?.map((t, index) => (
                             <tr 
                             key={index} 
-                            className="bg-white text-black border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                            className="hover:bg-gray-50 transition-colors duration-150"
                             >
-                            {filterTransaction === "methodCash" ? (
-                                <td className="hidden">
+                            <td className="hidden">
                                 <CountDownRemoveData 
                                     expiry={t?.expires_at} 
                                     transactionId={t.id} 
-                                    remove={removeTransactionCashOnGoingInternalById}
+                                    remove={
+                                        filterTransaction === "methodCash" 
+                                            ? removeTransactionCashOnGoingInternalById 
+                                            : removeTransactionNonCashOnGoingInternalById
+                                    }
                                 />
-                                </td>
-                            ) : (
-                                <td className="hidden">
-                                <CountDownRemoveData 
-                                    expiry={t?.expires_at} 
-                                    transactionId={t.id} 
-                                    remove={removeTransactionNonCashOnGoingInternalById}
-                                />
-                                </td>
-                            )}
-                            <td className="py-3 px-4 text-red-500">{t.status_transaction?.toLowerCase()}</td>
-                            <td className="py-3 px-4">{t.channel_code?.toLowerCase()}</td>
-                            <td className="py-3 px-4">{t.username}</td>
-                            <td className="py-3 px-4 flex items-center gap-2">
-                                {t.amount_price?.toLocaleString("id-ID")}
                             </td>
                             <td className="py-3 px-4">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full
+                                    'bg-red-100 text-red-800'}`}>
+                                    {t.status_transaction}
+                                </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-700">{t.channel_code}</td>
+                            <td className="py-3 px-4 text-sm text-gray-700">{t.username}</td>
+                            <td className="py-3 px-4 text-sm text-gray-800">
+                                {t.amount_price?.toLocaleString("id-ID")}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-800">
                                 {t.table === 0 ? t.order_type : t.table}
                             </td>
                             <td className="py-3 px-4">{FormatDate(t.created_at)}</td>
                             { filterTransaction !== "methodFilterTransaction" && (
-                                <td className="py-3 px-4">
+                                <td className="py-3 px-4 text-start">
                                     <button 
                                     onClick={() => filterTransaction === "methodCash" 
                                         ? handleOpenModelPaymentCash(t.id, t.amount_price)
                                         : handleCheckTransactionNonCash(t.id)}
-                                    className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 transition-colors"
+                                        lassName="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm font-medium rounded-md hover:bg-red-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                     >
                                     { filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
                                     </button>
@@ -661,7 +668,7 @@ const TransactionTable = () => {
                     <tbody>
                         <tr>
                         <td colSpan="7">
-                            <div className="flex flex-col items-center justify-center min-h-[400px] bg-white p-8 text-center">
+                            <div className="flex flex-col items-center justify-center min-h-[370px] bg-white p-8 text-center">
                             <div className="mb-6 relative">
                                 <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
                                 <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -693,36 +700,40 @@ const TransactionTable = () => {
             </div>
 
             { spinner && (
-                <SpinnerFixed/>
+                <SpinnerFixed colors={'fill-gray-900'}/>
             )}
 
             {/* alert success confirmation modal  */}
             {  (allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
-                <ConfirmationModal 
-                onClose={handleCloseConfirmationModalSuccess} 
-                title={"Success!"}  
-                message={
-                    allertSuccessBuyTransactionCash
-                        ? "Pembayaran tunai telah berhasil diproses"
-                        : "Verifikasi pembayaran non-tunai berhasil"
-                }
-                type={"success"}
-                />
+                <div ref={panelRef}>
+                    <ConfirmationModal 
+                    onClose={handleCloseConfirmationModalSuccess} 
+                    title={"Success!"}  
+                    message={
+                        allertSuccessBuyTransactionCash
+                            ? "Pembayaran tunai telah berhasil diproses"
+                            : "Verifikasi pembayaran non-tunai berhasil"
+                    }
+                    type={"success"}
+                    />
+                </div>
             )}
 
 
             {/* alert error confirmation modal  */}
-            { (allertErrorBuyTransactionCash || allertErrorCheckTransactionNonCash) && (
-                <ConfirmationModal
-                onClose={handleCloseConfirmationModalError}
-                title={"Gagal!"}
-                    message={
-                        allertErrorBuyTransactionCash
-                            ? "Pembayaran tunai telah gagal diproses"
-                            : "Verifikasi pembayaran non-tunai gagal"
-                }
-                type={"error"}
-                />
+            { (allertErrorBuyTransactionCash || allertPendingCheckTransactionNonCash) && (
+                <div ref={panelRef}>
+                    <ConfirmationModal
+                    onClose={handleCloseConfirmationModalError}
+                    title={"Gagal!"}
+                        message={
+                            allertErrorBuyTransactionCash
+                                ? "Pembayaran tunai telah gagal diproses"
+                                : "Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."
+                    }
+                    type={"error"}
+                    />
+                </div>
             )}
 
             {/* Model payment cash*/}

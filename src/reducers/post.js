@@ -206,7 +206,7 @@ const initialCreateTransactionInternalState = {
     successCreateTransactionInternal: null,
     dataSuccessCreateTransactionInternal: null,
     errorCreateTransactionInternal: null,
-    setLoadingCreateTransactionInternal: false,
+    loadingCreateTransactionInternal: false,
 }
 export const createTransactionInternalSlice = createSlice({
     name: "createTransactionInternal",
@@ -222,10 +222,10 @@ export const createTransactionInternalSlice = createSlice({
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
         }, 
-        setLoadingCreateTransactionCustomer: (state, action) => {
-            state.setLoadingCreateTransactionInternal = action.payload
+        setLoadingCreateTransactionInternal: (state, action) => {
+            state.loadingCreateTransactionInternal = action.payload
         }, 
-        resetCreateTransactionCustomer: (state) => {
+        resetCreateTransactionInternal: (state) => {
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
             state.errorCreateTransactionInternal = null

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
 import { useSelector } from "react-redux"
-import { deleteItem, updateItem, setTaxRate, setFee, clearCart } from "../reducers/cartSlice"
+import { deleteItem, updateItem, setFee, clearCart } from "../reducers/cartSlice"
 import { useNavigate, useLocation } from "react-router-dom"
 import { UseResponsiveClass } from "../helper/presentationalLayer"
 import BottomNavbar from "./bottomNavbar"
@@ -51,8 +51,6 @@ function Cart({ closeCart }) {
         phone_number_ewallet: null,
         product: []
     })
-    console.log("data transaction: ", dataTransaction)
-    console.log(items)
 
     const handleCloseModel = () => {
         setIsModelInputNumberEwallet(false)
@@ -68,7 +66,6 @@ function Cart({ closeCart }) {
             channel_code: null,
         }))
     }
-    
     
     const handleChoicePaymentMethodModel = () => {
         if (items.length <= 0) {
@@ -148,6 +145,8 @@ function Cart({ closeCart }) {
             product: mappedProducts,
         }))
     }, [subTotal])
+
+    console.log("data fee dan sub total: ", fee, subTotal)
 
     useEffect(() => {
         const mappedProducts = items.map((item) => ({
@@ -339,10 +338,14 @@ function Cart({ closeCart }) {
     }, [])
 
     const groupedMethods = {
-        VA: dataPaymentMethodCustomer?.data?.payment_methods.filter((m) => m.type === "VA"),
-        EWALLET: dataPaymentMethodCustomer?.data?.payment_methods.filter((m) => m.type === "EWALLET"),
-        QR: dataPaymentMethodCustomer?.data?.payment_methods.filter((m) => m.type === "QR"),
-    };
+        VA: dataPaymentMethodCustomer?.filter((m) => m.type === "VA"),
+        EWALLET: dataPaymentMethodCustomer?.filter((m) => m.type === "EWALLET"),
+        QR: dataPaymentMethodCustomer?.filter((m) => m.type === "QR"),
+    }
+
+    console.log(dataPaymentMethodCustomer)
+
+    console.log(groupedMethods)
 
     useEffect(() => {
         setSpinner(loadingPaymentMethodsCustomer)
@@ -375,7 +378,7 @@ function Cart({ closeCart }) {
 
         {/* spinner saat create transaction */}
         { spinnerTransaction && (
-            <SpinnerFixed/>
+            <SpinnerFixed colors={'fill-green-500'}/>
         )}
 
         {/* alert error create transaction */}

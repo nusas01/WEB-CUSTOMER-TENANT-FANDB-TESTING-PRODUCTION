@@ -108,7 +108,7 @@ export default function Verification() {
             </div>
 
                 { spinner && (
-                    <SpinnerFixed/>
+                    <SpinnerFixed colors={'fill-green-500'}/>
                 )}
         </div>
     )

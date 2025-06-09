@@ -432,8 +432,8 @@ export default function RegisterPage() {
         </div>
 
         {/* spinner */}
-          { spinner && (
-            <SpinnerFixed/>
+          {spinner && (
+            <SpinnerFixed colors={isInternal ? 'fill-gray-900' : 'fill-green-500'} />
           )}
       </div>
     </div>

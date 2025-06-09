@@ -139,7 +139,7 @@ export const getTransactionsHistoryCustomerSlice = createSlice({
 
 
 const initialGetPaymentMethodsCustomer = {
-    dataPaymentMethodCustomer: {},
+    dataPaymentMethodCustomer: [],
     taxRate: 0,
     errorPaymentMethodsCustomer: null,
     statusCodePaymentMethodsCustomer: null,
@@ -153,8 +153,8 @@ export const getPaymentMethodsCustomerSlice = createSlice({
             state.loadingPaymentMethodsCustomer = action.payload
         },
         fetchSuccessGetPaymentMethodsCustomer: (state, action) => {
-            state.dataPaymentMethodCustomer = action.payload
-            state.taxRate = action.payload.data.tax_rate
+            state.dataPaymentMethodCustomer = action.payload?.payment_methods
+            state.taxRate = action.payload?.tax_rate
             state.statusCodePaymentMethodsCustomer = 200
             state.errorPaymentMethodsCustomer = null
         },
@@ -256,11 +256,10 @@ export const transactionCashOnGoingInternalSlice = createSlice({
         fetchSuccessTransactionCashInternal: (state, action) => {
             state.dataTransactionCashInternal = action.payload
             state.errorTransactionCashInternal = null
-            state.loadingTransactionCashInternal = false
         },
         fetchErrorTransactionCashInternal: (state, action) => {
             state.errorTransactionCashInternal = action.payload
-            state.loadingTransactionCashInternal = false
+            state.dataTransactionCashInternal = []
         }, 
         removeTransactionCashOnGoingInternalById: (state, action) => {
             state.dataTransactionCashInternal = state.dataTransactionCashInternal.filter(
@@ -301,11 +300,10 @@ export const transactionNonCashOnGoingInternalSlice  = createSlice({
         fetchSuccessTransactionNonCashInternal: (state, action) => {
             state.dataTransactionNonCashInternal = action.payload
             state.errorTransactionNonCashInternal = null
-            state.loadingTransactionNonCashInternal = false
         },
         fetchErrorTransactionNonCashInternal: (state, action) => {
             state.errorTransactionNonCashInternal = action.payload
-            state.loadingTransactionNonCashInternal = false
+            state.dataTransactionNonCashInternal = []
         },
         removeTransactionNonCashOnGoingInternalById: (state, action) => {
             state.dataTransactionNonCashInternal = state.dataTransactionNonCashInternal.filter(
@@ -411,23 +409,22 @@ export const checkTransactionNonCashInternalSlice = createSlice({
     initialState: initialCheckTransactionNonCashInternalState,
     reducers: {
         checkTransactionNonCashSuccess: (state, action) => {
-            state.checkTransactionNonCashId = action.payload.transaction_id;
-            state.statusCheckTransactionNonCash = action.payload.status_payment_gateway;
-            state.errorCheckTransactionNonCash = null;
-            state.loadingCheckTransactionNonCash = false;
+            state.checkTransactionNonCashId = action.payload.transaction_id
+            state.statusCheckTransactionNonCash = action.payload.status_payment_gateway
+            state.errorCheckTransactionNonCash = null
         },
         checkTransactionNonCashError: (state, action) => {
-            state.errorCheckTransactionNonCash = action.payload.error;
-            state.statusCheckTransactionNonCash = null;
-            state.loadingCheckTransactionNonCash = false;
+            state.errorCheckTransactionNonCash = action.payload
+            state.statusCheckTransactionNonCash = null
+            state.checkTransactionNonCashId = null
         },
         setLoadingCheckTransactionNonCash: (state, action) => {
-            state.loadingCheckTransactionNonCash = action.payload;
+            state.loadingCheckTransactionNonCash = action.payload
         },
         resetCheckTransactionNonCash: (state) => {
-            state.checkTransactionNonCashId = null;
-            state.statusCheckTransactionNonCash = null;
-            state.errorCheckTransactionNonCash = null;
+            state.checkTransactionNonCashId = null
+            state.statusCheckTransactionNonCash = null
+            state.errorCheckTransactionNonCash = null
         }
     }
 })
@@ -436,7 +433,7 @@ export const checkTransactionNonCashInternalSlice = createSlice({
 const initialGetAllCreateTransactionInternal = {
     dataGetAllCreateTransactionInternal: [], 
     errorGetAllCreateTransactionInternal: null,
-    loadingGetAllCreateTransactionInternal: null, 
+    loadingGetAllCreateTransactionInternal: false, 
 } 
 export const getAllCreateTransactionInternalSlice = createSlice({
     name: 'getAllCreateTransactionInternal', 
@@ -454,12 +451,71 @@ export const getAllCreateTransactionInternalSlice = createSlice({
             state.loadingGetAllCreateTransactionInternal = action.payload
         },
         addGetAllCreateTransactionInternal: (state, action) => {
+            if (!Array.isArray(state.dataGetAllCreateTransactionInternal)) {
+                state.dataGetAllCreateTransactionInternal = []
+            }
             state.dataGetAllCreateTransactionInternal.push(action.payload)
         }, 
-        removeTransactionOnGoingById: (state, action) => {
+        removeGetAllCreateTransactionById: (state, action) => {
             state.dataGetAllCreateTransactionInternal = state.dataGetAllCreateTransactionInternal.filter(
                 (item) => item.id !== action.payload
             )
         },
+    }
+})
+
+
+const initialGetPaymentMethodsInternalState = {
+    dataPaymentMethodInternal: [],
+    taxRateInternal: 0,
+    errorPaymentMethodsInternal: null,
+    loadingPaymentMethodsInternal: false,
+}
+export const getPaymentMethodsInternalSlice = createSlice({
+    name: "dataPaymentMethodInternal",
+    initialState: initialGetPaymentMethodsInternalState,
+    reducers: {
+        setLoadingGetPaymentMethodsInternal: (state, action) => {
+            state.loadingPaymentMethodsInternal = action.payload
+        },
+        fetchSuccessGetPaymentMethodsInternal: (state, action) => {
+            state.dataPaymentMethodInternal = action.payload?.payment_methods
+            state.taxRateInternal = action.payload?.tax_rate
+            state.errorPaymentMethodsInternal = null
+        },
+        fetchErrorGetPaymentMethodsInternal: (state, action) => {
+            state.errorPaymentMethodsInternal = action.payload.error
+        }
+    }
+})
+
+
+const initialAllDataOrderInternalState = {
+    dataOrderIntenal: [],
+    errorDataOrderIntenal: null,
+    loadingDataOrderInternal: false
+} 
+export const getAllDataOrderInternalSlice = createSlice({
+    name: "dataOrderInternal",
+    initialState: initialAllDataOrderInternalState,
+    reducers: {
+        setLoadingGetAllDataOrderInternal: (state, action) => {
+            state.loadingDataOrderInternal = action.payload
+        },
+        fetchSuccessGetAllDataOrderInternal: (state, action) => {
+            state.dataOrderIntenal = action.payload
+            state.errorDataOrderIntenal = null
+        },
+        fetchErrorGetAllDataOrderInternal: (state, action) => {
+            state.errorDataOrderIntenal = action.payload.error
+            state.dataOrderIntenal = []
+        }, 
+        removeDataOrderInternalById: (state, action) => {
+            const idToRemove = action.payload
+            state.dataOrderIntenal = state.dataOrderIntenal.filter(item => item.id !== idToRemove)
+        },
+        addDataOrderInternal: (state, action) => {
+            state.dataOrderIntenal.push(action.payload);
+        }
     }
 })

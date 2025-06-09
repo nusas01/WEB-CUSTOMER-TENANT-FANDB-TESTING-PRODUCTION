@@ -13,6 +13,8 @@ import {
     transactionNonCashOnGoingInternalSlice,
     checkTransactionNonCashInternalSlice,
     transactionHistoryInternalSlice,
+    getPaymentMethodsInternalSlice,
+    getAllCreateTransactionInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -135,7 +137,7 @@ export const fetchTransactionHistoryCustomer = (page) => {
     }
 }
 
-const {setLoadingGetPaymentMethodsCustomer, setTaxRate, fetchSuccessGetPaymentMethodsCustomer, fetchErrorGetPaymentMethodsCustomer} = getPaymentMethodsCustomerSlice.actions;
+const {setLoadingGetPaymentMethodsCustomer, fetchSuccessGetPaymentMethodsCustomer, fetchErrorGetPaymentMethodsCustomer} = getPaymentMethodsCustomerSlice.actions;
 export const fetchPaymentMethodsCustomer = () => {
     return async (dispatch) => {
         dispatch(setLoadingGetPaymentMethodsCustomer(true))
@@ -148,7 +150,6 @@ export const fetchPaymentMethodsCustomer = () => {
         })
         console.log(response)
         dispatch(fetchSuccessGetPaymentMethodsCustomer(response?.data))
-        dispatch(setTaxRate(response?.data?.tax_rate))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -271,8 +272,7 @@ export const fetchTransactionCashOnGoingInternal = () => {
                     'API_KEY': process.env.REACT_APP_API_KEY
                   },
             })
-            dispatch(fetchSuccessTransactionCashInternal(response.data))
-            console.log("apa yang terjadi ini ouyyyyyyyyyyyyhu: ", response)
+            dispatch(fetchSuccessTransactionCashInternal(response.data || []))
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
@@ -300,7 +300,7 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
                     'API_KEY': process.env.REACT_APP_API_KEY
                   },
             })
-            dispatch(fetchSuccessTransactionNonCashInternal(response?.data))
+            dispatch(fetchSuccessTransactionNonCashInternal(response?.data || []))
             console.log("apa yang terjadi ini di transaction non cash: ", response)
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -371,15 +371,9 @@ export const checkTransactionNonCashInternal = (data) => {
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
-            }
+            } 
             console.log(error)
-            console.log("apa yang terjadi ini di transaction non cash: ", error.response)
-
-            const message = {
-                error: error.response.message,
-                statusCode: error.response.status,
-            }
-            dispatch(checkTransactionNonCashError(message))
+            dispatch(checkTransactionNonCashError(error.response?.data?.error))
         } finally {
             dispatch(setLoadingCheckTransactionNonCash(false))
         }
@@ -387,8 +381,8 @@ export const checkTransactionNonCashInternal = (data) => {
 }
 
 
-const {fetchSuccessGetAllCreateTransactionInternal, fetchErrorGetAllCreateTransactionInternal, setLoadingFetchGetAllCreateTransactionInternal} = transactionHistoryInternalSlice.actions
-export const fetchGetAllCreateTransactionInternal = (data) => {
+const {fetchSuccessGetAllCreateTransactionInternal, fetchErrorGetAllCreateTransactionInternal, setLoadingFetchGetAllCreateTransactionInternal} = getAllCreateTransactionInternalSlice.actions
+export const fetchGetAllCreateTransactionInternal = () => {
     return async (dispatch) => {
         dispatch(setLoadingFetchGetAllCreateTransactionInternal(true))
         try {
@@ -396,8 +390,7 @@ export const fetchGetAllCreateTransactionInternal = (data) => {
                 withCredentials: true,
                 headers: {
                     'API_KEY': process.env.REACT_APP_API_KEY
-                  },
-                params: data,
+                  }
             })
             dispatch(fetchSuccessGetAllCreateTransactionInternal(response.data))
             console.log("apa yang terjadi ini di history vhoufvhouf: ", response.data)
@@ -423,3 +416,29 @@ export const fetchGetAllCreateTransactionInternal = (data) => {
 }
 
 
+const {setLoadingGetPaymentMethodsInternal, fetchSuccessGetPaymentMethodsInternal, fetchErrorGetPaymentMethodsInternal} = getPaymentMethodsInternalSlice.actions;
+export const fetchPaymentMethodsInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingGetPaymentMethodsInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_PAYMENT_METHODS_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log(response)
+        dispatch(fetchSuccessGetPaymentMethodsInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        const message = {
+          error: error.response?.data?.error || "Unknown error",
+        }
+        dispatch(fetchErrorGetPaymentMethodsInternal(message))
+      } finally {
+        dispatch(setLoadingGetPaymentMethodsInternal(false))
+      }
+    }
+}

@@ -206,7 +206,7 @@ export default function ChangePassword() {
                         <button className="button" type="submit">Continue</button>
                     </form>
 
-                    {spinner && <SpinnerFixed />}
+                    {spinner && <SpinnerFixed colors={'fill-green-500'}/>}
                 </div>
             </div>
         </div>

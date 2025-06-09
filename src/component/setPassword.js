@@ -168,7 +168,7 @@ export default function SetPassword() {
                     </form>
                     </div>
 
-                    {spinner && <SpinnerFixed />}
+                    {spinner && <SpinnerFixed colors={'fill-green-500'}/>}
                 </div>
             </div>
         </div>

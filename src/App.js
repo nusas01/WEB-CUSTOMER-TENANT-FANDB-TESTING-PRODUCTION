@@ -24,7 +24,7 @@ import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRout
 import Verification from './component/verification'
 import { use, useEffect } from 'react'
 import SetUsername from './component/setUsername'
-import SSEContainer from './actions/sse'
+import {UsedSSEContainer} from './actions/sse'
 import ServiceRenewalNotice from './component/serviceRenewal'
 import Cashier from './casier/cashier'
 
@@ -105,7 +105,8 @@ function App() {
   return (
     <Router>
       <div>
-        <SSEContainer />
+        <UsedSSEContainer />
+
         <Routes>
           <Route path='/' element={<Home/>}/>
           <Route path='/cart' element={<Cart/>}/>

@@ -1,9 +1,10 @@
 import "../style/add.css"
 import { useState } from 'react';
 import { useDispatch } from "react-redux";
-import { addItem, deleteItem, updateItem, clearCart } from "../reducers/cartSlice";
+import { addItem, addItemCashier } from "../reducers/cartSlice";
 
-export const AddProductToCart = ({ onClose, id, name, harga, image, description }) => {
+// type CUSTOMER, INTERNAL
+export const AddProductToCart = ({ onClose, id, name, harga, image, description, type }) => {
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const amountPrice = quantity * harga
@@ -13,9 +14,14 @@ export const AddProductToCart = ({ onClose, id, name, harga, image, description 
 
   const dispatch = useDispatch();
 
-  const handleAddItem = (name, harga, image, description, amountPrice, quantity) => {
-      const newItem = {id, name, harga, image, description, notes, amountPrice, quantity};
-      dispatch(addItem(newItem));
+  const handleAddItem = (name, harga, image, amountPrice, quantity) => {
+      const newItem = {id, name, harga, image, notes, amountPrice, quantity}
+      if (type === "CUSTOMER") {
+        dispatch(addItem(newItem))
+      }
+      if (type === "INTERNAL") {
+        dispatch(addItemCashier(newItem))
+      }
       onClose()
   };
 
@@ -102,8 +108,8 @@ export const AddProductToCart = ({ onClose, id, name, harga, image, description 
             Batal
           </button>
           <button
-            className="px-6 text-sm py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            onClick={() => handleAddItem(name, harga, image, description, amountPrice, quantity)}
+            className={`px-6 text-sm py-2 text-white rounded-lg ${type === "CUSTOMER" ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 hover:bg-gray-900'} transition-colors`}
+            onClick={() => handleAddItem(name, harga, image, amountPrice, quantity)}
             style={{padding: '10px 15px'}}
           >
             Tambah ke Keranjang - Rp {(amountPrice).toLocaleString('id-ID')}

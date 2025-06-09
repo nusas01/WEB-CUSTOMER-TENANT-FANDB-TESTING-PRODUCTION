@@ -257,6 +257,7 @@ function Home() {
             harga={productData.harga} 
             image={productData.image} 
             description={productData.description} 
+            type={"CUSTOMER"}
           />
         )}
 
@@ -265,7 +266,7 @@ function Home() {
        )}      
 
        { spinner && (
-        <SpinnerFixed/>
+        <SpinnerFixed colors={'fill-green-500'}/>
        )}
       
     </div>

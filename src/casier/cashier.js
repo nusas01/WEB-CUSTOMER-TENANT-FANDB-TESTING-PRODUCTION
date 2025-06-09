@@ -1,338 +1,1092 @@
 import Sidebar from "../component/sidebar"
-import { useState } from "react"
-import {Plus, Search} from "lucide-react"
-
+import { useEffect, useRef, useState } from "react"
+import {Plus, Search, Eye, X, CheckCircle} from "lucide-react"
+import {
+    fetchPaymentMethodsInternal, 
+    fetchProductsCustomer,
+    fetchGetAllCreateTransactionInternal,
+    checkTransactionNonCashInternal,
+} from "../actions/get"
+import {
+    createTransactionInternal
+} from "../actions/post"
+import {
+    createTransactionInternalSlice
+} from "../reducers/post"
+import {
+    cartCashierSlice
+} from "../reducers/cartSlice"
+import {
+    getAllCreateTransactionInternalSlice,
+    checkTransactionNonCashInternalSlice,
+} from "../reducers/get"
+import { useDispatch, useSelector } from "react-redux"
+import {SpinnerRelative, SpinnerFixed} from "../helper/spinner"
+import { id } from "date-fns/locale"
+import { AddProductToCart } from "../component/add"
+import { Trash2 } from 'lucide-react'; // Pastikan Anda mengimpor ikon yang diperlukan
+import  { addItemCashier, deleteItemCashier, updateItemCashier, clearCartCashier } from "../reducers/cartSlice"
+import { Tuple } from "@reduxjs/toolkit"
+import { validateEmail } from "../helper/validate"
+import {ErrorAlert, ConfirmationModal, PaymentSuccessMessage, SuccessAlertPaymentCash} from "../component/alert"
+import {QRCodeCanvas} from 'qrcode.react'
+import { format } from 'date-fns'
+import ImagePaymentMethod from '../helper/imagePaymentMethod'
+import { CountDownRemoveData } from '../helper/countDown'
+import { paymentSuccessTransactionCashierSlice } from '../reducers/notif'
 
 export default function Cashier() {
+    const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Cashier")
+    const cartRef = useRef(null)
+    const [error, setError] = useState(false)
+
+    // error check status transaction to server and payment gateway
+    const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
+    const { errorCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
+
+    useEffect(() => {
+        if (errorCheckTransactionNonCash) {
+            setError(true)
+            setTimeout(() => {
+                setError(false)
+                dispatch(resetCheckTransactionNonCash())
+            }, 3000)
+        }
+    }, [errorCheckTransactionNonCash])
 
     return (
-        <div className="flex">
-            <div className="w-1/10 min-w-[250px]">
-                <Sidebar activeMenu={activeMenu}/>
-            </div>
+        <>
+            { error && (
+                <ErrorAlert message={"there was an error on our server, we are fixing it"} />
+            )}
 
-            <div className="flex-1">
-                {/* header  */}
-                <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
-                    <p className="font-semibold mx-4 text-lg">Cashier</p>
+            <div className="flex">
+                <div className="w-1/10 min-w-[250px]">
+                    <Sidebar activeMenu={activeMenu}/>
                 </div>
 
-            <div className="p-5">
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="p-4 cursor-pointer bg-white rounded-lg shadow-md">
-                        <CartCashier/>
+                <div className="flex-1">
+                    {/* header  */}
+                    <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
+                        <p className="font-semibold mx-4 text-lg text-gray-800">Cashier</p>
                     </div>
-                    <div className="p-4 cursor-pointer bg-white rounded-lg shadow-md">
 
+                <div className="flex flex-col gap-6 p-5">
+                    <div className="p-4 bg-white rounded-lg shadow-md">
+                        <ComponentOrderCashier/>
+                    </div>
+                    
+                    <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
+                        <ComponentCartCashier cartRef={cartRef}/>
                     </div>
                 </div>
+                </div>
             </div>
-            </div>
-        </div>
+        </>
     )
 } 
 
-const products1 = [
-    {
-        id: 1,
-        name: "Product 1",
-        image: "https://via.placeholder.com/150",
-        quantity: 1,
-        price: 1000,
-        amount: 1000,
-    },
-    {
-        id: 2,
-        name: "Product 2",
-        image: "https://via.placeholder.com/150",
-        quantity: 2,
-        price: 2000,
-        amount: 4000,
-    },
-    {
-        id: 3,
-        name: "Product 3",
-        image: "https://via.placeholder.com/150",
-        quantity: 3,
-        price: 3000,
-        amount: 9000,
-    },
-]
+const ComponentCartCashier = ({cartRef}) => {
+    const [eventNotes, setEventNotes] = useState(0)
+    const dispatch = useDispatch()
+    const dropdownRef = useRef(null)
+    const [isModalOpenDetailResponse, setIsModalOpenDetailResponse] = useState(false)
+    const [selectedTransaction, setSelectedTransaction] = useState(null) 
+    const [openModeladdProduct, setOpenModelAddProduct] = useState(false)
+    const [spinnerRelative, setSpinnerRelative] = useState(false)
+    const [spinnerFixed, setSpinnerFixed] = useState(false)
+    const [openPaymentMethod, setOpenPaymentMethod] = useState(false)
+    const [feeTransaction, setFeeTransaction] = useState(0)
+    const [customerEmail, setCustomerEmail] = useState('')
+    const [emailError, setEmailError] = useState()
+    const [modelMoneyReceved, setModelMoneyReceved] = useState(false)
+    const [error, setError] = useState(false)
+    const [ dataCart, setDataCart ] = useState({
+      payment_method: '',
+      fee: 0, 
+      tax: 0,
+      channel_code: '',
+      payment_method_id: null, // jika payment method tidak cash
+      amount_price: 0,
+      money_received: 0, // jika payment method cash 
+    })
 
-const CartCashier = ({data}) => {
-    const [addProduct, setAddProduct] = useState(false);
+    // handle get payment method 
+    const {dataPaymentMethodInternal, taxRateInternal, loadingPaymentMethodsInternal} = useSelector((state) => state.persisted.paymentMethodsInternal)
+    useEffect(() => {
+        if (dataPaymentMethodInternal.length === 0 || !dataPaymentMethodInternal) {
+            dispatch(fetchPaymentMethodsInternal())
+        }
+    }, [dataPaymentMethodInternal])
+
+    useEffect(() => {
+        setSpinnerRelative(loadingPaymentMethodsInternal)
+    }, [loadingPaymentMethodsInternal])
+
+    useEffect(() => {
+        if (validateEmail(customerEmail)) {
+            setEmailError()
+        }
+    }, [customerEmail])
+
+
+    // CLOSE ON OUTSIDE CLICK
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setOpenPaymentMethod(false);
+                setIsModalOpenDetailResponse(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+
+        return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
+
+
+     useEffect(() => {
+        if (openPaymentMethod && cartRef?.current) {
+            cartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+    }, [openPaymentMethod])
+
+    const {subTotal, items } = useSelector((state) => state.cartCashierState)
+
+
+    const handleChoicePaymentMethod = ({id, paymentMethod, channelCode, fee}) => {
+        setDataCart((prev) => ({
+            ...prev, 
+            payment_method_id: id,
+            payment_method: paymentMethod,
+            channel_code: channelCode,
+        }))
+
+        if (paymentMethod === "CASH") {
+            setModelMoneyReceved(true)
+        }
+
+        
+        if (paymentMethod === "QR") {
+            setFeeTransaction(fee)
+            const feeTransaction = fee * subTotal
+            setDataCart((prev) => ({
+            ...prev, 
+            fee: feeTransaction,
+            amount_price: subTotal + feeTransaction
+            }))
+            return
+        } 
+
+        if (paymentMethod === "VA") {
+            setDataCart((prev) => ({
+            ...prev, 
+            fee: fee,
+            amount_price: subTotal + fee
+            }))
+            return
+        }
+
+    }
+
+    useEffect(() => {
+        const tax = taxRateInternal * subTotal
+        if (dataCart.payment_method === "QR") {
+            const fee = feeTransaction * subTotal
+            setDataCart((prev) => ({
+                ...prev,
+                amount_price: subTotal + tax + fee,
+                fee: fee,
+                tax: tax
+            })) 
+        } else {
+            setDataCart((prev) => ({
+            ...prev,
+            amount_price: subTotal + tax + dataCart.fee,
+            tax: tax,
+        }))
+        }
+    }, [subTotal])
+
+
+    const handleDeleteItem = (id) => {
+        dispatch(deleteItemCashier(id))
+        // setIdModelNotifDelete('')
+        // if (items.length <= 1) {
+        //     setIsModelInputNumberEwallet(false)
+        //     setPaymentMethod(null)
+        //     setChannelCode()
+        //     setFee(0)
+        //     setFeeTransaction(0)
+        //     setIsPaymentMethod(false)
+        // }
+    }
+
+
+    const handleQuantityChange = (quantity, id, harga) => {
+        if (quantity === 0 || isNaN(quantity)) {
+            quantity = '';
+        }
+        const amountPrice = quantity * harga;
+        const item = {id, amountPrice, quantity}
+        dispatch(updateItemCashier(item))
+    }
+
+    const handleUpdateIncerement = (id, harga, quantity) => {
+        quantity = Number(quantity) + 1;
+        const amountPrice = quantity * harga;
+        const item = {id, amountPrice, quantity};
+        dispatch(updateItemCashier(item));
+    }
+
+    const handleUpdateDecrement = (id, harga, quantity) => {
+        quantity = Number(quantity) - 1;
+        if (quantity === 0) {
+            // setIdModelNotifDelete(id);
+            quantity = 1;
+        }
+        const amountPrice = quantity * harga;
+        const item = {id, amountPrice, quantity}
+        dispatch(updateItemCashier(item))
+    }
+
+    const handleUpdateNotes = (notes, id) => {
+        const item  = {id, notes}
+        dispatch(updateItemCashier(item))
+        setEventNotes(eventNotes + 1)
+    }
+
+
+    const handleChangeMoneyReceved = (e) => {
+        const raw = e.target.value.replace(/\./g, '')
+
+        // Hanya izinkan angka saja
+        if (!/^\d*$/.test(raw)) return
+
+        const numericValue = parseInt(raw, 10) || 0
+
+        setDataCart((prev) => ({
+            ...prev,
+            money_received: numericValue,
+        }))
+    }
+
     
+    const { clearCartCashier } = cartCashierSlice.actions
+    const {successCreateTransactionInternal,dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
+    const { resetCreateTransactionInternal } = createTransactionInternalSlice.actions
+
+    useEffect(() => {
+        setSpinnerFixed(loadingCreateTransactionInternal)
+    }, [loadingCreateTransactionInternal])
+
+
+    useEffect(() => {
+        if (errorCreateTransactionInternal) {
+            setError(true)
+
+            const timer = setTimeout(() => {
+                setError(false)
+                dispatch(resetCreateTransactionInternal())
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
+        }
+    }, [errorCreateTransactionInternal])
+
+    useEffect(() => {
+        if (successCreateTransactionInternal) {
+            setSelectedTransaction(dataSuccessCreateTransactionInternal)
+            setIsModalOpenDetailResponse(true)
+            dispatch(clearCartCashier())
+            setCustomerEmail('')
+            setDataCart({
+                payment_method: '',
+                fee: 0,
+                tax: 0,
+                channel_code: '',
+                payment_method_id: null,
+                amount_price: 0,
+                money_received: 0,
+            })
+        }
+    }, [successCreateTransactionInternal])
+
+    const handleCreateTransaction = () => {
+        if (items.length === 0 || !items) {
+            setOpenModelAddProduct(true)
+            return
+        }
+        
+        if (dataCart.payment_method === "") {
+            setOpenPaymentMethod(true)
+            return
+        }
+
+        if (customerEmail === '' || !validateEmail(customerEmail)) {
+            setEmailError('Format email tidak valid.')
+            return
+        }
+
+        if (dataCart.payment_method === "CASH" && dataCart.money_received < dataCart.amount_price) {
+            return 
+        }
+
+        const dataOrders = items.map(product => {
+            return {
+                product_id: product.id,
+                quantity: product.quantity,
+                notes: product.notes || "", 
+                name: product.name,
+            };
+        });
+
+        const data = {
+            payment_method: dataCart.payment_method,
+            channel_code: dataCart.channel_code,
+            payment_method_id: dataCart.payment_method_id, 
+            amount_price: dataCart.amount_price,
+            money_received: dataCart.money_received,
+            email: customerEmail,
+            products: dataOrders
+        }        
+
+        dispatch(createTransactionInternal(data))
+        console.log("create transaction: ", data)
+    }
+
+    const closeModalDetailResponse = () => {
+        setIsModalOpenDetailResponse(false)
+        setSelectedTransaction(null)
+        dispatch(resetCreateTransactionInternal())
+    }
+
+
+
+    // handle notif transaction non cash berhasil dibayarkan
+    // dan secara otomatis menghapus data 
+    const [modelNotifPaymentSuccess, setModelNotifPaymentSuccess] = useState(false)
+    const {removePaymentSuccessTransactionCashier} = paymentSuccessTransactionCashierSlice.actions
+    const {dataTransactionCashierSuccess} = useSelector((state) => state.paymentSuccessTransactionCashierState)
+
+    useEffect(() => {
+        if (dataTransactionCashierSuccess) {
+            setModelNotifPaymentSuccess(true)
+        }
+    }, [dataTransactionCashierSuccess])
+
+    const modelCloseNotifPaymentSuccess = () => {
+        setModelNotifPaymentSuccess(false)
+        dispatch(removePaymentSuccessTransactionCashier())
+    }
+
     return (
         <div>
-            {/* add product */}
-            <div className="mb-10">
-                <div onClick={() => setAddProduct(true)} className="rounded-lg px-5 flex space-x-2 py-1 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white">
-                    <Plus/>
-                    <p>Product</p>
-                </div>
-            </div>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                {/* <PaymentSuccessMessage data={dataTransactionCashierSuccess} onClose={modelCloseNotifPaymentSuccess} message="Transaksi berhasil!" subMessage={"Pembayaran berhasil! customer berhasil membayar."}/> */}
+                
+                {/* model setalah create transaction dengan method tidak cash */}
+                <PaymentDetailsModal
+                    isOpen={isModalOpenDetailResponse}
+                    transaction={selectedTransaction}
+                    onClose={closeModalDetailResponse}
+                    modalRef={dropdownRef}
+                />
 
-            <div className="flex justify-between items-center">
-                {/* Order Type Dropdown */}
-                <div className="relative group">
-                    <button className="flex items-center justify-between w-48 px-2 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                    <span>Choose Order Type</span>
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                    </button>
-                    
-                    <div className="absolute z-10 hidden w-48 mt-1 bg-white rounded-md shadow-lg group-hover:block">
-                        <div className="py-1">
-                            <button className="flex items-center w-full px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-100">
-                            <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
-                            Dine In
-                            </button>
-                            <button className="flex items-center w-full px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-100">
-                            <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
-                            Takeaway
-                            </button>
-                        </div>
-                    </div>
+                {/* spinner */}
+                { spinnerFixed && (
+                    <SpinnerFixed colors={'fill-gray-900'}/>
+                )}
+
+
+                {/* alertError */}
+                { error && (
+                    <ErrorAlert message={"Somthing error in our server"}/>
+                )}
+
+                {/* add product */}
+                <div
+                    onClick={() => setOpenModelAddProduct(true)}
+                    className="w-[15%] rounded-lg px-5 py-1 flex items-center justify-center space-x-2 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white transition-colors duration-200"
+                >
+                    <Plus size={20} />
+                    <p className="text-base">Product</p>
                 </div>
 
                 {/* Payment Method Dropdown */}
-                <div className="relative group">
-                    <button className="flex items-center justify-between w-56 px-2 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                    <span>Choose Payment Method</span>
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                <div className="relative w-[25%]" ref={dropdownRef}>
+                    <button
+                        className="flex items-center justify-between w-full md:w-56 px-4 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
+                        onClick={() => setOpenPaymentMethod((prev) => !prev)}
+                    >
+                        <span>{dataCart.channel_code === '' ? 'Choose Payment Method' : dataCart.channel_code}</span>
+                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
                     </button>
-                    
-                    <div className="absolute right-0 z-10 hidden w-64 mt-1 bg-white rounded-md shadow-lg group-hover:block">
-                        <div className="py-1">
-                            {['CASH', 'BCA', 'BNI', 'BRI', 'Mandiri', 'BJB', 'Permata', 'QRIS'].map((method) => (
-                            <button 
-                                key={method} 
-                                className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                            >
-                                <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
-                                {method === 'QRIS' ? (
-                                    <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h8v2H8V8zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/>
-                                    </svg>
-                                ) : (
-                                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+
+                    {openPaymentMethod && (
+                        <div className="absolute right-0 z-10 w-full md:w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div className="py-1">
+                                {!spinnerRelative && (
+                                    <>
+                                        {dataPaymentMethodInternal.map((method) => {
+                                            const isSelected = method.name === dataCart.channel_code;
+                                            return (
+                                                <button
+                                                    key={method.id}
+                                                    className={`flex items-center w-full px-4 py-2 text-sm text-left ${isSelected ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
+                                                    onClick={() =>
+                                                        handleChoicePaymentMethod({
+                                                            id: method.id,
+                                                            paymentMethod: method.type,
+                                                            channelCode: method.name,
+                                                            fee: method.fee
+                                                        })
+                                                    }
+                                                >
+                                                    <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
+                                                        <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                                    </div>
+                                                    {method.name}
+                                                    {isSelected && (
+                                                        <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+
+                                        <button
+                                            onClick={() => handleChoicePaymentMethod({ paymentMethod: "CASH", channelCode: "CASH", fee: 0 })}
+                                            className={`flex items-center w-full px-4 py-2 text-sm text-left ${dataCart.channel_code === 'CASH' ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
+                                        >
+                                            <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
+                                                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                            </div>
+                                            CASH
+                                            {dataCart.channel_code === 'CASH' && (
+                                                <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    </>
                                 )}
-                                </div>
-                                {method}
-                            </button>
-                            ))}
+
+                                {spinnerRelative && <SpinnerRelative />}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
-            <div className="overflow-hidden mt-5">
-                <table className="w-full text-left">
-                    <thead className="rounded-lg bg-gray-100">
+            <div className="overflow-x-auto mt-5 rounded-lg border border-gray-200">
+                <table className="min-w-full text-left divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
                         <tr>
-                        {["Image", "Product", "Quantity", "Price", "Cost"].map((header) => (
-                            <th key={header} className="py-3 px-4 font-medium text-sm">{header}</th>
-                        ))}
+                            {["Image", "Product", "Quantity", "Price", "Amount"].map((header) => (
+                                <th key={header} className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">
+                                    {header}
+                                </th>
+                            ))}
+                            <th className="py-3 px-4 font-medium text-sm text-gray-600"></th> {/* For delete icon */}
                         </tr>
                     </thead>
-                    <tbody>
-                        {products1.map((t, index) => (
-                            <tr key={index} className="bg-white text-black border-gray-700 hover:bg-gray-100 transition">
-                            <td className="py-3 px-4 ]"><img src={require("../image/443acfe1-aaf4-4c06-9858-74a80fb5c6fa.jpg")} className="w-[55px] h-[55px]"/></td>
-                            <td className="py-3 px-4">{t.name}</td>
-                            <td className="py-3 px-4">{t.quantity}</td>
-                            <td className="py-3 px-4">{t.price}</td>
-                            <td className="py-3 px-4">{t.amount}</td>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {items.length > 0 ? (
+                            items.map((t, index) => (
+                                <tr key={index} className="text-black hover:bg-gray-50 transition-colors duration-150">
+                                    <td className="py-3 px-4">
+                                        <div className="w-[62px] h-auto aspect-[4/3]">
+                                            <img src={`/image/${t.image}`} alt={t.name} className="w-full h-full object-cover rounded-md" />
+                                        </div>
+                                    </td>
+                                    <td className="py-3 px-4 text-sm font-medium text-gray-800">{t.name}</td>
+                                    <td className="py-3 px-4 align-middle">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center rounded-sm"
+                                                onClick={() => handleUpdateDecrement(t.id, t.harga, t.quantity)}
+                                                disabled={t.quantity === 1}
+                                                aria-label="Decrease quantity"
+                                            >
+                                                <span className="text-sm font-semibold">−</span>
+                                            </button>
+
+                                            <input
+                                                type="number"
+                                                className="w-8 h-6 text-center text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                value={t.quantity}
+                                                onChange={(e) => handleQuantityChange(Number(e.target.value), t.id, t.harga)}
+                                                min="1"
+                                                aria-label="Product quantity"
+                                            />
+
+                                            <button
+                                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 flex items-center justify-center rounded-sm"
+                                                onClick={() => handleUpdateIncerement(t.id, t.harga, t.quantity)}
+                                                aria-label="Increase quantity"
+                                            >
+                                                <span className="text-sm font-semibold">+</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="py-3 px-4 text-sm text-gray-700">Rp {t.harga.toLocaleString("id-ID")}</td>
+                                    <td className="py-3 px-4 text-sm font-medium text-gray-800">Rp {t.amountPrice.toLocaleString("id-ID")}</td>
+                                    <td className="py-3 px-4 text-center">
+                                        <button
+                                            onClick={() => handleDeleteItem(t.id)}
+                                            className="text-red-500 hover:text-red-700 transition-colors duration-150"
+                                            aria-label="Delete item"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="6" className="px-6 py-12 text-center bg-white">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <div className="mb-5 text-gray-300">
+                                            <i className="fas fa-shopping-bag text-6xl"></i>
+                                        </div>
+                                        <h3 className="text-xl font-medium text-gray-800 mb-2">Keranjang Belanja Kosong</h3>
+                                        <p className="text-gray-500 max-w-md mb-6 text-sm">
+                                            Tambahkan produk ke keranjang Anda untuk memulai belanja.
+                                        </p>
+                                        <div
+                                            onClick={() => setOpenModelAddProduct(true)}
+                                            className="rounded-lg px-5 flex items-center space-x-2 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors duration-200"
+                                        >
+                                            <p className="text-base">Lihat Product</p>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                     <tfoot>
-                        <tr className="border-t border-gray-700 border-b">
-                            <td colSpan="4" className="py-3 px-4 font-medium">Subtotal</td>
-                            <td className="font-medium">IDR 20000</td>
+                        <tr className="border-t border-gray-300">
+                            <td colSpan="4" className="py-3 px-4 font-medium text-gray-700 text-base">Subtotal</td>
+                            <td className="font-medium text-gray-800 text-base">Rp {subTotal.toLocaleString("id-ID")}</td>
+                            <td></td> {/* Empty cell for alignment */}
                         </tr>
                     </tfoot>
                 </table>
             </div>
 
-            <div className="flex justify-between mt-5">
-                <p>Fulfillment Cost</p>
-                <div className="bg-blue-100 rounded-lg p-5">
-                    <div className="flex space-x-80 justify-between">
+            <div className="flex flex-col md:flex-row justify-between mt-5">
+                <p className="text-lg font-medium mb-2 md:mb-0 md:mr-4">Fulfillment Cost</p>
+                <div className="bg-blue-50 w-[50%] md:min-w-[45vh] rounded-lg px-5 py-3 border border-blue-200">
+                    <div className="flex text-gray-700 text-sm md:text-base justify-between mb-1">
                         <p>Subtotal</p>
-                        <p>150.000</p>
+                        <p>Rp {subTotal.toLocaleString("id-ID")}</p>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex text-gray-700 text-sm md:text-base justify-between mb-1">
                         <p>Payment Fee</p>
-                        <p>2.000</p>
+                        <p>Rp {dataCart.fee.toLocaleString("id-ID")}</p>
                     </div>
-                    <div className="flex justify-between">
-                        <p>pajak</p>
-                        <p>5.000</p>
+                    <div className="flex text-gray-700 text-sm md:text-base justify-between mb-3">
+                        <p>Pajak</p>
+                        <p>Rp {dataCart.tax.toLocaleString("id-ID")}</p>
                     </div>
-                    <div className="flex text-lg font-semibold justify-between">
+                    <div className="flex text-lg font-bold text-gray-900 justify-between border-t pt-2 border-gray-300">
                         <p>Total</p>
-                        <p>IDR 157.000</p>
+                        <p>Rp {dataCart.amount_price.toLocaleString("id-ID")}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="rounded-lg justify-center px-5 flex space-x-2 py-1 cursor-pointer mt-5 bg-gray-800 hover:bg-gray-900 text-white">
-                <p>Buy</p>
+            {/* New Email Input Section */}
+            <div className="mt-6 bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+                <label htmlFor="customer-email" className="block mb-2 text-sm font-medium text-gray-700">
+                    Email Pelanggan (Opsional)
+                </label>
+                <input
+                    id="customer-email"
+                    type="email"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="misal@contoh.com"
+                    value={customerEmail} 
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                />
+                {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
             </div>
 
 
-            {/* add product */}
-                {addProduct && <AddProduct onClose={() => setAddProduct(false)}/>}
+            {/*handle kembalian*/}
+            {dataCart.channel_code === 'CASH' && ( // Only show if payment method is CASH
+                <div className="mt-6 bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+                    <label htmlFor="money-received" className="block mb-2 text-sm font-medium text-gray-700">
+                        Masukkan uang diterima:
+                    </label>
+                    <input
+                        id="money-received"
+                        type="text"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        value={dataCart.money_received.toLocaleString("id-ID")}
+                        onChange={handleChangeMoneyReceved}
+                        placeholder="Masukkan jumlah uang"
+                    />
+
+                    <div className="mt-1 text-sm">
+                        {dataCart.money_received < dataCart.amount_price ? (
+                            <span className="text-red-500">
+                                Uang tidak cukup. Kurang sebesar Rp{' '}
+                                {(dataCart.amount_price - dataCart.money_received).toLocaleString('id-ID')}
+                            </span>
+                        ) : (
+                            <span className="text-green-500">
+                                Kembalian: Rp{' '}
+                                {(dataCart.money_received - dataCart.amount_price).toLocaleString('id-ID')}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <div className="flex justify-center mt-6">
+                <button onClick={() => handleCreateTransaction()} className="w-full md:w-auto rounded-lg px-8 py-1 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white font-semibold text-lg transition-colors duration-200">
+                    <p>Buy</p>
+                </button>
+            </div>
+
+
+            {/* add product modal */}
+            {openModeladdProduct && <ProductCashier onClose={() => setOpenModelAddProduct(false)} />}
         </div>
     )
 }
 
+const ProductCashier = ({onClose}) => {
+    const dispatch = useDispatch()
+    const [productData, setProductData] = useState()
+    const [showModelAddProduct, setShowModelAddProduct] = useState(false);
 
-const products = [
-    {
-      category: 'Makanan',
-      items: [
-        {
-          name: 'Sate Ayam merah maranggi',
-          harga: 45000,
-          image: 'sate-ayam.png',
-          description: 'Sate ayam dengan bumbu kacang.'
-        },
-        {
-          name: 'Nasi Goreng',
-          harga: 30000,
-          image: 'nasi-goreng.png',
-          description: 'Nasi goreng spesial dengan telur dan ayam.'
-        },
-        {
-          name: 'Mie Goreng',
-          harga: 25000,
-          image: 'mie-goreng.png',
-          description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-        },
-        {
-          name: 'Mie Aceh',
-          harga: 25000,
-          image: 'mie-goreng.png',
-          description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-        },
-        {
-          name: 'Nasi Padang',
-          harga: 25000,
-          image: 'mie-goreng.png',
-          description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-        },
-        {
-          name: 'Nasi Padang',
-          harga: 25000,
-          image: 'mie-goreng.png',
-          description: 'Mie goreng dengan sayuran segar dan bumbu rempah.'
-        }
-      ]
-    },
-    {
-      category: 'Minuman',
-      items: [
-        {
-          name: 'Es Teh Manis',
-          harga: 5000,
-          image: 'es-teh-manis.png',
-          description: 'Es teh manis dingin yang segar.'
-        },
-        {
-          name: 'Kopi Susu',
-          harga: 12000,
-          image: 'kopi-susu.png',
-          description: 'Kopi susu hangat yang nikmat.'
-        },
-        {
-          name: 'Jus Jeruk',
-          harga: 8000,
-          image: 'jus-jeruk.png',
-          description: 'Jus jeruk segar dengan rasa alami.'
-        }
-      ]
-    },
-    {
-      category: 'Tambahan',
-      items: [
-        {
-          name: 'Kerupuk',
-          harga: 3000,
-          image: 'kerupuk.png',
-          description: 'Kerupuk renyah pendamping makan.'
-        },
-        {
-          name: 'Sambal',
-          harga: 2000,
-          image: 'sambal.png',
-          description: 'Sambal pedas dengan rasa khas.'
-        },
-        {
-          name: 'Pencok',
-          harga: 4000,
-          image: 'pencok.png',
-          description: 'Pencok, sambal kacang dengan tempe goreng.'
-        }
-      ]
-    }
-  ]; 
 
-function AddProduct({onClose}) {
+    const { datas } = useSelector((state) => state.persisted.productsCustomer)
+      useEffect(() => {
+        if (datas.length === 0 || !datas) {
+          dispatch(fetchProductsCustomer())
+        }
+      }, [])
+
     const handleOutsideClick = (event) => {
         if (event.target.id === "modal-background") {
-            onClose();
+            onClose()
         }
-    };
+    }
+
+     const handleShowModalAddProduct = (show, product) => {
+        setProductData(product)
+        setShowModelAddProduct(show)
+    }
+
+    const { items } = useSelector((state) => state.cartCashierState)
+
+    console.log(items)
+    console.log(datas)
+
     return (
-       <div 
-            id="modal-background"
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-20"
-            onClick={handleOutsideClick} 
-        >
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto">
-                
-                {/* Input Search */}
-                <div className="relative w-full flex items-center mb-6">
-                <Search className="absolute left-3 text-gray-600" size={20} />
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"
-                />
-                </div>
-
-                {/* Produk */}
-                <div>
-                {products.map((item, index) => (
-                    <div id={item.category} className="mb-8" key={item.category}>  
-                    <p className="text-2xl font-bold text-gray-700 mb-4">{item.category}</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                        {item.items.map((item, idx) => (
-                        <div key={idx} className="border border-gray-300 rounded-lg p-4 shadow-sm bg-white">
-                            <img
-                            className="h-32 w-40 object-cover rounded-md mb-3"
-                            src={require(`../image/foto1.jpg`)}
-                            alt="Product"
+        <>
+            {!showModelAddProduct ? (
+                <div 
+                    id="modal-background"
+                    className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-20"
+                    onClick={handleOutsideClick} 
+                >
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto">
+                        
+                        {/* Input Search */}
+                        <div className="relative w-full flex items-center mb-6">
+                            <Search className="absolute left-3 text-gray-600" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"
                             />
-                            <div className="text-center">
-                            <p className="text-md font-semibold text-gray-800 line-clamp-2">{item.name}</p>
-                            <p className="text-sm text-gray-700">Rp {(item.harga).toLocaleString("id-ID")}</p>
-                            </div>
                         </div>
-                        ))}
-                    </div>
-                    </div>
-                ))}
-                </div>
 
-            </div>
+                        {/* Produk */}
+                        <div>
+                            {datas.length > 0 && datas.map((item) => (
+                                <div id={item.category_name} className="mb-8" key={item.category_name}>  
+                                    <p className="text-2xl font-bold text-gray-700 mb-4">{item.category_name}</p>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                                        {item.products.map((prd, idx) => {
+                                            const cartItem = items.find((cart) => cart.id === prd.product_id);
+
+                                            return (
+                                                <div 
+                                                    key={idx} 
+                                                    className="relative border border-gray-300 rounded-lg p-4 shadow-sm bg-white"
+                                                    onClick={() =>
+                                                        handleShowModalAddProduct(true, {
+                                                            id: prd.product_id,
+                                                            name: prd.name,
+                                                            harga: prd.price,
+                                                            image: prd.image,
+                                                        })
+                                                    }
+                                                >
+                                                    {/* BADGE */}
+                                                    {cartItem && (
+                                                        <span className="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">
+                                                            {cartItem.quantity}x
+                                                        </span>
+                                                    )}
+
+                                                    {/* GAMBAR */}
+                                                    <img
+                                                        className="h-32 w-40 object-cover rounded-md mb-3"
+                                                        src={`/image/${prd.image}`}
+                                                        alt={prd.name}
+                                                    />
+
+                                                    {/* INFO PRODUK */}
+                                                    <div className="text-center">
+                                                        <p className="text-md font-semibold text-gray-800 line-clamp-2">{prd.name}</p>
+                                                        <p className="text-sm text-gray-700">Rp {prd.price.toLocaleString("id-ID")}</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                    </div>
+                </div>
+            ) : (
+                <AddProductToCart 
+                    onClose={() => setShowModelAddProduct(false)} 
+                    id={productData.id}
+                    name={productData.name} 
+                    harga={productData.harga} 
+                    image={productData.image} 
+                    description={productData.description} 
+                    type={"INTERNAL"}
+                />
+            )}
+        </>
+    )
+}
+
+const ComponentOrderCashier = () => {
+    const dispatch = useDispatch()
+    const [loading, setLoading] = useState(true)
+    const [loadingFixed, setLoadingFixed] = useState(false)
+    const [error, setError] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedTransaction, setSelectedTransaction] = useState(null) // To store transaction for modal
+    const modelRef = useRef()
+
+    const {removeGetAllCreateTransactionById} = getAllCreateTransactionInternalSlice.actions
+    const {dataGetAllCreateTransactionInternal, errorGetAllCreateTransactionInternal, loadingGetAllCreateTransactionInternal} = useSelector((state) => state.persisted.getAllCreateTransactionInternal)
+
+    useEffect(() => {
+        if (!dataGetAllCreateTransactionInternal || dataGetAllCreateTransactionInternal?.length === 0) {
+            dispatch(fetchGetAllCreateTransactionInternal())
+        }
+    }, [])
+
+    useEffect(() => {
+        setLoading(loadingGetAllCreateTransactionInternal)
+    }, [loadingGetAllCreateTransactionInternal])
+
+
+    // Handle opening the modal
+    const handleViewPaymentDetails = (transaction) => {
+        setSelectedTransaction(transaction)
+        setIsModalOpen(true)
+    }
+
+    // Handle closing the modal
+    const closeModal = () => {
+        setIsModalOpen(false)
+        setSelectedTransaction(null)
+    }
+
+    // Close modal when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modelRef.current && !modelRef.current.contains(event.target)) {
+                closeModal()
+            }
+        };
+
+       
+        document.removeEventListener('mousedown', handleClickOutside);
+       
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [])
+
+
+
+    // handle check status transaction non cash 
+    const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
+    const {checkTransactionNonCashId, statusCheckTransactionNonCash, loadingCheckTransactionNonCash} = useSelector((state) => state.checkTransactionNonCashInternalState)
+    const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
+    const [allertPendingCheckTransactionNonCash, setAllertPendingCheckTransactionNonCash] = useState(false)
+
+    const handleCheckStatusPayment = (transactionId) => {
+        const data = {
+            transaction_id: transactionId,
+        }
+        dispatch(checkTransactionNonCashInternal(data))
+    }
+
+    useEffect(() => {
+        if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
+            dispatch(removeGetAllCreateTransactionById(checkTransactionNonCashId))
+            setAllertSuccessCheckTransactionNonCash(true)
+        } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
+            setAllertPendingCheckTransactionNonCash(true)
+        }
+    }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
+
+
+    useEffect(() => {
+        setLoadingFixed(loadingCheckTransactionNonCash)
+    }, [loadingCheckTransactionNonCash])
+
+    const handleCloseModelConfirmation = () => {
+        dispatch(resetCheckTransactionNonCash())
+        setAllertPendingCheckTransactionNonCash(false)
+        setAllertSuccessCheckTransactionNonCash(false)
+        setError(false)
+    }
+
+    return (
+        <div className="h-[40vh] w-full">
+            { allertSuccessCheckTransactionNonCash && (
+                <div ref={modelRef}>
+                    <ConfirmationModal 
+                        onClose={handleCloseModelConfirmation} 
+                        title={"Success!"}  
+                        message={"Verifikasi pembayaran non-tunai berhasil"}
+                        type={"success"}
+                    />
+                </div>
+            )}
+
+             { allertPendingCheckTransactionNonCash && (
+                <div ref={modelRef}>
+                    <ConfirmationModal 
+                        onClose={handleCloseModelConfirmation} 
+                        title={"Gagal!"}  
+                        message={"Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."}
+                        type={"error"}
+                    />
+                </div>
+            )}            
+
+            { loadingFixed && (
+                <SpinnerFixed colors={'fill-gray-800'}/>
+            )}
+
+            {loading ? (
+                <div className="flex items-center justify-center h-full">
+                    <SpinnerRelative />
+                </div>
+            ) : (
+                <>
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Daftar Transaksi</h2>
+                    <div className="overflow-y-auto h-[33vh] relative">
+                        <table className="min-w-full text-left divide-y divide-gray-200">
+                            <thead className="bg-gray-100 sticky top-0 z-10">
+                                <tr>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Status</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Date</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Channel</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Amount</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Order By</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Check</th>
+                                    <th className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {dataGetAllCreateTransactionInternal?.length > 0 || dataGetAllCreateTransactionInternal ? (
+                                    dataGetAllCreateTransactionInternal.map((transaction) => (
+                                        <tr key={transaction.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                            <td className="hidden">
+                                                <CountDownRemoveData 
+                                                    expiry={transaction.expires_at} 
+                                                    transactionId={transaction.id} 
+                                                    remove={removeGetAllCreateTransactionById}
+                                                />
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full
+                                                    'bg-red-100 text-red-800'}`}>
+                                                    {transaction.status_transaction}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-700">
+                                                {format(new Date(transaction.date), 'dd MMM yyyy, HH:mm', { locale: id })}
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-700">{transaction.channel_code}</td>
+                                            <td className="py-3 px-4 text-sm text-gray-800">Rp {transaction.amount_price.toLocaleString("id-ID")}</td>
+                                            <td className="py-3 px-4 text-sm text-gray-700">{transaction.email || '-'}</td>
+                                            <td className="py-3 px-4 text-start">
+                                                <button
+                                                    onClick={() => handleCheckStatusPayment(transaction.transaction_id)}
+                                                    className="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm font-medium rounded-md hover:bg-red-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                                    aria-label="Check Status Payment"
+                                                >
+                                                    Check
+                                                </button>
+                                            </td>
+                                            <td className="py-3 px-4 text-start">
+                                                {transaction.channel_code !== 'CASH' && transaction.payment_reference ? (
+                                                        <button
+                                                            onClick={() => handleViewPaymentDetails(transaction)}
+                                                            className="inline-flex items-center px-3 py-1 bg-gray-800 text-white text-sm font-medium rounded-md hover:bg-gray-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                                            aria-label="Lihat Referensi Pembayaran"
+                                                        >
+                                                            <Eye size={16} className="mr-2" />
+                                                            Lihat Referensi
+                                                        </button>
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">-</span> // For CASH or no reference
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="8">
+                                            <div class="flex justify-center w-full">
+                                                <div class="card bg-white p-8">
+                                                    <div class="flex flex-col items-center text-center">
+                                                        <div class="icon-circle w-20 h-10 rounded-full flex items-center justify-center my-2">
+                                                            <svg class="w-16 h-16 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        
+                                                        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Belum Ada Transaksi</h2>
+                                                    
+                                                        <p class="text-gray-500 mb-2 max-w-xs">
+                                                            Transaksi yang berhasil atau sedang diproses akan muncul di sini. Mulai transaksi baru di kasir untuk melihat daftar.
+                                                        </p>
+                                                        
+                                                        <a href="#" class="text-sm text-gray-800 font-medium hover:underline">
+                                                            Lihat panduan transaksi
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Payment Reference Modal */}
+                    <PaymentDetailsModal
+                        isOpen={isModalOpen}
+                        transaction={selectedTransaction}
+                        onClose={closeModal}
+                        modalRef={modelRef}
+                    />
+                </>
+            ) }
         </div>
     )
 }
+
+
+const PaymentDetailsModal = ({ isOpen, transaction, onClose, modalRef }) => {
+    if (!isOpen || !transaction) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto p-6 md:p-8 relative transform transition-all duration-300 scale-100 opacity-100">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200"
+                    aria-label="Tutup modal"
+                >
+                    <X size={24} />
+                </button>
+
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Detail Pembayaran</h3>
+
+                <div className="space-y-4 text-center">
+                    <p className="text-lg font-semibold text-gray-700">Metode: {transaction.channel_code}</p>
+                    <p className="text-gray-600">
+                        ID Transaksi: <span className="font-medium">{transaction.transaction_id}</span>
+                    </p>
+
+                    {transaction.channel_code === 'CASH' ? (
+                        <div className="p-6 border border-green-300 rounded-lg bg-green-50 shadow-inner flex flex-col items-center">
+                            <CheckCircle size={48} className="text-green-500 mb-2" />
+                            <p className="text-lg font-bold text-green-700">Pembayaran Berhasil!</p>
+                            <p className="text-sm text-green-600 mt-1">
+                                Terima kasih! Transaksi telah selesai secara tunai.
+                            </p>
+                            <p className="mt-4 text-base font-semibold text-gray-700">
+                                Total: Rp {transaction.amount_price.toLocaleString("id-ID")}
+                            </p>
+                        </div>
+                    ) : transaction.channel_code === 'QRIS' && transaction.payment_reference ? (
+                        <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <p className="text-sm text-gray-700 mb-3">Scan QR Code ini untuk pembayaran:</p>
+                            <QRCodeCanvas
+                                value={transaction.payment_reference}
+                                size={200}
+                                level="H"
+                                includeMargin={false}
+                                className="rounded-md"
+                            />
+                            <p className="mt-3 text-sm text-gray-500">
+                                Jumlah: Rp {transaction.amount_price.toLocaleString("id-ID")}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <p className="text-sm text-gray-700 font-medium mb-2">Referensi Pembayaran:</p>
+                            <p className="text-xl font-bold text-gray-800 break-words">
+                                {transaction.payment_reference || 'N/A'}
+                            </p>
+                            {transaction.channel_code !== 'CASH' && (
+                                <p className="mt-2 text-xs text-gray-500">
+                                    Harap gunakan referensi ini untuk menyelesaikan pembayaran.
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex justify-center">
+                        {transaction.channel_code !== 'CASH' && ImagePaymentMethod(transaction.channel_code)}
+                    </div>
+                </div>
+
+                <div className="mt-2 flex justify-end">
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
