@@ -15,6 +15,7 @@ import {
     transactionHistoryInternalSlice,
     getPaymentMethodsInternalSlice,
     getAllCreateTransactionInternalSlice,
+    getCategoryAndProductInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -439,6 +440,37 @@ export const fetchPaymentMethodsInternal = () => {
         dispatch(fetchErrorGetPaymentMethodsInternal(message))
       } finally {
         dispatch(setLoadingGetPaymentMethodsInternal(false))
+      }
+    }
+}
+
+
+const {fetchSuccessCategoryAndProductInternal, fetchErrorCategoryAndProductInternal, setLoadingCategoryAndProductInternal} = getCategoryAndProductInternalSlice.actions
+export const fetchCategoryAndProductInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingCategoryAndProductInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_CATEGORY_AND_PRODUCT_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        const message = {
+            amountCategory: response?.data?.result?.jumlah_category,
+            amountProduct: response?.data?.result?.jumlah_product,
+            data: response?.data?.result?.data
+        }
+        dispatch(fetchSuccessCategoryAndProductInternal(message))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorCategoryAndProductInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingCategoryAndProductInternal(false))
       }
     }
 }

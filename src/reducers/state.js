@@ -24,6 +24,7 @@ import {
   dataFilteringTransactionHistorySlice,
   getAllCreateTransactionInternalSlice,
   getPaymentMethodsInternalSlice,
+  getCategoryAndProductInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -33,7 +34,12 @@ import {
   createTransactionCustomerSlice,
   loginInternalSlice,
   createTransactionInternalSlice,
+  createCategoryInternalSlice,
+  createProductInternalSlice,
 } from './post'
+import {
+  updateInternalSlice,
+} from './put'
 import {
   changePasswordCustomerSlice,
   setPasswordCustomerSlice,
@@ -66,6 +72,7 @@ const persistedReducers = combineReducers({
   dataFilteringTransactionHistoryState: dataFilteringTransactionHistorySlice.reducer,
   getAllCreateTransactionInternal: getAllCreateTransactionInternalSlice.reducer,
   paymentMethodsInternal: getPaymentMethodsInternalSlice.reducer,
+  getCategoryAndProductInternal: getCategoryAndProductInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist
@@ -93,6 +100,9 @@ const nonPersistedReducers = {
   createTransactionInternalState: createTransactionInternalSlice.reducer,
   cartCashierState: cartCashierSlice.reducer,
   paymentSuccessTransactionCashierState: paymentSuccessTransactionCashierSlice.reducer,
+  createCategoryInternalState: createCategoryInternalSlice.reducer,
+  createProductInternalState: createProductInternalSlice.reducer,
+  updateInternalState: updateInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

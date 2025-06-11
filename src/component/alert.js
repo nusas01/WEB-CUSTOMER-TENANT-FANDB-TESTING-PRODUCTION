@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, AlertTriangle } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react"
 import { useRef } from "react"
 import { X } from 'lucide-react'
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
@@ -71,13 +71,19 @@ export const ConfirmationModal = ({
   message, 
   type,
 }) => {
-  const isSuccess = type === "success"
-  const icon = isSuccess ? (
-    <CheckCircle className="h-16 w-16 text-green-500" />
-  ) : (
-    <XCircle className="h-16 w-16 text-red-500" />
-  )
-  const buttonColorClass = isSuccess ? "bg-green-600 hover:bg-green-700 focus:ring-green-500" : "bg-red-600 hover:bg-red-700 focus:ring-red-500";
+  let icon;
+  let buttonColorClass;
+
+  if (type === "success") {
+    icon = <CheckCircle className="h-16 w-16 text-green-500" />;
+    buttonColorClass = "bg-green-600 hover:bg-green-700 focus:ring-green-500";
+  } else if (type === "pending") {
+    icon = <Clock className="h-16 w-16 text-yellow-500" />;
+    buttonColorClass = "bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500";
+  } else {
+    icon = <XCircle className="h-16 w-16 text-red-500" />;
+    buttonColorClass = "bg-red-600 hover:bg-red-700 focus:ring-red-500";
+  }
 
   return (
     <div className="fixed inset-0 z-90 flex items-center justify-center bg-black bg-opacity-50 px-4 animate-fadeIn">
@@ -100,7 +106,7 @@ export const ConfirmationModal = ({
 }
 
   
-export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar }, ref) => {
+export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar, ref }) => {
   const [uangDiterima, setUangDiterima] = useState("");
   const [kembalian, setKembalian] = useState(0);
 
@@ -212,17 +218,15 @@ export const SuccessAlertPaymentCash = ({ kembalian, onClose }) => {
   )
 }
 
-export const PaymentSuccessMessage = ({
+export const PaymentSuccessNonCashCashier = forwardRef(({
   data,
   message,
   subMessage,
   onClose,
-}) => {
-  const modalRef = useRef(null)
+}, ref) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+    <div ref={ref} className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
       <div
-        ref={modalRef}
         className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto p-6 md:p-8 relative transform transition-all duration-300 scale-100 opacity-100"
       >
         <button
@@ -272,7 +276,7 @@ export const PaymentSuccessMessage = ({
       </div>
     </div>
   )
-}
+})
 
 
   

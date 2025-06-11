@@ -470,6 +470,8 @@ const TransactionTable = () => {
         dispatch(resetCheckTransactionNonCash())
     }
 
+    console.log("data transaction cash: ", dataTransactionCashInternal)
+
   return (
     <div>
         {/* header  */}
@@ -634,8 +636,7 @@ const TransactionTable = () => {
                                 />
                             </td>
                             <td className="py-3 px-4">
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full
-                                    'bg-red-100 text-red-800'}`}>
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800`}>
                                     {t.status_transaction}
                                 </span>
                             </td>
@@ -647,14 +648,14 @@ const TransactionTable = () => {
                             <td className="py-3 px-4 text-sm text-gray-800">
                                 {t.table === 0 ? t.order_type : t.table}
                             </td>
-                            <td className="py-3 px-4">{FormatDate(t.created_at)}</td>
+                            <td className="py-3 px-4 text-sm text-gray-700">{FormatDate(t.created_at)}</td>
                             { filterTransaction !== "methodFilterTransaction" && (
                                 <td className="py-3 px-4 text-start">
                                     <button 
                                     onClick={() => filterTransaction === "methodCash" 
                                         ? handleOpenModelPaymentCash(t.id, t.amount_price)
                                         : handleCheckTransactionNonCash(t.id)}
-                                        lassName="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm font-medium rounded-md hover:bg-red-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                        className="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm font-medium rounded-md hover:bg-red-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                     >
                                     { filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
                                     </button>
@@ -721,21 +722,29 @@ const TransactionTable = () => {
 
 
             {/* alert error confirmation modal  */}
-            { (allertErrorBuyTransactionCash || allertPendingCheckTransactionNonCash) && (
+            { allertPendingCheckTransactionNonCash && (
                 <div ref={panelRef}>
                     <ConfirmationModal
                     onClose={handleCloseConfirmationModalError}
-                    title={"Gagal!"}
-                        message={
-                            allertErrorBuyTransactionCash
-                                ? "Pembayaran tunai telah gagal diproses"
-                                : "Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."
-                    }
-                    type={"error"}
+                    title={"Pending"}
+                        message={"Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."}
+                    type={"pending"}
                     />
                 </div>
             )}
 
+            {/* allert error  */}
+            { allertErrorBuyTransactionCash && (
+                <div ref={panelRef}>
+                    <ConfirmationModal
+                    onClose={handleCloseConfirmationModalError}
+                    title={"Gagal!"}
+                        message={"Pembayaran tunai telah gagal diproses"}
+                    type={"error"}
+                    />
+                </div>
+            )}
+            
             {/* Model payment cash*/}
             { dataPaymentCash.open && ( 
                  <CashPaymentModal 

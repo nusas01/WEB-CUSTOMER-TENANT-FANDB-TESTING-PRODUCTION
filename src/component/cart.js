@@ -126,7 +126,7 @@ function Cart({ closeCart }) {
         const tax = taxRate * subTotal
         var feeRate 
         if (paymentMethod === "EWALLET" || paymentMethod === "QR") {
-            feeRate = fee * subTotal
+            feeRate = fee * (subTotal + tax)
         } else {
             feeRate = fee
         }
@@ -351,10 +351,6 @@ function Cart({ closeCart }) {
         setSpinner(loadingPaymentMethodsCustomer)
     }, [loadingPaymentMethodsCustomer])
 
-    console.log(isModelInputNumberEwallet)
-
-  
-  
 
 
     return (

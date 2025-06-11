@@ -232,3 +232,68 @@ export const createTransactionInternalSlice = createSlice({
         }
     }
 })
+
+
+const initialCreateCategoryInternalState = {
+    successCreateCategoryInternal: null,
+    errorCreateCategoryInternal: null,
+    errorFieldCreateCategoryInternal: null,
+    loadingCreateCategoryInternal: false,
+}
+export const createCategoryInternalSlice = createSlice({
+    name: "createCategoryInternal",
+    initialState: initialCreateCategoryInternalState,
+    reducers: {
+        successCreateCategoryInternal: (state, action) => {
+            state.successCreateCategoryInternal = action.payload
+            state.errorFieldCreateCategoryInternal = null
+            state.errorCreateCategoryInternal = null
+        },
+        errorCreateCategoryInternal: (state, action) => {
+            state.errorCreateCategoryInternal = action.payload.error
+            state.errorFieldCreateCategoryInternal = action.payload.errorField
+            state.successCreateCategoryInternal = null
+        }, 
+        setLoadingCreateCategoryInternal: (state, action) => {
+            state.loadingCreateCategoryInternal = action.payload
+        }, 
+        resetCreateCategoryInternal: (state) => {
+            state.successCreateCategoryInternal = null
+            state.errorCreateCategoryInternal = null
+            state.errorFieldCreateCategoryInternal = null
+        }
+    }
+})
+
+
+
+const initialCreateProductInternalState = {
+    successCreateProductInternal: null,
+    errorCreateProductInternal: null,
+    errorFieldCreateProductInternal: null,
+    loadingCreateProductInternal: false,
+}
+export const createProductInternalSlice = createSlice({
+    name: "createProductInternal",
+    initialState: initialCreateProductInternalState,
+    reducers: {
+        successCreateProductInternal: (state, action) => {
+            state.successCreateProductInternal = action.payload
+            state.errorFieldCreateProductInternal = null
+            state.errorCreateProductInternal = null
+        },
+        errorCreateProductInternal: (state, action) => {
+            state.errorCreateProductInternal = action.payload.error
+            state.errorFieldCreateProductInternal = action.payload.errorField
+            state.successCreateProductInternal = null
+        }, 
+        setLoadingCreateProductInternal: (state, action) => {
+            state.loadingCreateProductInternal = action.payload
+        }, 
+        resetCreateProductInternal: (state) => {
+            state.successCreateProductInternal = null
+            state.errorCreateProductInternal = null
+            state.errorFieldCreateProductInternal = null
+        }
+    }
+})

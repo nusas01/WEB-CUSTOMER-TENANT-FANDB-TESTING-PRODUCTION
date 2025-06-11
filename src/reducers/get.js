@@ -457,8 +457,12 @@ export const getAllCreateTransactionInternalSlice = createSlice({
             state.dataGetAllCreateTransactionInternal.push(action.payload)
         }, 
         removeGetAllCreateTransactionById: (state, action) => {
+            console.log("apakah ini tidak dijalankan: ", action.payload)
             state.dataGetAllCreateTransactionInternal = state.dataGetAllCreateTransactionInternal.filter(
-                (item) => item.id !== action.payload
+                (item) => {
+                    console.log("Item ID:", item.transaction_id, "==>", item.transaction_id === action.payload)
+                    return item.transaction_id !== action.payload;
+                }
             )
         },
     }
@@ -517,5 +521,36 @@ export const getAllDataOrderInternalSlice = createSlice({
         addDataOrderInternal: (state, action) => {
             state.dataOrderIntenal.push(action.payload);
         }
+    }
+})
+
+
+
+const initialCategoryAndProductInternalState = {
+    amountCategory: 0,
+    amountProduct: 0,
+    dataCategoryAndProduct: [],
+    errorCategoyAndProductIntenal: null,
+    loadingCategoryAndProductInternal: false
+} 
+export const getCategoryAndProductInternalSlice = createSlice({
+    name: "dataCategoryAndProduct",
+    initialState: initialCategoryAndProductInternalState,
+    reducers: {
+        setLoadingCategoryAndProductInternal: (state, action) => {
+            state.loadingCategoryAndProductInternal= action.payload
+        },
+        fetchSuccessCategoryAndProductInternal: (state, action) => {
+            state.dataCategoryAndProduct = action.payload.data
+            state.amountCategory = action.payload.amountCategory
+            state.amountProduct = action.payload.amountProduct
+            state.errorCategoyAndProductIntenal = null
+        },
+        fetchErrorCategoryAndProductInternal: (state, action) => {
+            state.errorCategoyAndProductIntenal = action.payload
+            state.amountCategory = 0
+            state.amountProduct = 0
+            state.dataOrderIntenal = []
+        },
     }
 })

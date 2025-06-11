@@ -12,6 +12,8 @@ import axios from "axios"
     createTransactionCustomerSlice,
     loginInternalSlice,
     createTransactionInternalSlice,
+    createCategoryInternalSlice,
+    createProductInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -240,5 +242,67 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingCreateTransactionInternal(false))
+    }
+}
+
+
+const { successCreateCategoryInternal, errorCreateCategoryInternal, setLoadingCreateCategoryInternal } = createCategoryInternalSlice.actions
+export const createCategoryInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateCategoryInternal(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_INPUT_CATEGORY_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+      
+        dispatch(successCreateCategoryInternal(response.data?.success))
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        const message = {
+            error: error.response?.data?.ErrorField,
+            errorField: error.response?.data?.error
+        }
+        dispatch(errorCreateCategoryInternal(message))
+        console.log("response data create transacrion internal: ", error)
+    }finally {
+        dispatch(setLoadingCreateCategoryInternal(false))
+    }
+}
+
+
+const { successCreateProductInternal, errorCreateProductInternal, setLoadingCreateProductInternal } = createProductInternalSlice.actions
+export const createProductInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateProductInternal(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+      
+        dispatch(successCreateProductInternal(response.data?.success))
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        const message = {
+            error: error.response?.data?.ErrorField,
+            errorField: error.response?.data?.error
+        }
+        dispatch(errorCreateProductInternal(message))
+        console.log("response data create transacrion internal: ", error)
+    }finally {
+        dispatch(setLoadingCreateProductInternal(false))
     }
 }

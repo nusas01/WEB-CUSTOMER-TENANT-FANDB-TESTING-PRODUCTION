@@ -28,7 +28,7 @@ import { Trash2 } from 'lucide-react'; // Pastikan Anda mengimpor ikon yang dipe
 import  { addItemCashier, deleteItemCashier, updateItemCashier, clearCartCashier } from "../reducers/cartSlice"
 import { Tuple } from "@reduxjs/toolkit"
 import { validateEmail } from "../helper/validate"
-import {ErrorAlert, ConfirmationModal, PaymentSuccessMessage, SuccessAlertPaymentCash} from "../component/alert"
+import {ErrorAlert, ConfirmationModal, PaymentSuccessNonCashCashier, SuccessAlertPaymentCash} from "../component/alert"
 import {QRCodeCanvas} from 'qrcode.react'
 import { format } from 'date-fns'
 import ImagePaymentMethod from '../helper/imagePaymentMethod'
@@ -36,55 +36,33 @@ import { CountDownRemoveData } from '../helper/countDown'
 import { paymentSuccessTransactionCashierSlice } from '../reducers/notif'
 
 export default function Cashier() {
-    const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Cashier")
     const cartRef = useRef(null)
-    const [error, setError] = useState(false)
-
-    // error check status transaction to server and payment gateway
-    const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
-    const { errorCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
-
-    useEffect(() => {
-        if (errorCheckTransactionNonCash) {
-            setError(true)
-            setTimeout(() => {
-                setError(false)
-                dispatch(resetCheckTransactionNonCash())
-            }, 3000)
-        }
-    }, [errorCheckTransactionNonCash])
 
     return (
-        <>
-            { error && (
-                <ErrorAlert message={"there was an error on our server, we are fixing it"} />
-            )}
+        <div className="flex">
+            <div className="w-1/10 min-w-[250px]">
+                <Sidebar activeMenu={activeMenu}/>
+            </div>
 
-            <div className="flex">
-                <div className="w-1/10 min-w-[250px]">
-                    <Sidebar activeMenu={activeMenu}/>
+            <div className="flex-1">
+                {/* header  */}
+                <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
+                    <p className="font-semibold mx-4 text-lg text-gray-800">Cashier</p>
                 </div>
 
-                <div className="flex-1">
-                    {/* header  */}
-                    <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
-                        <p className="font-semibold mx-4 text-lg text-gray-800">Cashier</p>
-                    </div>
-
-                <div className="flex flex-col gap-6 p-5">
-                    <div className="p-4 bg-white rounded-lg shadow-md">
-                        <ComponentOrderCashier/>
-                    </div>
-                    
-                    <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
-                        <ComponentCartCashier cartRef={cartRef}/>
-                    </div>
+            <div className="flex flex-col gap-6 p-5">
+                <div className="p-4 bg-white rounded-lg shadow-md">
+                    <ComponentOrderCashier/>
                 </div>
+                
+                <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
+                    <ComponentCartCashier cartRef={cartRef}/>
                 </div>
             </div>
-        </>
+            </div>
+        </div>
     )
 } 
 
@@ -136,8 +114,10 @@ const ComponentCartCashier = ({cartRef}) => {
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setOpenPaymentMethod(false);
-                setIsModalOpenDetailResponse(false);
+                setOpenPaymentMethod(false)
+                setIsModalOpenDetailResponse(false)
+                handleCloseNotifPaymentNonCashSuccess()
+                closeModalDetailResponse()
             }
         }
 
@@ -173,10 +153,10 @@ const ComponentCartCashier = ({cartRef}) => {
         
         if (paymentMethod === "QR") {
             setFeeTransaction(fee)
-            const feeTransaction = fee * subTotal
+            const feeOne = fee * (subTotal + dataCart.tax) 
             setDataCart((prev) => ({
             ...prev, 
-            fee: feeTransaction,
+            fee: feeOne,
             amount_price: subTotal + feeTransaction
             }))
             return
@@ -196,7 +176,7 @@ const ComponentCartCashier = ({cartRef}) => {
     useEffect(() => {
         const tax = taxRateInternal * subTotal
         if (dataCart.payment_method === "QR") {
-            const fee = feeTransaction * subTotal
+            const fee = feeTransaction * (subTotal + tax)
             setDataCart((prev) => ({
                 ...prev,
                 amount_price: subTotal + tax + fee,
@@ -274,7 +254,6 @@ const ComponentCartCashier = ({cartRef}) => {
             money_received: numericValue,
         }))
     }
-
     
     const { clearCartCashier } = cartCashierSlice.actions
     const {successCreateTransactionInternal,dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
@@ -369,25 +348,34 @@ const ComponentCartCashier = ({cartRef}) => {
 
     // handle notif transaction non cash berhasil dibayarkan
     // dan secara otomatis menghapus data 
-    const [modelNotifPaymentSuccess, setModelNotifPaymentSuccess] = useState(false)
+    const [modelNotifPaymentNonCashSuccess, setModelNotifPaymentNonCashSuccess] = useState(false)
     const {removePaymentSuccessTransactionCashier} = paymentSuccessTransactionCashierSlice.actions
     const {dataTransactionCashierSuccess} = useSelector((state) => state.paymentSuccessTransactionCashierState)
 
     useEffect(() => {
         if (dataTransactionCashierSuccess) {
-            setModelNotifPaymentSuccess(true)
+            setModelNotifPaymentNonCashSuccess(true)
         }
     }, [dataTransactionCashierSuccess])
 
-    const modelCloseNotifPaymentSuccess = () => {
-        setModelNotifPaymentSuccess(false)
+    const handleCloseNotifPaymentNonCashSuccess = () => {
+        setModelNotifPaymentNonCashSuccess(false)
         dispatch(removePaymentSuccessTransactionCashier())
     }
 
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-                {/* <PaymentSuccessMessage data={dataTransactionCashierSuccess} onClose={modelCloseNotifPaymentSuccess} message="Transaksi berhasil!" subMessage={"Pembayaran berhasil! customer berhasil membayar."}/> */}
+
+                {modelNotifPaymentNonCashSuccess && (
+                    <PaymentSuccessNonCashCashier 
+                    data={dataTransactionCashierSuccess} 
+                    onClose={handleCloseNotifPaymentNonCashSuccess} 
+                    message="Transaksi berhasil!" 
+                    subMessage={"Pembayaran berhasil! customer berhasil membayar."}
+                    ref={dropdownRef}
+                    />
+                )}
                 
                 {/* model setalah create transaction dengan method tidak cash */}
                 <PaymentDetailsModal
@@ -837,9 +825,10 @@ const ComponentOrderCashier = () => {
 
     // handle check status transaction non cash 
     const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
-    const {checkTransactionNonCashId, statusCheckTransactionNonCash, loadingCheckTransactionNonCash} = useSelector((state) => state.checkTransactionNonCashInternalState)
+    const {checkTransactionNonCashId, statusCheckTransactionNonCash, errorCheckTransactionNonCash, loadingCheckTransactionNonCash} = useSelector((state) => state.checkTransactionNonCashInternalState)
     const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
     const [allertPendingCheckTransactionNonCash, setAllertPendingCheckTransactionNonCash] = useState(false)
+    const [allertErrorCheckTransactionNonCash, setAllertErrorCheckTransactionNonCash] = useState(false)
 
     const handleCheckStatusPayment = (transactionId) => {
         const data = {
@@ -847,6 +836,12 @@ const ComponentOrderCashier = () => {
         }
         dispatch(checkTransactionNonCashInternal(data))
     }
+
+    useEffect(() => {
+        if (errorCheckTransactionNonCash) {
+            setAllertErrorCheckTransactionNonCash(true)
+        }
+    }, [errorCheckTransactionNonCash])
 
     useEffect(() => {
         if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
@@ -858,6 +853,7 @@ const ComponentOrderCashier = () => {
     }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
 
 
+
     useEffect(() => {
         setLoadingFixed(loadingCheckTransactionNonCash)
     }, [loadingCheckTransactionNonCash])
@@ -866,6 +862,7 @@ const ComponentOrderCashier = () => {
         dispatch(resetCheckTransactionNonCash())
         setAllertPendingCheckTransactionNonCash(false)
         setAllertSuccessCheckTransactionNonCash(false)
+        setAllertErrorCheckTransactionNonCash(false)
         setError(false)
     }
 
@@ -886,12 +883,23 @@ const ComponentOrderCashier = () => {
                 <div ref={modelRef}>
                     <ConfirmationModal 
                         onClose={handleCloseModelConfirmation} 
-                        title={"Gagal!"}  
+                        title={"Pending!"}  
                         message={"Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."}
+                        type={"pending"}
+                    />
+                </div>
+            )}       
+
+            { allertErrorCheckTransactionNonCash && (
+                <div ref={modelRef}>
+                    <ConfirmationModal 
+                        onClose={handleCloseModelConfirmation} 
+                        title={"Error!"}  
+                        message={"there was an error on our server, we are fixing it."}
                         type={"error"}
                     />
                 </div>
-            )}            
+            )}     
 
             { loadingFixed && (
                 <SpinnerFixed colors={'fill-gray-800'}/>
@@ -924,7 +932,7 @@ const ComponentOrderCashier = () => {
                                             <td className="hidden">
                                                 <CountDownRemoveData 
                                                     expiry={transaction.expires_at} 
-                                                    transactionId={transaction.id} 
+                                                    transactionId={transaction.transaction_id} 
                                                     remove={removeGetAllCreateTransactionById}
                                                 />
                                             </td>
@@ -970,16 +978,16 @@ const ComponentOrderCashier = () => {
                                         <td colSpan="8">
                                             <div class="flex justify-center w-full">
                                                 <div class="card bg-white p-8">
-                                                    <div class="flex flex-col items-center text-center">
+                                                    <div class="flex flex-col mt-2 items-center text-center">
                                                         <div class="icon-circle w-20 h-10 rounded-full flex items-center justify-center my-2">
-                                                            <svg class="w-16 h-16 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                                            <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                                             </svg>
                                                         </div>
                                                         
-                                                        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Belum Ada Transaksi</h2>
+                                                        <h2 class="text-xl font-semibold text-gray-800 mb-2">Belum Ada Transaksi</h2>
                                                     
-                                                        <p class="text-gray-500 mb-2 max-w-xs">
+                                                        <p class="text-gray-500 mb-2 max-w-md">
                                                             Transaksi yang berhasil atau sedang diproses akan muncul di sini. Mulai transaksi baru di kasir untuk melihat daftar.
                                                         </p>
                                                         

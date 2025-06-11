@@ -1,5 +1,7 @@
 import { Pencil, Trash, Search, Plus, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
+import { fetchCategoryAndProductInternal } from "../actions/get"
+import { useDispatch, useSelector } from "react-redux";
 
 const products = [
     { id: 1, name: "T-shirt for Men", price: 90, image: 'foto1.jpg' },
@@ -7,13 +9,23 @@ const products = [
     { id: 3, name: "Jeans Shorts", price: 70, image: 'foto1.jpg' },
     { id: 4, name: "Sofa for Interior", price: 375, image: 'foto1.jpg' },
     { id: 5, name: "Leather Wallet", price: 375, image: 'foto1.jpg' },
-  ];
+  ]
 
 export default function ProductsTable() {
     const [search, setSearch] = useState("");
     const [addProduct, setAddProduct] = useState(false);
     const [addCategory, setAddCategory] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const dispatch = useDispatch()
+
+    const {amountCategory, amountProduct, dataCategoryAndProduct} = useSelector((state) => state.persisted.getCategoryAndProductInternal)
+
+    useEffect(() => {
+     if ((amountCategory === 0 && amountProduct === 0) && dataCategoryAndProduct.length === 0) {
+        dispatch(fetchCategoryAndProductInternal())
+      }
+    }, [])
+    console.log("oyyyy ayolahhh: ", dataCategoryAndProduct)
 
     return (
         <div>
@@ -25,8 +37,8 @@ export default function ProductsTable() {
             <div className="p-6 max-w-7xl mx-auto">
                 <div className="p-6 flex justify-between rounded-md items-center shadow-lg bg-white text-black">
                     <div className="flex space-x-10">
-                        <p>Category : 10</p>
-                        <p>Product :  100</p>
+                        <p>Category : {amountCategory}</p>
+                        <p>Product :  {amountProduct}</p>
                     </div>
                     <div className="relative w-full max-w-md">
                         <Search className="absolute left-3 top-1/4 text-black  transform -translate-y-1/2" size={20} />
@@ -51,45 +63,134 @@ export default function ProductsTable() {
                 </div>
             </div>
             
-            <div className="p-6  max-w-7xl mx-auto">
-                <div className="bg-white rounded-md shadow-lg p-6">
-                    <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
-                        <p className="text-lg font-semibold">Makanan</p>
+            <div className="p-6 max-w-7xl mx-auto">
+              <div className="bg-white rounded-md shadow-lg p-6 mb-8">
+                {dataCategoryAndProduct && dataCategoryAndProduct.length > 0 ? (
+                  dataCategoryAndProduct.map((category) => (
+                    <div key={category.id}>
+                      {/* Nama Kategori */}
+                      <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
+                        <p className="text-lg font-semibold">{category.name}</p>
+                      </div>
+
+                      {/* Grid Produk */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {(category?.product || [])
+                          .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()))
+                          .map((product) => {
+                            const isAvailable = product.available;
+
+                            return (
+                              <div
+                                  key={product.id}
+                                  className={`relative bg-white border border-gray-200 rounded-2xl p-4 shadow-md transition-transform duration-200 hover:shadow-lg ${
+                                    !isAvailable ? "opacity-50 pointer-events-none" : ""
+                                  }`}
+                                >
+                                  <img
+                                    src={`/image/${product.image}`}
+                                    alt={product.name}
+                                    className="w-full h-40 object-cover rounded-xl"
+                                  />
+
+                                  <div className="mt-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
+                                    <p className="text-sm text-gray-500">{product.desc}</p>
+
+                                    <p className="mt-2 text-base font-semibold text-gray-700">
+                                      Harga Jual: <span className="text-black">Rp {product.price.toLocaleString("id-ID")}</span>
+                                    </p>
+                                    <p className="text-sm text-red-500 font-medium">HPP: Rp {product.hpp.toLocaleString("id-ID")}</p>
+                                  </div>
+
+                                  <div className="flex items-center justify-between mt-4 gap-2">
+                                    <button
+                                      className={`w-1/2 flex items-center justify-center gap-1 py-2 rounded-xl border text-sm font-medium transition ${
+                                        isAvailable
+                                          ? "text-green-600 border-green-300 hover:bg-green-50"
+                                          : "text-red-600 bg-red-100 border-red-300 cursor-not-allowed"
+                                      }`}
+                                    >
+                                      {isAvailable ? "Tersedia" : <><Lock size={14} /> Habis</>}
+                                    </button>
+
+                                    <button
+                                      onClick={() =>
+                                        isAvailable &&
+                                        setSelectedProduct({
+                                          id: product.id,
+                                          name: product.name,
+                                          category: category.name,
+                                          price: product.price,
+                                          hpp: product.hpp,
+                                          image: product.image,
+                                        })
+                                      }
+                                      className="w-1/2 flex items-center justify-center gap-1 py-2 rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-100 transition"
+                                    >
+                                      <Pencil size={14} /> Edit
+                                    </button>
+                                  </div>
+
+                                  <button
+                                    className="mt-3 w-full flex items-center justify-center gap-1 py-2 border border-red-300 rounded-xl text-red-600 text-sm font-medium hover:bg-red-50 transition"
+                                  >
+                                    <Trash size={14} /> Hapus
+                                  </button>
+
+                                  {!isAvailable && (
+                                    <div className="absolute inset-0 bg-white bg-opacity-70 rounded-2xl flex items-center justify-center text-red-600 font-bold text-sm">
+                                      Tidak Tersedia
+                                    </div>
+                                  )}
+                                </div>
+
+                            );
+                          })}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <div className="relative mb-5">
+                      <div className="absolute -inset-4 bg-gray-200 rounded-full blur-md opacity-70 animate-pulse"></div>
+                      <div className="relative bg-white p-6 rounded-full shadow-lg">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-16 w-16 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          />
+                        </svg>
+                      </div>
                     </div>
 
-                    {/* Product Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        {products
-                        .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()))
-                        .map((product) => (
-                            <div key={product.id} className="border border-gray-300 rounded-lg p-4 shadow-sm bg-white">
-                            <img src={require(`../image/${product.image}`)} alt={product.name} className="w-full h-40 rounded-md" />
-                            <h3 className="text-lg font-semibold mt-2">{product.name}</h3>
-                            <p className="text-gray-600 font-bold">${product.price.toFixed(2)}</p>
-                            <div className="flex justify-between gap-2 my-3">
-                                <button className="flex items-center gap-1 px-5 py-1 border rounded-md text-red-600 hover:bg-red-100">
-                                    <Lock size={14}/> Habis
-                                </button>
-                                <button  className="flex items-center gap-1 px-5 py-1 border rounded-md text-gray-700 hover:bg-gray-200"
-                                onClick={() => setSelectedProduct({
-                                    id: product.id,
-                                    name: product.name,
-                                    category: "Fashion",
-                                    price: 90.00,
-                                    image: product.image
-                                })}
-                                >
-                                <Pencil size={14} /> Edit
-                                </button>
-                            </div>
-                            <button className="flex items-center gap-1 px-3 py-1 border w-full justify-center rounded-md text-red-600 hover:bg-red-100">
-                              <Trash size={14} /> Delete
-                            </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Tidak Ada Produk Ditemukan</h3>
+                    <p className="text-gray-500 max-w-md text-center mb-6">
+                      {search
+                        ? `Hasil pencarian "${search}" tidak ditemukan`
+                        : "Belum ada produk yang tersedia untuk kategori ini"}
+                    </p>
+
+                    <button
+                      onClick={() => setSearch("")}
+                      className="px-6 py-3 bg-gray-800 hover:bg-gray-600 text-white rounded-full shadow-md transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+                    >
+                      Reset Pencarian
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+
+
 
             {/* pop up product model */}
             { addProduct && (
