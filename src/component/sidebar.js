@@ -119,7 +119,7 @@ const Sidebar = ({activeMenu}) => {
 
         {/* Footer */}
         <div className="p-4 border-t space-y-2">
-            <div onClick={() => handleLogout()} className="rounded-lg bg-gray-900 hover:bg-gray-500 text-white">
+            <div onClick={() => handleLogout()} className="rounded-lg bg-gray-800 hover:bg-gray-600 text-white">
                 <NavItem Icon={LogOut} title="Logout" />
             </div>
         </div>

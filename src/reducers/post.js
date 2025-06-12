@@ -136,6 +136,7 @@ const initialCreateTransactionCustomer = {
     message: null,
     statusCode: null,
     error: null,
+    errorProductUnavailable: null,
     loading: false,
 }
 export const createTransactionCustomerSlice = createSlice({
@@ -143,13 +144,15 @@ export const createTransactionCustomerSlice = createSlice({
     initialState: initialCreateTransactionCustomer,
     reducers: {
         successCreateTransactionCustomer: (state, action) => {
-            state.message = action.payload;
-            state.statusCode = 200;
+            state.message = action.payload
+            state.statusCode = 200
             state.error = null
+            state.errorProductUnavailable = null
         },
         errorCreateTransactionCustomer: (state, action) => {
-            state.error = action.payload.error;
-            state.statusCode = action.payload.statusCode;
+            state.error = action.payload.error
+            state.errorProductUnavailable = action.payload.errorProductUnavailable
+            state.statusCode = action.payload.statusCode
             state.message = null
         }, 
         setLoadingCreateTransactionCustomer: (state, action) => {
@@ -157,6 +160,7 @@ export const createTransactionCustomerSlice = createSlice({
         }, 
         resetCreateTransactionCustomer: (state) => {
             state.message = null
+            state.errorProductUnavailable = null
             state.statusCode = null
             state.error = null
         }
@@ -206,6 +210,7 @@ const initialCreateTransactionInternalState = {
     successCreateTransactionInternal: null,
     dataSuccessCreateTransactionInternal: null,
     errorCreateTransactionInternal: null,
+    errorProductUnavailable: null,
     loadingCreateTransactionInternal: false,
 }
 export const createTransactionInternalSlice = createSlice({
@@ -216,9 +221,11 @@ export const createTransactionInternalSlice = createSlice({
             state.dataSuccessCreateTransactionInternal = action.payload.data
             state.successCreateTransactionInternal = action.payload.success
             state.errorCreateTransactionInternal = null
+            state.errorProductUnavailable = null
         },
         errorCreateTransactionInternal: (state, action) => {
-            state.errorCreateTransactionInternal = action.payload
+            state.errorCreateTransactionInternal = action.payload.error 
+            state.errorProductUnavailable = action.payload.errorProductUnavailable
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
         }, 
@@ -226,6 +233,7 @@ export const createTransactionInternalSlice = createSlice({
             state.loadingCreateTransactionInternal = action.payload
         }, 
         resetCreateTransactionInternal: (state) => {
+            state.errorProductUnavailable = null
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
             state.errorCreateTransactionInternal = null

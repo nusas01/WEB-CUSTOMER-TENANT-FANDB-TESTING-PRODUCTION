@@ -28,7 +28,13 @@ import { Trash2 } from 'lucide-react'; // Pastikan Anda mengimpor ikon yang dipe
 import  { addItemCashier, deleteItemCashier, updateItemCashier, clearCartCashier } from "../reducers/cartSlice"
 import { Tuple } from "@reduxjs/toolkit"
 import { validateEmail } from "../helper/validate"
-import {ErrorAlert, ConfirmationModal, PaymentSuccessNonCashCashier, SuccessAlertPaymentCash} from "../component/alert"
+import {
+    ErrorAlert, 
+    ConfirmationModal, 
+    ProductUnavailableModal, 
+    PaymentSuccessNonCashCashier, 
+    SuccessAlertPaymentCash
+} from "../component/alert"
 import {QRCodeCanvas} from 'qrcode.react'
 import { format } from 'date-fns'
 import ImagePaymentMethod from '../helper/imagePaymentMethod'
@@ -79,6 +85,7 @@ const ComponentCartCashier = ({cartRef}) => {
     const [feeTransaction, setFeeTransaction] = useState(0)
     const [customerEmail, setCustomerEmail] = useState('')
     const [emailError, setEmailError] = useState()
+    const [productUnavailable, setProductUnavailable] = useState(false)
     const [modelMoneyReceved, setModelMoneyReceved] = useState(false)
     const [error, setError] = useState(false)
     const [ dataCart, setDataCart ] = useState({
@@ -256,13 +263,23 @@ const ComponentCartCashier = ({cartRef}) => {
     }
     
     const { clearCartCashier } = cartCashierSlice.actions
-    const {successCreateTransactionInternal,dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
+    const {successCreateTransactionInternal, errorProductUnavailable, dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
     const { resetCreateTransactionInternal } = createTransactionInternalSlice.actions
 
     useEffect(() => {
         setSpinnerFixed(loadingCreateTransactionInternal)
     }, [loadingCreateTransactionInternal])
 
+    useEffect(() => {
+        if (errorProductUnavailable) {
+            setProductUnavailable(true)
+        }
+    }, [errorProductUnavailable])
+
+    const handleCloseProuctUnavailable = () => {
+        setProductUnavailable(false)
+        dispatch(resetCreateTransactionInternal())
+    }
 
     useEffect(() => {
         if (errorCreateTransactionInternal) {
@@ -366,6 +383,12 @@ const ComponentCartCashier = ({cartRef}) => {
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+
+                {/* product unavailable */}
+                { productUnavailable && (
+                    <ProductUnavailableModal onClose={handleCloseProuctUnavailable} colorsType={"internal"}/>
+                )}
+
 
                 {modelNotifPaymentNonCashSuccess && (
                     <PaymentSuccessNonCashCashier 

@@ -17,7 +17,6 @@ import {
 } from "../reducers/get"
 import { useDispatch, useSelector } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner"
-import { ErrorAlert, SuccessAlert } from "./alert"
 
 const products = [
     { id: 1, name: "T-shirt for Men", price: 90, image: 'foto1.jpg' },
@@ -35,8 +34,6 @@ export default function ProductsTable() {
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [spinnerFixed, setSpinnerFixed] = useState(false)
     const [spinnerProduct, setSpinnerProduct ] = useState(false)
-    const [inputProductSuccess, setInputProductSuccess] = useState(null)
-    const [error, setError] = useState(false)
     const dispatch = useDispatch()
 
      useEffect(() => {
@@ -67,68 +64,41 @@ export default function ProductsTable() {
       setSpinnerProduct(loadingCategoryAndProductInternal)
     }, [loadingCategoryAndProductInternal])
 
-    useEffect(() => {
-      if (errorCategoyAndProductIntenal) {
-        setError(true)
-        const timeout = setTimeout(() => {
-          setError(false)
-          dispatch(resetCreateProductInternal())
-        }, 3000)
-
-        return () => clearTimeout(timeout)
-      }
-    }, [errorCategoyAndProductIntenal])
+  
 
 
     // create product
-    const { resetCreateProductInternal } = createProductInternalSlice.actions
-    const { successCreateProductInternal, errorCreateProductInternal, errorFieldCreateProductInternal, loadingCreateProductInternal } = useSelector((state) => state.createProductInternalState)
+    const { loadingCreateProductInternal } = useSelector((state) => state.createProductInternalState)
     
-    const handleCreateProduct = ({data}) => {
-      dispatch(createProductInternal(data))
-    }
-
-    useEffect(() => {
-      if (errorCreateProductInternal) {
-        setError(true)
-        const timeout = setTimeout(() => {
-          setError(false)
-          dispatch(resetCreateProductInternal())
-        }, 3000)
-
-        return () => clearTimeout(timeout)
-      }
-    }, [errorCreateProductInternal, dispatch])
-
-
-    useEffect(() => {
-      setInputProductSuccess('Berhasil Memasukkan Product')
+    const handleCreateProduct = (data) => {
+      const form = new FormData()
+      form.append("name", data.name)
+      form.append("category_id", data.category_id)
+      form.append("price", data.price)
+      form.append("desc", data.desc)
+      form.append("hpp", data.hpp)
+      form.append("image", data.image) 
       
-      const timeout = setTimeout(() => {
-        setInputProductSuccess(null)
-        dispatch(resetCreateProductInternal())
-      }, 3000)
-
-      return () => clearTimeout(timeout)
-    }, [successCreateProductInternal, dispatch])
+      dispatch(createProductInternal(form));
+    }
 
     useEffect(() => {
       setSpinnerFixed(loadingCreateProductInternal)
     }, [loadingCreateProductInternal])
 
+
+    // handle create category
+    const { loadingCreateCategoryInternal } = useSelector((state) => state.createCategoryInternalState)
+    useEffect(() => {
+      setSpinnerFixed(loadingCreateCategoryInternal)
+    }, [loadingCreateCategoryInternal])
+
     return (
         <div>
             { spinnerFixed && (
-              <SpinnerFixed/>
+              <SpinnerFixed colors={'fill-gray-900'}/>
             )}
 
-            { inputProductSuccess && (
-              <SuccessAlert message={inputProductSuccess}/>
-            )}
-
-            { error && (
-              <ErrorAlert message={"there was an error on our server, we are fixing it"}/>
-            )}
             {/* header  */}
             <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
                 <p className="font-semibold mx-4 text-lg">Products</p>
@@ -164,112 +134,117 @@ export default function ProductsTable() {
             </div>
             
             <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-md shadow-lg p-6 mb-8">
-                { spinnerProduct && (
-                  <SpinnerRelative/>
-                )}
-                {dataCategoryAndProduct && dataCategoryAndProduct.length > 0 ? (
-                  dataCategoryAndProduct.map((category) => (
-                    <div key={category.id}>
-                      {/* Nama Kategori */}
-                       <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
-                          <p className="text-lg font-semibold">{category.name}</p>
-                        </div>
-
-                        {/* Grid Produk */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                          {(category.product || []).filter(product =>
-                            product.name.toLowerCase().includes(search.toLowerCase())
-                          ).map((product) => (
-                            <div
-                            key={product.id}
-                            className="border border-gray-200 rounded-xl p-3 bg-white shadow-sm transition-all hover:shadow-md relative"
-                          >
-                            {!product.available && (
-                              <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10 rounded-xl">
-                                <span className="text-red-500 font-medium py-1 px-3 rounded-full bg-red-50 text-sm">
-                                  Stok Habis
-                                </span>
+              <div className="bg-white rounded-md  min-h-[70vh] shadow-lg p-6 mb-8">
+                { !spinnerProduct ? (
+                  <>
+                    {dataCategoryAndProduct && dataCategoryAndProduct.length > 0 ? (
+                      dataCategoryAndProduct.map((category) => (
+                        <div key={category.id}>
+                          {/* Nama Kategori */}
+                          <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
+                              <p className="text-lg font-semibold">{category.name}</p>
+                            </div>
+    
+                            {/* Grid Produk */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                              {(category.product || []).filter(product =>
+                                product.name.toLowerCase().includes(search.toLowerCase())
+                              ).map((product) => (
+                                <div
+                                key={product.id}
+                                className="border border-gray-200 rounded-xl p-3 bg-white shadow-sm transition-all hover:shadow-md relative"
+                              >
+                                {!product.available && (
+                                  <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10 rounded-xl">
+                                    <span className="text-red-500 font-medium py-1 px-3 rounded-full bg-red-50 text-sm">
+                                      Stok Habis
+                                    </span>
+                                  </div>
+                                )}
+    
+                                <div className="overflow-hidden rounded-lg mb-3 bg-gray-100">
+                                  <img
+                                    src={`/image/${product.image}`}
+                                    alt={product.name}
+                                    className="w-full h-[20vh] object-cover"
+                                  />
+                                </div>
+    
+                                <div className="space-y-1 mb-4">
+                                  <h3 className="font-medium text-gray-900 line-clamp-1">{product.name}</h3>
+                                  <p className="text-gray-700 font-semibold">Rp {product.price.toLocaleString("id-ID")}</p>
+                                </div>
+    
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    className={`py-2 text-sm rounded-lg ${
+                                      product.available
+                                        ? "text-green-600 bg-green-50 hover:bg-green-100"
+                                        : "text-red-600 bg-red-50"
+                                    }`}
+                                  >
+                                    {product.available ? "Tersedia" : "Habis"}
+                                  </button>
+                                  
+                                  <div
+                                    onClick={() => product.available && setSelectedProduct({ ...product, category: category.name })}
+                                    className="flex justify-center space-x-2 items-center py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700"
+                                  >
+                                    <Pencil width={15} height={15}/>
+                                    <p>Edit</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex justify-center space-x-2  items-center w-full mt-2 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-red-600">
+                                  <Trash width={17} height={17}/>
+                                  <p>Hapus</p>
+                                </div>
                               </div>
-                            )}
-
-                            <div className="overflow-hidden rounded-lg mb-3 bg-gray-100">
-                              <img
-                                src={`/image/${product.image}`}
-                                alt={product.name}
-                                className="w-full h-[20vh] object-cover"
+                              ))}
+                            </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-20">
+                        <div className="relative mb-5">
+                          <div className="absolute -inset-4 bg-gray-200 rounded-full blur-md opacity-70 animate-pulse"></div>
+                          <div className="relative bg-white p-6 rounded-full shadow-lg">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-16 w-16 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                               />
-                            </div>
-
-                            <div className="space-y-1 mb-4">
-                              <h3 className="font-medium text-gray-900 line-clamp-1">{product.name}</h3>
-                              <p className="text-gray-700 font-semibold">Rp {product.price.toLocaleString("id-ID")}</p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                className={`py-2 text-sm rounded-lg ${
-                                  product.available
-                                    ? "text-green-600 bg-green-50 hover:bg-green-100"
-                                    : "text-red-600 bg-red-50"
-                                }`}
-                              >
-                                {product.available ? "Tersedia" : "Habis"}
-                              </button>
-                              
-                              <div
-                                onClick={() => product.available && setSelectedProduct({ ...product, category: category.name })}
-                                className="flex justify-center space-x-2 items-center py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700"
-                              >
-                                <Pencil width={15} height={15}/>
-                                <p>Edit</p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex justify-center space-x-2  items-center w-full mt-2 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-red-600">
-                              <Trash width={17} height={17}/>
-                              <p>Hapus</p>
-                            </div>
+                            </svg>
                           </div>
-                          ))}
                         </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-20">
-                    <div className="relative mb-5">
-                      <div className="absolute -inset-4 bg-gray-200 rounded-full blur-md opacity-70 animate-pulse"></div>
-                      <div className="relative bg-white p-6 rounded-full shadow-lg">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-16 w-16 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+    
+                        <h3 className="text-2xl font-bold text-gray-700 mb-2">Tidak Ada Produk Ditemukan</h3>
+                        <p className="text-gray-500 max-w-md text-center mb-6">
+                          {search
+                            ? `Hasil pencarian "${search}" tidak ditemukan`
+                            : "Belum ada produk yang tersedia untuk kategori ini"}
+                        </p>
+    
+                        <button
+                          onClick={() => setSearch("")}
+                          className="px-6 py-3 bg-gray-800 hover:bg-gray-600 text-white rounded-full shadow-md transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                          />
-                        </svg>
+                          Reset Pencarian
+                        </button>
                       </div>
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Tidak Ada Produk Ditemukan</h3>
-                    <p className="text-gray-500 max-w-md text-center mb-6">
-                      {search
-                        ? `Hasil pencarian "${search}" tidak ditemukan`
-                        : "Belum ada produk yang tersedia untuk kategori ini"}
-                    </p>
-
-                    <button
-                      onClick={() => setSearch("")}
-                      className="px-6 py-3 bg-gray-800 hover:bg-gray-600 text-white rounded-full shadow-md transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
-                    >
-                      Reset Pencarian
-                    </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center min-h-[68vh]">
+                    <SpinnerRelative/>
                   </div>
                 )}
               </div>
@@ -281,7 +256,7 @@ export default function ProductsTable() {
             { addProduct && (
                 <AddProductModal 
                 onClose={() => setAddProduct(false)}
-                onSubmit={handleCreateProduct}
+                onSubmit={(formData) => handleCreateProduct(formData)}
                 panelRef={panelRef}
                 />  
             )}
@@ -290,7 +265,7 @@ export default function ProductsTable() {
             { addCategory && (
                 <AddCategoryModal 
                 onClose={() => setAddCategory(false)}
-
+                onSubmit={(data) => dispatch(createCategoryInternal(data))}
                 />
             )}
 
@@ -327,7 +302,7 @@ const AddProductModal = forwardRef(({
     id: null, 
     name: '',
   })
-
+  console.log("dibawah ini adalah data formData: ", formData)
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const handleImageUpload = (e) => {
@@ -363,24 +338,20 @@ const AddProductModal = forwardRef(({
     onSubmit(formData)
   }
 
-  // Add the handleClickOutside logic directly within the modal component
-  // This is a common pattern for modals to encapsulate their own behavior.
-  useEffect(() => {
+ useEffect(() => {
     function handleClickOutside(event) {
       if (modalContentRef.current && !modalContentRef.current.contains(event.target)) {
-        onClose(); // Call the onClose prop to close the modal
+        onClose()
       }
     }
 
-    // Attach the event listener to the document
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside)
 
-    // Clean up the event listener
+    
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]); // Dependency array: re-run if onClose changes (though it's usually stable)
-
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [onClose])
 
 
   // get category
@@ -443,19 +414,6 @@ const AddProductModal = forwardRef(({
               placeholder="T-shirt for Men"
               required
               onChange={(e) => handleChange("name", e.target.value)}
-            />
-          </div>
-
-          {/* Deskripsi Produk */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Deskripsi</label>
-            <textarea
-              value={formData.desc}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Deskripsi produk"
-              required
-              rows={3}
-              onChange={(e) => handleChange("desc", e.target.value)}
             />
           </div>
 
@@ -533,24 +491,38 @@ const AddProductModal = forwardRef(({
               </div>
             )}
           </div>
-        </form>
 
-        {/* Tombol Aksi */}
-        <div className="flex gap-3 pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            Batal
-          </button>
-          <button
-            type="submit" // Ensure this button is inside the form or submits it
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            {submitText}
-          </button>
-        </div>
+          {/* Deskripsi Produk */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Deskripsi</label>
+            <textarea
+              value={formData.desc}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="Deskripsi produk"
+              required
+              rows={3}
+              onChange={(e) => handleChange("desc", e.target.value)}
+            />
+          </div>
+
+
+          {/* Tombol Aksi */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Batal
+            </button>
+            <button
+              type="submit" // Ensure this button is inside the form or submits it
+              className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-600"
+            >
+              {submitText}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -563,7 +535,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
   
     const handleSubmit = (e) => {
       e.preventDefault();
-      onSubmit({ name: categoryName });
+      onSubmit({ category_name: categoryName });
       onClose();
     };
   
@@ -586,7 +558,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
               <label className="text-sm font-medium text-gray-700">Nama Kategori</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
                 placeholder="Contoh: Fashion"
                 value={categoryName}
                 required
@@ -605,7 +577,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Simpan Kategori
               </button>

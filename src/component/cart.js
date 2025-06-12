@@ -12,7 +12,7 @@ import {fetchPaymentMethodsCustomer, fetchTransactionOnGoingCustomer} from "../a
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { UndoIcon } from "lucide-react"
 import { orderTypeSlice } from "../reducers/reducers"
-import { OrderTypeInvalidAlert, ErrorAlert } from "./alert"
+import { OrderTypeInvalidAlert, ErrorAlert, ProductUnavailableModal } from "./alert"
 import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import {createTransactionCustomerSlice} from "../reducers/post"
@@ -242,9 +242,21 @@ function Cart({ closeCart }) {
 
 
     // handle create transaction
+    const [productUnavailable, setProductUnavailable] = useState(false)
     const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
-    const {message, statusCode, error, loading} = useSelector((state) => state.createTransactionCustomerState)
+    const {message, statusCode, error, loading, errorProductUnavailable} = useSelector((state) => state.createTransactionCustomerState)
     const {loading: loadingOnGoingTransaction} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+
+    useEffect(() => {
+        if (errorProductUnavailable) {
+            setProductUnavailable(true)
+        }
+    }, [errorProductUnavailable])
+
+    const handleCloseProductUnavailable = () => {
+        setProductUnavailable(false)
+        dispatch(resetCreateTransactionCustomer())
+    }
 
     useEffect(() => {
         if (message) {
@@ -355,6 +367,11 @@ function Cart({ closeCart }) {
 
     return (
     <div class="container-main-cart" style={{position: 'relative'}}>
+
+        {/* product unavailable */}
+        { productUnavailable && (
+            <ProductUnavailableModal onClose={handleCloseProductUnavailable} colorsType={"customer"}/>
+        )}
 
         {/* section alert invalid order type */}
         { orderTypeInvalid && (

@@ -52,6 +52,56 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
     )
   }
 
+export const ProductUnavailableModal = ({ open, onClose, colorsType }) => {
+  const modalRef = useRef(null)
+
+  // Detect click outside modal
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose])
+
+
+  return (
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
+      <div
+        ref={modalRef}
+        className="bg-white w-full max-w-sm my-20 sm:max-w-lg md:max-w-xl p-4 rounded-xl shadow-lg relative transition-all"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-black"
+        >
+          <X size={20} />
+        </button>
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+          Produk Tidak Tersedia
+        </h2>
+        <p className="text-sm sm:text-base text-gray-700">
+          Maaf, produk yang Anda pilih saat ini sedang tidak tersedia.
+        </p>
+        <div className="mt-5 sm:mt-6 text-right">
+          <button
+            onClick={onClose}
+            className={`${colorsType === 'internal' ? 'bg-gray-800 hover:bg-gray-600': 'bg-green-500 hover:bg-green-600'} text-white px-6 py-2 rounded text-sm sm:text-base`}
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export const ErrorAlert = ({ message }) => {
   return (

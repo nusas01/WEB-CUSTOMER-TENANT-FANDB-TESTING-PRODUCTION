@@ -147,10 +147,11 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
         }
         console.log(error)
         const message = {
-            error: error.response?.data.error,
-            statusCode: error.response.status,
+            error: error.response?.data?.error,
+            errorProductUnavailable: error?.response?.data?.errorProductUnavailable,
+            statusCode: error?.response?.status,
         }
-        dispatch(errorCreateTransactionCustomer(message));
+        dispatch(errorCreateTransactionCustomer(message))
     }finally {
         dispatch(setLoadingCreateTransactionCustomer(false));
     }
@@ -243,7 +244,11 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        dispatch(errorCreateTransactionInternal(error.response?.data?.error))
+        const message = {
+            error: error.response?.data?.error,
+            errorProductUnavailable: error.response?.data?.errorProductUnavailable,
+        }
+        dispatch(errorCreateTransactionInternal(message))
         console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingCreateTransactionInternal(false))
@@ -301,11 +306,11 @@ export const createProductInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
         const message = {
-            error: error.response?.data?.ErrorField,
-            errorField: error.response?.data?.error
+            errorField: error.response?.data?.ErrorField,
+            error: error.response?.data?.error
         }
         dispatch(errorCreateProductInternal(message))
-        console.log("response data create transacrion internal: ", error)
+        console.log("response data create product internal: ", error)
     }finally {
         dispatch(setLoadingCreateProductInternal(false))
     }
