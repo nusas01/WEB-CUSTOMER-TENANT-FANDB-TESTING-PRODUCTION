@@ -525,6 +525,29 @@ export const getAllDataOrderInternalSlice = createSlice({
 })
 
 
+const initialCategorytInternalState = {
+    dataCategory: [],
+    errorCategoyIntenal: null,
+    loadingCategoryInternal: false
+} 
+export const getCategoryInternalSlice = createSlice({
+    name: "dataCategory",
+    initialState: initialCategorytInternalState,
+    reducers: {
+        setLoadingCategoryInternal: (state, action) => {
+            state.loadingCategoryInternal= action.payload
+        },
+        fetchSuccessCategoryInternal: (state, action) => {
+            state.dataCategory = action.payload
+            state.errorCategoyIntenal = null
+        },
+        fetchErrorCategoryInternal: (state, action) => {
+            state.errorCategoyIntenal = action.payload
+            state.dataCategory = []
+        },
+    }
+})
+
 
 const initialCategoryAndProductInternalState = {
     amountCategory: 0,
@@ -550,7 +573,7 @@ export const getCategoryAndProductInternalSlice = createSlice({
             state.errorCategoyAndProductIntenal = action.payload
             state.amountCategory = 0
             state.amountProduct = 0
-            state.dataOrderIntenal = []
+            state.dataCategoryAndProduct = []
         },
     }
 })

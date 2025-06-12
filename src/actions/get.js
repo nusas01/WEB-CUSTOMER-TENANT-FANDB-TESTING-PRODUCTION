@@ -15,6 +15,7 @@ import {
     transactionHistoryInternalSlice,
     getPaymentMethodsInternalSlice,
     getAllCreateTransactionInternalSlice,
+    getCategoryInternalSlice,
     getCategoryAndProductInternalSlice,
  } from "../reducers/get.js"
  import {
@@ -440,6 +441,32 @@ export const fetchPaymentMethodsInternal = () => {
         dispatch(fetchErrorGetPaymentMethodsInternal(message))
       } finally {
         dispatch(setLoadingGetPaymentMethodsInternal(false))
+      }
+    }
+}
+
+
+const { fetchSuccessCategoryInternal, fetchErrorCategoryInternal, setLoadingCategoryInternal } = getCategoryInternalSlice.actions
+export const fetchCategoryInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingCategoryInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_CATEGORY_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessCategoryInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorCategoryInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingCategoryInternal(false))
       }
     }
 }

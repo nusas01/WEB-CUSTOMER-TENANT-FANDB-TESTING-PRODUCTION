@@ -25,6 +25,7 @@ import {
   getAllCreateTransactionInternalSlice,
   getPaymentMethodsInternalSlice,
   getCategoryAndProductInternalSlice,
+  getCategoryInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -72,6 +73,7 @@ const persistedReducers = combineReducers({
   dataFilteringTransactionHistoryState: dataFilteringTransactionHistorySlice.reducer,
   getAllCreateTransactionInternal: getAllCreateTransactionInternalSlice.reducer,
   paymentMethodsInternal: getPaymentMethodsInternalSlice.reducer,
+  getCategoryInternal: getCategoryInternalSlice.reducer,
   getCategoryAndProductInternal: getCategoryAndProductInternalSlice.reducer,
 })
 

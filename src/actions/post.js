@@ -3,6 +3,7 @@ import axios from "axios"
     loginStatusCustomerSlice,
     loginStatusInternalSlice,
     getAllCreateTransactionInternalSlice,
+    getCategoryInternalSlice,
  } from "../reducers/get"
  import {
     signupCustomerSlice, 
@@ -18,6 +19,10 @@ import axios from "axios"
 import {
     statusExpiredTokenSlice
  } from "../reducers/expToken.js"
+ import {
+    fetchCategoryInternal,
+    fetchCategoryAndProductInternal,
+ } from './get.js'
 import store from "../reducers/state"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
@@ -245,7 +250,6 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     }
 }
 
-
 const { successCreateCategoryInternal, errorCreateCategoryInternal, setLoadingCreateCategoryInternal } = createCategoryInternalSlice.actions
 export const createCategoryInternal = (data) => async (dispatch) => {
     const configJson = {
@@ -259,7 +263,7 @@ export const createCategoryInternal = (data) => async (dispatch) => {
     try {
         const response = await axios.post(`${process.env.REACT_APP_INPUT_CATEGORY_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
-      
+        dispatch(fetchCategoryInternal())
         dispatch(successCreateCategoryInternal(response.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -290,7 +294,7 @@ export const createProductInternal = (data) => async (dispatch) => {
     try {
         const response = await axios.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
-      
+        dispatch(fetchCategoryAndProductInternal())
         dispatch(successCreateProductInternal(response.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {

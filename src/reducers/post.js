@@ -266,7 +266,6 @@ export const createCategoryInternalSlice = createSlice({
 })
 
 
-
 const initialCreateProductInternalState = {
     successCreateProductInternal: null,
     errorCreateProductInternal: null,
