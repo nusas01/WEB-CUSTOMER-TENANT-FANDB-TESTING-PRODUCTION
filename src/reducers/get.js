@@ -554,7 +554,8 @@ const initialCategoryAndProductInternalState = {
     amountProduct: 0,
     dataCategoryAndProduct: [],
     errorCategoyAndProductIntenal: null,
-    loadingCategoryAndProductInternal: false
+    loadingCategoryAndProductInternal: false,
+    filteredProduct: [],
 } 
 export const getCategoryAndProductInternalSlice = createSlice({
     name: "dataCategoryAndProduct",
@@ -568,12 +569,205 @@ export const getCategoryAndProductInternalSlice = createSlice({
             state.amountCategory = action.payload.amountCategory
             state.amountProduct = action.payload.amountProduct
             state.errorCategoyAndProductIntenal = null
+            state.filteredProduct = []
         },
         fetchErrorCategoryAndProductInternal: (state, action) => {
             state.errorCategoyAndProductIntenal = action.payload
             state.amountCategory = 0
             state.amountProduct = 0
             state.dataCategoryAndProduct = []
+            state.filteredProduct = []
+        },
+        updateProductInCategory: (state, action) => {
+            console.log("Reducer dijalankan", action.payload);
+            const { categoryId, productId, updatedProduct } = action.payload;
+
+            for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
+                const productIndex = state.dataCategoryAndProduct[i].product.findIndex(
+                (prod) => prod.id === productId
+                );
+                if (productIndex !== -1) {
+                state.dataCategoryAndProduct[i].product.splice(productIndex, 1);
+                break;
+                }
+            }
+
+            const newCategoryIndex = state.dataCategoryAndProduct.findIndex(
+                (cat) => cat.id === categoryId
+            );
+
+            if (newCategoryIndex !== -1) {
+                state.dataCategoryAndProduct[newCategoryIndex].product.push(updatedProduct);
+            }
+        },
+        toggleProductAvailability: (state, action) => {
+            console.log("Reducer toggleProductAvailability dijalankan dengan id:", action.payload)
+            const productId = action.payload;
+
+            for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
+                const products = state.dataCategoryAndProduct[i].product;
+                const productIndex = products.findIndex((prod) => prod.id === productId);
+
+                if (productIndex !== -1) {
+                    products[productIndex].available = !products[productIndex].available;
+                    break
+                }
+            }
+        },
+        deleteProductById: (state, action) => {
+            const productId = action.payload;
+            console.log("Reducer deleteProductById dijalankan dengan id:", productId);
+
+            for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
+                const products = state.dataCategoryAndProduct[i].product;
+
+                const productIndex = products.findIndex((prod) => prod.id === productId);
+
+                if (productIndex !== -1) {
+                    products.splice(productIndex, 1);
+                    break;
+                }
+            }
+        }, 
+        searchProductByName: (state, action) => {
+            const keyword = action.payload.toLowerCase();
+
+            state.filteredProduct = []
+
+            state.dataCategoryAndProduct.forEach((category) => {
+                const matchingProducts = []
+
+                category.product.forEach((product) => {
+                    if (product.name && product.name.toLowerCase().includes(keyword)) {
+                        matchingProducts.push(product)
+                    }
+                })
+
+                if (matchingProducts.length > 0) {
+                    state.filteredProduct.push({
+                        id: category.id,
+                        name: category.name,
+                        product: matchingProducts, 
+                    })
+                }
+            })
+        }
+    }
+})
+
+const initialDefaultLabaRugiInternalState = {
+    dataLabaRugiInternal: [],
+    errorLabaRugiIntenal: null,
+    loadingLabaRugiInternal: false,
+} 
+export const getLabaRugiInternalSlice = createSlice({
+    name: "dataLabaRugi",
+    initialState: initialDefaultLabaRugiInternalState,
+    reducers: {
+        setLoadingLabaRugiInternal: (state, action) => {
+            state.loadingCategoryAndProductInternal= action.payload
+        },
+        fetchSuccessLabaRugiInternal: (state, action) => {
+            state.dataLabaRugiInternal = action.payload
+            state.errorLabaRugiIntenal = null
+        },
+        fetchErrorLabaRugiInternal: (state, action) => {
+           state.errorLabaRugiIntenal = action.payload
+           state.dataLabaRugiInternal = []
+        },
+    }
+})
+
+const initialGeneralJournalByEventAllInternalState = {
+    dataGeneralJournalByEventAllInternal: [],
+    errorGeneralJournalByEventAllIntenal: null,
+    loadingGeneralJournalByEventAllInternal: false,
+} 
+export const getGeneralJournalByEventAllInternalSlice = createSlice({
+    name: "dataGeneralJournalByEventAll",
+    initialState: initialGeneralJournalByEventAllInternalState,
+    reducers: {
+        setLoadingGeneralJournalByEventAllInternal: (state, action) => {
+            state.loadingGeneralJournalByEventAllInternal= action.payload
+        },
+        fetchSuccessGeneralJournalByEventAllInternal: (state, action) => {
+            state.dataGeneralJournalByEventAllInternal = action.payload
+            state.errorGeneralJournalByEventAllIntenal = null
+        },
+        fetchErrorGeneralJournalByEventAllInternal: (state, action) => {
+           state.errorGeneralJournalByEventAllIntenal = action.payload
+           state.dataGeneralJournalByEventAllInternal = []
+        },
+    }
+})
+
+const initialGeneralJournalByEventPerDayInternalState = {
+    dataGeneralJournalByEventPerDayInternal: [],
+    errorGeneralJournalByEventPerDayIntenal: null,
+    loadingGeneralJournalByEventPerDayInternal: false,
+} 
+export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
+    name: "dataGeneralJournalByEventPerDay",
+    initialState: initialGeneralJournalByEventPerDayInternalState,
+    reducers: {
+        setLoadingGeneralJournalByEventPerDayInternal: (state, action) => {
+            state.loadingGeneralJournalByEventPerDayInternal= action.payload
+        },
+        fetchSuccessGeneralJournalByEventPerDayInternal: (state, action) => {
+            state.dataGeneralJournalByEventPerDayInternal = action.payload
+            state.errorGeneralJournalByEventPerDayIntenal = null
+        },
+        fetchErrorGeneralJournalByEventPerDayInternal: (state, action) => {
+           state.errorGeneralJournalByEventPerDayIntenal = action.payload
+           state.dataGeneralJournalByEventPerDayInternal = []
+        },
+    }
+})
+
+
+const initialGeneralJournalVoidInternalState = {
+    dataGeneralJournalVoidInternal: [],
+    errorGeneralJournalVoidIntenal: null,
+    loadingGeneralJournalVoidInternal: false,
+} 
+export const getGeneralJournalVoidInternalSlice = createSlice({
+    name: "dataGeneralJournalVoid",
+    initialState: initialGeneralJournalVoidInternalState,
+    reducers: {
+        setLoadingGeneralJournalVoidInternal: (state, action) => {
+            state.loadingGeneralJournalVoidInternal = action.payload
+        },
+        fetchSuccessGeneralJournalVoidInternal: (state, action) => {
+            state.dataGeneralJournalVoidInternal = action.payload
+            state.errorGeneralJournalVoidIntenal = null
+        },
+        fetchErrorGeneralJournalVoidInternal: (state, action) => {
+           state.errorGeneralJournalVoidIntenal = action.payload
+           state.dataGeneralJournalVoidInternal = []
+        },
+    }
+})
+
+
+const initialGeneralJournalDrafInternalState = {
+    dataGeneralJournalDrafInternal: [],
+    errorGeneralJournalDrafIntenal: null,
+    loadingGeneralJournalDrafInternal: false,
+} 
+export const getGeneralJournalDrafInternalSlice = createSlice({
+    name: "dataGeneralJournalDraf",
+    initialState: initialGeneralJournalDrafInternalState,
+    reducers: {
+        setLoadingGeneralJournalDrafInternal: (state, action) => {
+            state.loadingGeneralJournalDrafInternal = action.payload
+        },
+        fetchSuccessGeneralJournalDrafInternal: (state, action) => {
+            state.dataGeneralJournalDrafInternal = action.payload
+            state.errorGeneralJournalDrafIntenal = null
+        },
+        fetchErrorGeneralJournalDrafInternal: (state, action) => {
+           state.errorGeneralJournalDrafIntenal = action.payload
+           state.dataGeneralJournalDrafInternal = []
         },
     }
 })

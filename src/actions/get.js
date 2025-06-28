@@ -17,6 +17,9 @@ import {
     getAllCreateTransactionInternalSlice,
     getCategoryInternalSlice,
     getCategoryAndProductInternalSlice,
+    getLabaRugiInternalSlice,
+    getGeneralJournalByEventAllInternalSlice,
+    getGeneralJournalByEventPerDayInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -498,6 +501,131 @@ export const fetchCategoryAndProductInternal = () => {
         dispatch(fetchErrorCategoryAndProductInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingCategoryAndProductInternal(false))
+      }
+    }
+}
+
+const {setLoadingLabaRugiInternal, fetchSuccessLabaRugiInternal,  fetchErrorLabaRugiInternal} = getLabaRugiInternalSlice.actions 
+export const fetchLabaRugiInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingLabaRugiInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_DEFAULT_LABA_RUGI_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessLabaRugiInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorLabaRugiInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingLabaRugiInternal(false))
+      }
+    }
+}
+
+const {fetchSuccessGeneralJournalByEventAllInternal, fetchErrorGeneralJournalByEventAllInternal, setLoadingGeneralJournalByEventAllInternal} = getGeneralJournalByEventAllInternalSlice.actions 
+export const fetchGeneralJournalByEventAllInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingGeneralJournalByEventAllInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_ALL_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessGeneralJournalByEventAllInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorGeneralJournalByEventAllInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingGeneralJournalByEventAllInternal(false))
+      }
+    }
+}
+
+const {fetchSuccessGeneralJournalByEventPerDayInternal, fetchErrorGeneralJournalByEventPerDayInternal, setLoadingGeneralJournalByEventPerDayInternal} = getGeneralJournalByEventPerDayInternalSlice.actions 
+export const fetchGeneralJournalByEventPerDayInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingGeneralJournalByEventPerDayInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_PER_DAY}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessGeneralJournalByEventPerDayInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorGeneralJournalByEventPerDayInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingGeneralJournalByEventPerDayInternal(false))
+      }
+    }
+}
+
+const {fetchSuccessGeneralJournalVoidInternal, fetchErrorGeneralJournalVoidInternal, setLoadingGeneralJournalVoidInternal} = getGeneralJournalVoidInternalSlice.actions 
+export const fetchGeneralJournalVoidInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingGeneralJournalVoidInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_PUT_GENERAL_JOURNAL_VOID}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessGeneralJournalVoidInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingGeneralJournalVoidInternal(false))
+      }
+    }
+}
+
+const {fetchSuccessGeneralJournalDrafInternal, fetchErrorGeneralJournalDrafInternal, setLoadingGeneralJournalDrafInternal} = getGeneralJournalDrafInternalSlice.actions
+export const fetchGeneralJournalDrafInternal = () => {
+    return async (dispatch) => {
+        dispatch(setLoadingGeneralJournalDrafInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_PUT_GENERAL_JOURNAL_DRAF}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessGeneralJournalDrafInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorGeneralJournalDrafInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingGeneralJournalDrafInternal(false))
       }
     }
 }

@@ -18,4 +18,20 @@ export const paymentSuccessTransactionCashierSlice = createSlice({
     }
 })
 
+const initialDataTempUpdateProductInternalSlice = {
+    dataTempUpdateProduct: null
+}
+export const dataTempUpdateProductSlice = createSlice({
+    name: 'dataTempUpdateProduct',
+    initialState: initialDataTempUpdateProductInternalSlice,
+    reducers: {
+        addDataTempUpdateProduct: (state, action) => {
+            state.dataTempUpdateProduct = action.payload
+        },
+        resetDataTempUpdateProduct: (state) => {
+            state.dataTempUpdateProduct = null
+        }
+    }
+})
+
 

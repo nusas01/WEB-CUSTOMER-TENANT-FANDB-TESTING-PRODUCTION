@@ -133,3 +133,29 @@ export const buyTransactionCashOnGoingInternalSlice = createSlice({
         }
     }
 })
+
+
+const initialAvailableProductInternalState = {
+    successAvailableProduct: null,
+    errorAvailableProduct: null,
+}
+export const availbaleProductlSlice = createSlice({
+    name: 'availableProduct',
+    initialState: initialAvailableProductInternalState,
+    reducers: {
+        setSuccessAvailableProduct: (state, action) => {
+            state.successAvailableProduct = action.payload
+            state.errorAvailableProduct = null
+        },
+        setErrorAvailableProduct: (state, action) => {
+            state.errorAvailableProduct = action.payload
+            state.successAvailableProduct = null
+        },
+        resetAvailableProduct: (state) => {
+            state.successAvailableProduct = null
+            state.errorAvailableProduct = null
+        }
+    }
+})
+
+

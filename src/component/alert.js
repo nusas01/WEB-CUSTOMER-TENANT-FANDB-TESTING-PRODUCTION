@@ -103,24 +103,63 @@ export const ProductUnavailableModal = ({ open, onClose, colorsType }) => {
   )
 }
 
-export const ErrorAlert = ({ message }) => {
+export const ErrorAlert = ({ title = "OOPS!", message, onClose }) => {
+  const alertRef = useRef()
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (alertRef.current && !alertRef.current.contains(event.target)) {
+        onClose()
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [onClose])
+
   return (
-    <div className="absolute top-10 w-full flex justify-center px-4">
-      <div className="flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3 shadow-md">
-        <AlertTriangle className="text-red-600 w-5 h-5 flex-shrink-0" />
-        <p className="text-sm text-red-800">{message}</p>
+    <div className="absolute top-10 w-full flex justify-center px-4 z-50">
+      <div
+        ref={alertRef}
+        className="bg-white border-t-4 border-red-500 rounded-lg shadow-lg p-6 max-w-md w-full text-center"
+      >
+        <div className="flex justify-center mb-4">
+          <XCircle className="w-16 h-16 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-red-600">{title}</h2>
+        <p className="text-sm text-gray-600 mt-2">{message}</p>
       </div>
     </div>
   )
 }
 
+export const SuccessAlert = ({ title = "SUCCESS!", message, onClose }) => {
+  const alertRef = useRef()
 
-export const SuccessAlert = ({ message }) => {
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (alertRef.current && !alertRef.current.contains(event.target)) {
+        onClose()
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [onClose])
+
   return (
-    <div className="absolute top-10 w-full flex justify-center px-4">
-      <div className="flex items-center gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3 shadow-md">
-        <CheckCircle className="text-green-600 w-5 h-5 flex-shrink-0" />
-        <p className="text-sm text-green-800">{message}</p>
+    <div className="absolute top-10 w-full flex justify-center px-4 z-50">
+      <div
+        ref={alertRef}
+        className="bg-white border-t-4 border-green-500 rounded-lg shadow-lg p-6 max-w-md w-full text-center"
+      >
+        <div className="flex justify-center mb-4">
+          <CheckCircle className="w-16 h-16 text-green-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-green-600">{title}</h2>
+        <p className="text-sm text-gray-600 mt-2">{message}</p>
       </div>
     </div>
   )
@@ -338,6 +377,38 @@ export const PaymentSuccessNonCashCashier = forwardRef(({
     </div>
   )
 })
+
+
+export const DeleteConfirmationModal = ({ onConfirm, onCancel, colorsType }) => {
+  const confirmButtonClass =
+    colorsType === 'internal'
+      ? 'bg-gray-800 hover:bg-gray-900'
+      : 'bg-green-600 hover:bg-green-700';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-md w-full max-w-md px-4 py-6 sm:px-6">
+        <p className="text-center text-gray-800 mb-6">
+          Anda yakin ingin menghapus produk ini?
+        </p>
+        <div className="flex justify-center space-x-6">
+          <button
+            onClick={onConfirm}
+            className={`${confirmButtonClass} text-white px-6 py-2 rounded transition`}
+          >
+            Ya
+          </button>
+          <button
+            onClick={onCancel}
+            className="border border-gray-400 text-gray-500 px-5 py-2 rounded hover:bg-gray-100 transition"
+          >
+            Tidak
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
   

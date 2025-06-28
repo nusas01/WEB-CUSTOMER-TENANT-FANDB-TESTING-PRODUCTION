@@ -3,7 +3,7 @@ import axios from "axios"
     loginStatusCustomerSlice,
     loginStatusInternalSlice,
     getAllCreateTransactionInternalSlice,
-    getCategoryInternalSlice,
+    getCategoryAndProductInternalSlice,
  } from "../reducers/get"
  import {
     signupCustomerSlice, 
@@ -15,6 +15,8 @@ import axios from "axios"
     createTransactionInternalSlice,
     createCategoryInternalSlice,
     createProductInternalSlice,
+    deleteProductInternalSlice,
+    inputGeneralJournalInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -313,5 +315,52 @@ export const createProductInternal = (data) => async (dispatch) => {
         console.log("response data create product internal: ", error)
     }finally {
         dispatch(setLoadingCreateProductInternal(false))
+    }
+}
+
+
+const {deleteProductById} = getCategoryAndProductInternalSlice.actions
+const {setSuccessDeleteProductInternal, setErrorDeleteProductIntenal} = deleteProductInternalSlice.actions
+export const DeleteProductInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_DELETE_PRODUCT_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+        dispatch(setSuccessDeleteProductInternal(response.data?.success))
+        dispatch(deleteProductById(data.id))
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        dispatch(setErrorDeleteProductIntenal(error.response?.data?.error))
+        console.log("response data create transacrion internal: ", error)
+    }
+}
+
+const {setSuccessInputGeneralJournalInternal, setErrorInputGeneralJournalIntenal} = inputGeneralJournalInternalSlice.actions 
+export const inputGeneralJournalInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+        dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        dispatch(setErrorInputGeneralJournalIntenal(error.response?.data?.error))
+        console.log("response data create transacrion internal: ", error)
     }
 }

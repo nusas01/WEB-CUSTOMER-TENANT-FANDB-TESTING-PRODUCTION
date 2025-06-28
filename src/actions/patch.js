@@ -4,10 +4,14 @@ import axios from "axios"
     setPasswordCustomerSlice,
     setUsernameCustomerSlice,
     buyTransactionCashOnGoingInternalSlice,
+    availbaleProductlSlice,
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice
  } from "../reducers/expToken.js"
+import {
+    getCategoryAndProductInternalSlice
+} from "../reducers/get"
 
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
@@ -125,6 +129,31 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
     } finally {
         dispatch(setLoadingBuyTransactionCashOnGoingInternal(false))
     }
+}
+
+const {toggleProductAvailability} = getCategoryAndProductInternalSlice.actions
+const {setSuccessAvailableProduct, setErrorAvailableProduct}  = availbaleProductlSlice.actions
+export const availableProductInternal = (data) => async (dispatch) => {
+    console.log("Clicked", data.id);
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    try {
+        const response = await axios.patch(`${process.env.REACT_APP_AVAILABLE_PRODUCT_INTERNAL_URL}`, data, config)
+        dispatch(setSuccessAvailableProduct(response.data?.success))
+        dispatch(toggleProductAvailability(data.id))
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorAvailableProduct(error.response?.data?.error));
+    } 
 }
 
 

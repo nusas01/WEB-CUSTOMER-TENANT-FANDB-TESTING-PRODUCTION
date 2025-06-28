@@ -1,5 +1,12 @@
 import { useDispatch } from "react-redux"
 import { updateInternalSlice } from '../reducers/put'
+import axios from "axios"
+import {
+statusExpiredTokenSlice
+} from "../reducers/expToken.js"
+
+
+const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 
 
 const { successUpdateProductInternal, errorUpdateProductInternal, setLoadingUpdateProductInternal } = updateInternalSlice.actions
@@ -13,7 +20,7 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingUpdateProductInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
+        const response = await axios.put(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
       
         dispatch(successUpdateProductInternal(response.data?.success))

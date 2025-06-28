@@ -304,3 +304,51 @@ export const createProductInternalSlice = createSlice({
         }
     }
 })
+
+
+const initialDeleteProductInternalState = {
+    successDeleteProductInternal: null,
+    errorDeleteProductInternal: null,
+}
+export const deleteProductInternalSlice = createSlice({
+    name: "deleteProductInternal",
+    initialState: initialDeleteProductInternalState,
+    reducers: {
+        setSuccessDeleteProductInternal: (state, action) => {
+            state.successDeleteProductInternal = action.payload
+            state.errorDeleteProductInternal = null
+        },
+        setErrorDeleteProductIntenal: (state, action) => {
+            state.errorDeleteProductInternal = action.payload
+            state.successDeleteProductInternal = null
+        },
+        resetDeleteProductInternal: (state) => {
+            state.successDeleteProductInternal = null
+            state.errorDeleteProductInternal = null
+        }       
+    }
+})
+
+
+const initialInputGeneralJournalInternalState = {
+    successInputGeneralJournal: null,
+    errorInputGeneralJournal: null,
+}
+export const inputGeneralJournalInternalSlice = createSlice({
+    name: "inputGeneralJournalInternal",
+    initialState: initialInputGeneralJournalInternalState,
+    reducers: {
+        setSuccessInputGeneralJournalInternal: (state, action) => {
+            state.successInputGeneralJournal = action.payload
+            state.errorInputGeneralJournal = null
+        },
+        setErrorInputGeneralJournalIntenal: (state, action) => {
+            state.errorInputGeneralJournal = action.payload
+            state.successInputGeneralJournal = null
+        },
+        resetInputGeneralJournalInternal: (state) => {
+            state.errorInputGeneralJournal = null
+            state.successInputGeneralJournal = null
+        }       
+    }
+})

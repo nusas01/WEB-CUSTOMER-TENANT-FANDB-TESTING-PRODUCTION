@@ -26,6 +26,11 @@ import {
   getPaymentMethodsInternalSlice,
   getCategoryAndProductInternalSlice,
   getCategoryInternalSlice,
+  getLabaRugiInternalSlice,
+  getGeneralJournalByEventAllInternalSlice,
+  getGeneralJournalByEventPerDayInternalSlice,
+  getGeneralJournalVoidInternalSlice,
+  getGeneralJournalDrafInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -37,6 +42,8 @@ import {
   createTransactionInternalSlice,
   createCategoryInternalSlice,
   createProductInternalSlice,
+  deleteProductInternalSlice,
+  inputGeneralJournalInternalSlice,
 } from './post'
 import {
   updateInternalSlice,
@@ -46,12 +53,14 @@ import {
   setPasswordCustomerSlice,
   setUsernameCustomerSlice,
   buyTransactionCashOnGoingInternalSlice,
+  availbaleProductlSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice
 } from './expToken'
 import {
-  paymentSuccessTransactionCashierSlice
+  paymentSuccessTransactionCashierSlice,
+  dataTempUpdateProductSlice,
 } from './notif'
 
 
@@ -75,6 +84,11 @@ const persistedReducers = combineReducers({
   paymentMethodsInternal: getPaymentMethodsInternalSlice.reducer,
   getCategoryInternal: getCategoryInternalSlice.reducer,
   getCategoryAndProductInternal: getCategoryAndProductInternalSlice.reducer,
+  getLabaRugiInternal: getLabaRugiInternalSlice.reducer,
+  getGeneralJournalByEventInternal: getGeneralJournalByEventAllInternalSlice.reducer,
+  getGeneralJournalByEventPerDayInternal: getGeneralJournalByEventPerDayInternalSlice.reducer,
+  getGeneralJournalVoidInternal: getGeneralJournalVoidInternalSlice.reducer,
+  getGeneralJournalDrafInternal: getGeneralJournalDrafInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist
@@ -105,6 +119,10 @@ const nonPersistedReducers = {
   createCategoryInternalState: createCategoryInternalSlice.reducer,
   createProductInternalState: createProductInternalSlice.reducer,
   updateInternalState: updateInternalSlice.reducer,
+  dataTempUpdateProductState: dataTempUpdateProductSlice.reducer,
+  availbaleProductState: availbaleProductlSlice.reducer,
+  deleteProductInternalState: deleteProductInternalSlice.reducer,
+  inputGeneralJournalInternalState: inputGeneralJournalInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({
