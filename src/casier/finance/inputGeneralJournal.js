@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, FileText, DollarSign, Save, ChevronDown } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { SpinnerRelative } from '../../helper/spinner';
+import { fetchAssetsStoreInternal } from '../../actions/get';
 
 export function GeneralJournalForm() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [formData, setFormData] = useState({});
+  const [spinnerRelatif, setSpinnerRelatif] = useState(false);
+  const dispatch = useDispatch();
 
   const accounts = [
     { value: 'Persediaan Bahan Baku', label: 'Persediaan Bahan Baku' },
@@ -51,6 +56,26 @@ export function GeneralJournalForm() {
         return [
           { value: 'Pencatatan Modal Disetor', label: 'Pencatatan Modal Disetor' }
         ];
+      case "Prive":
+        return [
+          {values: 'Pencatatan Prive', label: 'Pencatatam Prive'}
+        ]
+      case "Beban Gaji":
+        return [
+          {values: 'Pencatatan Beban Gaji', label: 'Pencatatan Beban Gaji'}
+        ]
+      case "Beban Sewa":
+        return [
+          {values: 'Pencatatan Beban Sewa', label: 'Pencatatam Beban Sewa'}
+        ]
+      case "Beban Promosi Dan Pemasaran":
+        return [
+          {values: 'Pencatatan Beban Promosi Dan Pemasaran', label: 'Pencatatan Beban Promosi dan Pemasaran'}
+        ]
+      case "Beban Operasional Lainnya":
+        return [
+          {values: 'Pencatatan Beban Operasional Lainnya', label: 'Pencatatan Beban Operasional Lainnya'}
+        ]
       default:
         return [];
     }
@@ -68,6 +93,18 @@ export function GeneralJournalForm() {
       [field]: value
     }));
   };
+
+  // data call or api call
+  const {dataAssetsStoreInternal, loadingAssetsStoreInternal} = useSelector((state) => state.getAssetsStoreInternal)
+  useEffect(() => {
+    if (dataAssetsStoreInternal.length > 0 || dataAssetsStoreInternal) {
+      dispatch(fetchAssetsStoreInternal())
+    }
+  })
+
+  useEffect(() => {
+    setSpinnerRelatif(loadingAssetsStoreInternal)
+  })
 
   const renderFormFields = () => {
     if (!selectedAccount || !selectedType) return null;
@@ -271,24 +308,32 @@ export function GeneralJournalForm() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Asset</label>
                 <div className="relative flex items-center">
-                    <select
-                    value={selectedAccount}
-                    onChange={(e) => handleAccountChange(e.target.value)}
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                    >
-                    <option value="">Pilih Asset</option>
-                    {accounts.map((account) => (
-                        <option 
-                        key={account.value} 
-                        value={account.value}
-                        disabled={account.disabled}
-                        className={account.disabled ? 'text-gray-400' : ''}
+                    { spinnerRelatif ? (
+                      <div>
+                        <SpinnerRelative/>
+                      </div>
+                    ) : (
+                      <div>
+                        <select
+                        value={selectedAccount}
+                        onChange={(e) => handleAccountChange(e.target.value)}
+                        className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                         >
-                        {account.label} {account.disabled ? '(Tidak Tersedia)' : ''}
-                        </option>
-                    ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+                        <option value="">Pilih Asset</option>
+                        {dataAssetsStoreInternal.map((asset) => (
+                            <option 
+                            key={asset.id} 
+                            value={asset.id}
+                            // disabled={asset.name_asset}
+                            // className={account.disabled ? 'text-gray-400' : ''}
+                            >
+                            {asset.name_asset} 
+                            </option>
+                        ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -352,6 +397,68 @@ export function GeneralJournalForm() {
         );
       }
     }
+
+    // beban gaji
+    if (selectedAccount === 'Beban Gaji' || selectedAccount === 'Beban Sewa' || selectedAccount === 'Beban Promosi Dan Pemasaran' || selectedAccount === 'Beban Operasional Lainnya') {
+      if (selectedType === 'Pencatatan Beban Gaji' || selectedType === 'Pencatatan Beban Sewa' || selectedType === 'Pencatatan Beban Promosi Dan Pemasaran' || selectedType === 'Pencatatan Beban Operasional Lainnya') {
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Pembayaran</label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('payment_option', e.target.value)}
+                >
+                  <option value="">Pilih Opsi Pembayaran</option>
+                  <option value="Tunai">Tunai</option>
+                  <option value="Kredit">Kredit</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+              <input
+                type="number"
+                min="1"
+                placeholder="Masukkan jumlah beban gaji"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => handleInputChange('amount', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+              <textarea
+                rows="3"
+                placeholder="Contoh: Gaji karyawan bulan Januari 2024"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                onChange={(e) => handleInputChange('keterangan', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => handleInputChange('action', e.target.value)}
+              >
+                <option value="">Pilih Status</option>
+                <option value="DRAF">Draf</option>
+                <option value="FINALIZE">Finalisasi</option>
+              </select>
+            </div>
+            {commonFields}
+          </div>
+        )
+      }
+  }
 
     // Aset Tidak Berwujud
     if (selectedAccount === 'Aset Tidak Berwujud' && selectedType === 'Pencatatan Aset Tidak Berwujud') {
@@ -462,7 +569,16 @@ export function GeneralJournalForm() {
         <div className="space-y-6">
           {commonFields}
         </div>
-      );
+      )
+    }
+
+    // Prive
+    if (selectedAccount === 'Prive' || selectedType === 'Pencatatan Prive') {
+      return (
+        <div className="space-y-6">
+          {commonFields}
+        </div>
+      )
     }
 
     return null;
