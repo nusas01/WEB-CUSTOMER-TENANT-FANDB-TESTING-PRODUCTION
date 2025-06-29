@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-
 const initialUpdateProductInternalState = {
     successUpdateProductInternal: null,
     errorUpdateProductInternal: null,
@@ -24,6 +23,34 @@ export const updateInternalSlice = createSlice({
         resetUpdateProductInternal: (state) => {
             state.successUpdateProductInternal = null
             state.errorUpdateProductInternal = null
+        }
+    }
+})
+
+
+const initialUpdateGeneralJournalInternalState = {
+    successUpdateGeneralJournalInternal: null,
+    errorUpdateGeneralJournalInternal: null,
+    loadingUpdateGeneralJournalInternal: false,
+}
+export const updateGeneralJournalInternalSlice = createSlice({
+    name: "updateGeneralJournalInternal",
+    initialState: initialUpdateGeneralJournalInternalState,
+    reducers: {
+        successUpdateGeneralJournalInternal: (state, action) => {
+            state.successUpdateGeneralJournalInternal = action.payload
+            state.errorUpdateGeneralJournalInternal = null
+        },
+        errorUpdateGeneralJournalInternal: (state, action) => {
+            state.errorUpdateGeneralJournalInternal = action.payload
+            state.successUpdateGeneralJournalInternal = null
+        }, 
+        setLoadingUpdateGeneralJournalInternal: (state, action) => {
+            state.loadingUpdateGeneralJournalInternal = action.payload
+        }, 
+        resetUpdateGeneralJournalInternal: (state) => {
+            state.successUpdateGeneralJournalInternal = null
+            state.errorUpdateGeneralJournalInternal = null
         }
     }
 })

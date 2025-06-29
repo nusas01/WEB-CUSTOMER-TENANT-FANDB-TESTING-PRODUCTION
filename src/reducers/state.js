@@ -31,6 +31,7 @@ import {
   getGeneralJournalByEventPerDayInternalSlice,
   getGeneralJournalVoidInternalSlice,
   getGeneralJournalDrafInternalSlice,
+  getAssetsStoreInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -47,6 +48,7 @@ import {
 } from './post'
 import {
   updateInternalSlice,
+  updateGeneralJournalInternalSlice,
 } from './put'
 import {
   changePasswordCustomerSlice,
@@ -89,6 +91,7 @@ const persistedReducers = combineReducers({
   getGeneralJournalByEventPerDayInternal: getGeneralJournalByEventPerDayInternalSlice.reducer,
   getGeneralJournalVoidInternal: getGeneralJournalVoidInternalSlice.reducer,
   getGeneralJournalDrafInternal: getGeneralJournalDrafInternalSlice.reducer,
+  getAssetsStoreInternal: getAssetsStoreInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist
@@ -123,6 +126,7 @@ const nonPersistedReducers = {
   availbaleProductState: availbaleProductlSlice.reducer,
   deleteProductInternalState: deleteProductInternalSlice.reducer,
   inputGeneralJournalInternalState: inputGeneralJournalInternalSlice.reducer,
+  updateGeneralJournalInternalState: updateGeneralJournalInternalSlice.reducer, 
 }
 
 const rootReducer = combineReducers({

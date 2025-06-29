@@ -24,8 +24,12 @@ import {
  import {
     fetchCategoryInternal,
     fetchCategoryAndProductInternal,
+    fetchGeneralJournalDrafInternal,
+    fetchGeneralJournalByEventAllInternal,
+    fetchGeneralJournalByEventPerDayInternal,
  } from './get.js'
 import store from "../reducers/state"
+import { useSelector } from "react-redux"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 
@@ -356,6 +360,21 @@ export const inputGeneralJournalInternal = (data) => async (dispatch) => {
         const response = await axios.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
         dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
+        if (response.status === 200) {
+            const {dataGeneralJournalByEventPerDayInternal} = useSelector((state) => state.getGeneralJournalByEventPerDayInternal)
+            
+            if (data.action === "DRAF") {
+                dispatch(fetchGeneralJournalDrafInternal())
+            }
+
+            if (data.action === "FINALIZE") {
+                dispatch(fetchGeneralJournalByEventAllInternal())
+
+                if (dataGeneralJournalByEventPerDayInternal.length > 0 || dataGeneralJournalByEventPerDayInternal) {
+                    dispatch(fetchGeneralJournalByEventPerDayInternal())
+                }
+            }
+        }
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))

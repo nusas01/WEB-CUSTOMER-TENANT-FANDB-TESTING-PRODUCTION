@@ -769,5 +769,36 @@ export const getGeneralJournalDrafInternalSlice = createSlice({
            state.errorGeneralJournalDrafIntenal = action.payload
            state.dataGeneralJournalDrafInternal = []
         },
+        removeGeneralJournalDrafInternalByDataObject: (state, action) => {
+            const targetDataObjStr = JSON.stringify(action.payload)
+
+            state.dataGeneralJournalDrafInternal = state.dataGeneralJournalDrafInternal.filter(
+                (item) => JSON.stringify(item.detail?.data_general_journal) !== targetDataObjStr
+            )
+        },
+    }
+})
+
+
+const initialAssetsStoreInternalState = {
+    dataAssetsStoreInternal: [],
+    errorAssetsStoreIntenal: null,
+    loadingAssetsStoreInternal: false,
+} 
+export const getAssetsStoreInternalSlice = createSlice({
+    name: "dataAssetsStore",
+    initialState: initialAssetsStoreInternalState,
+    reducers: {
+        setLoadingAssetsStoreInternal: (state, action) => {
+            state.loadingAssetsStoreInternal = action.payload
+        },
+        fetchSuccessAssetsStoreInternal: (state, action) => {
+            state.dataAssetsStoreInternal = action.payload
+            state.errorAssetsStoreIntenal = null
+        },
+        fetchErrorAssetsStoreInternal: (state, action) => {
+           state.errorAssetsStoreIntenal = action.payload
+           state.dataAssetsStoreInternal = []
+        },
     }
 })

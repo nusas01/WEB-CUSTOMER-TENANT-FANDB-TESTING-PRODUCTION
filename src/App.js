@@ -19,6 +19,7 @@ import KasirSettings from './casier/settings'
 import KasirTables from './casier/table'
 import CreateTransaction from './casier/createTransaction'
 import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer } from './actions/get'
+import { GeneralJournalForm } from './casier/finance/inputGeneralJournal'
 import { useDispatch, useSelector } from 'react-redux'
 import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute'
 import Verification from './component/verification'
@@ -123,6 +124,7 @@ function App() {
           </Route>
 
           <Route path='/internal/access' element={<RegisterPage/>}/>
+          <Route path="/internal/admin/general/journal/input" element={<GeneralJournalForm/>}/>
           <Route element={<PrivateRouteInternal/>}>
             <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
             <Route path='/internal/admin/cashier' element={<Cashier/>}/>

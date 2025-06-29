@@ -20,11 +20,15 @@ import {
     getLabaRugiInternalSlice,
     getGeneralJournalByEventAllInternalSlice,
     getGeneralJournalByEventPerDayInternalSlice,
+    getGeneralJournalVoidInternalSlice,
+    getGeneralJournalDrafInternalSlice,
+    getAssetsStoreInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
  } from "../reducers/expToken.js"
  import {groupByDate} from "../helper/groupData.js"
+ import { useSelector } from "react-redux";
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 
@@ -560,7 +564,7 @@ export const fetchGeneralJournalByEventPerDayInternal = () => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalByEventPerDayInternal(true))
       try {
-        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_PER_DAY}`, {
+        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_PER_DAY_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
@@ -585,7 +589,7 @@ export const fetchGeneralJournalVoidInternal = () => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalVoidInternal(true))
       try {
-        const response = await axios.get(`${process.env.REACT_APP_GET_PUT_GENERAL_JOURNAL_VOID}`, {
+        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_VOID_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
@@ -610,7 +614,7 @@ export const fetchGeneralJournalDrafInternal = () => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalDrafInternal(true))
       try {
-        const response = await axios.get(`${process.env.REACT_APP_GET_PUT_GENERAL_JOURNAL_DRAF}`, {
+        const response = await axios.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_DRAF_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
@@ -628,4 +632,30 @@ export const fetchGeneralJournalDrafInternal = () => {
         dispatch(setLoadingGeneralJournalDrafInternal(false))
       }
     }
+}
+
+
+const {fetchSuccessAssetsStoreInternal, fetchErrorAssetsStoreInternal, setLoadingAssetsStoreInternal} = getAssetsStoreInternalSlice.actions
+export const fetchAssetsStoreInternal = (data) => {
+  return async (dispatch) => {
+    dispatch(setLoadingAssetsStoreInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_ASSETS_STORE_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessAssetsStoreInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorAssetsStoreInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingAssetsStoreInternal(false))
+      }
+  }
 }
