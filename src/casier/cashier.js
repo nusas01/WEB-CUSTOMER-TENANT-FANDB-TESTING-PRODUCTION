@@ -57,16 +57,16 @@ export default function Cashier() {
                     <p className="font-semibold mx-4 text-lg text-gray-800">Cashier</p>
                 </div>
 
-            <div className="flex flex-col gap-6 p-5">
-                <div className="p-4 bg-white rounded-lg shadow-md">
-                    <ComponentOrderCashier/>
+                <div className="flex flex-col gap-6 p-5">
+                    <div className="p-4 bg-white rounded-lg shadow-md">
+                        <ComponentOrderCashier/>
+                    </div>
+                    
+                    <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
+                        <ComponentCartCashier cartRef={cartRef}/>
+                    </div>
                 </div>
-                
-                <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
-                    <ComponentCartCashier cartRef={cartRef}/>
-                </div>
-            </div>
             </div>
         </div>
     )

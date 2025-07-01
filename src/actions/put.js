@@ -50,7 +50,7 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
 
 const { removeGeneralJournalDrafInternalByDataObject } = getGeneralJournalDrafInternalSlice.actions
 const { successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, setLoadingUpdateGeneralJournalInternal } = updateGeneralJournalInternalSlice.actions
-export const UpdateGeneralJournalInternal = (data) => async (dispatch) => {
+export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
@@ -66,8 +66,8 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch) => {
         dispatch(successUpdateGeneralJournalInternal(response.data?.success))
         
         if (response.status === 200) {
-            const { dataGeneralJournalByEventPerDayInternal } = useSelector((state) => state.getGeneralJournalByEventPerDayInternal)
-            
+            const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
+
             if (data.action === "VOID") {
                 dispatch(fetchGeneralJournalVoidInternal())
                 dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))

@@ -3,14 +3,32 @@ import { Calendar, FileText, DollarSign, Save, ChevronDown } from 'lucide-react'
 import { useSelector, useDispatch } from 'react-redux';
 import { SpinnerRelative } from '../../helper/spinner';
 import { fetchAssetsStoreInternal } from '../../actions/get';
-
+import { useLocation } from 'react-router-dom';
+import { useHandleDataUpdateGeneralJournal } from './updateGeneralJournal'
 export function GeneralJournalForm() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [formData, setFormData] = useState({});
   const [spinnerRelatif, setSpinnerRelatif] = useState(false);
   const dispatch = useDispatch();
+  const location = useLocation();
 
+  const journalData = location.state?.journalData || null;
+
+  const {
+    selectedAccount: journalDataSelectedAccount,
+    selectedType: journalDataSelectedType,
+    formData: journalDataFormData
+  } = useHandleDataUpdateGeneralJournal(journalData);
+  
+  useEffect(() => {
+    if (journalData !== null) {
+      setSelectedAccount(journalDataSelectedAccount);
+      setSelectedType(journalDataSelectedType);
+      setFormData(journalDataFormData);
+    }
+  }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
+  
   const accounts = [
     { value: 'Persediaan Bahan Baku', label: 'Persediaan Bahan Baku' },
     { value: 'Piutang Usaha', label: 'Piutang Usaha' },
@@ -20,11 +38,11 @@ export function GeneralJournalForm() {
     { value: 'utang_bank', label: 'Utang Bank', disabled: true },
     { value: 'Modal Usaha', label: 'Modal Usaha' },
     { value: 'Modal Disetor', label: 'Modal Disetor' },
-    { value: 'prive', label: 'Prive' },
+    { value: 'Prive', label: 'Prive' },
     { value: 'Beban Gaji', label: 'Beban Gaji' },
     { value: 'Beban Sewa', label: 'Beban Sewa' },
-    { value: 'Beban Promosi', label: 'Beban Promosi dan Pemasaran' },
-    { value: 'Bseban Operasional', label: 'Beban Operasional Lainnya' }
+    { value: 'Beban Promosi dan Pemasaran', label: 'Beban Promosi dan Pemasaran' },
+    { value: 'Beban Operasional Lainnya', label: 'Beban Operasional Lainnya' }
   ];
 
   const getTypeOptions = (account) => {
@@ -58,7 +76,7 @@ export function GeneralJournalForm() {
         ];
       case "Prive":
         return [
-          {values: 'Pencatatan Prive', label: 'Pencatatam Prive'}
+          {values: 'Pencatatan Prive', label: 'Pencatatan Prive'}
         ]
       case "Beban Gaji":
         return [
@@ -66,11 +84,11 @@ export function GeneralJournalForm() {
         ]
       case "Beban Sewa":
         return [
-          {values: 'Pencatatan Beban Sewa', label: 'Pencatatam Beban Sewa'}
+          {values: 'Pencatatan Beban Sewa', label: 'Pencatatan Beban Sewa'}
         ]
-      case "Beban Promosi Dan Pemasaran":
+      case "Beban Promosi dan Pemasaran":
         return [
-          {values: 'Pencatatan Beban Promosi Dan Pemasaran', label: 'Pencatatan Beban Promosi dan Pemasaran'}
+          {values: 'Pencatatan Beban Promosi dan Pemasaran', label: 'Pencatatan Beban Promosi dan Pemasaran'}
         ]
       case "Beban Operasional Lainnya":
         return [
@@ -95,7 +113,7 @@ export function GeneralJournalForm() {
   };
 
   // data call or api call
-  const {dataAssetsStoreInternal, loadingAssetsStoreInternal} = useSelector((state) => state.getAssetsStoreInternal)
+  const {dataAssetsStoreInternal, loadingAssetsStoreInternal} = useSelector((state) => state.persisted.getAssetsStoreInternal)
   useEffect(() => {
     if (dataAssetsStoreInternal.length > 0 || dataAssetsStoreInternal) {
       dispatch(fetchAssetsStoreInternal())
@@ -120,6 +138,7 @@ export function GeneralJournalForm() {
             <input
               type="date"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={formData.date || ""}
               onChange={(e) => handleInputChange('date', e.target.value)}
             />
           </div>
@@ -130,7 +149,7 @@ export function GeneralJournalForm() {
             </label>
             <input
               type="number"
-              min="1"
+              value={formData.amount}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onChange={(e) => handleInputChange('amount', e.target.value)}
             />
@@ -144,6 +163,7 @@ export function GeneralJournalForm() {
           <input
             type="text"
             maxLength="50"
+            value={formData.keterangan}
             placeholder="Maksimal 50 karakter"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             onChange={(e) => handleInputChange('keterangan', e.target.value)}
@@ -160,14 +180,18 @@ export function GeneralJournalForm() {
             {commonFields}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Return</label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('option_return', e.target.value)}
-              >
-                <option value="">Pilih Opsi Return</option>
-                <option value="Kredit">Kredit</option>
-                <option value="Tunai">Tunai</option>
-              </select>
+              <div className="relative flex items-center">
+                <select
+                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  onChange={(e) => handleInputChange('option_return', e.target.value)}
+                  value={formData.option_return || ""}
+                >
+                  <option value="">Pilih Opsi Return</option>
+                  <option value="Kredit">Kredit</option>
+                  <option value="Tunai">Tunai</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           </div>
         );
@@ -177,15 +201,19 @@ export function GeneralJournalForm() {
             {commonFields}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Akuisisi</label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
-              >
-                <option value="">Pilih Opsi Akuisisi</option>
-                <option value="Kredit">Kredit</option>
-                <option value="Tunai">Tunai</option>
-                <option value="Hibah">Hibah</option>
-              </select>
+              <div className="relative flex items-center">
+                <select
+                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
+                  value={formData.option_acquisition}
+                >
+                  <option value="">Pilih Opsi Akuisisi</option>
+                  <option value="Kredit">Kredit</option>
+                  <option value="Tunai">Tunai</option>
+                  <option value="Hibah">Hibah</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           </div>
         );
@@ -213,6 +241,7 @@ export function GeneralJournalForm() {
                 maxLength="255"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('name_asset', e.target.value)}
+                value={formData.name_asset}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -223,6 +252,7 @@ export function GeneralJournalForm() {
                   min="1"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
+                  value={formData.harga_perolehan}
                 />
               </div>
               <div>
@@ -231,6 +261,7 @@ export function GeneralJournalForm() {
                   type="date"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('tanggal_perolehan', e.target.value)}
+                  value={formData.tanggal_perolehan}
                 />
               </div>
             </div>
@@ -242,6 +273,7 @@ export function GeneralJournalForm() {
                   min="1"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
+                  value={formData.umur_manfaat_tahun}
                 />
               </div>
               <div>
@@ -251,6 +283,7 @@ export function GeneralJournalForm() {
                   min="1"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
+                  value={formData.nilai_sisa}
                 />
               </div>
               <div>
@@ -260,32 +293,41 @@ export function GeneralJournalForm() {
                   max="100"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('rate', e.target.value)}
+                  value={formData.rate}
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Akuisisi</label>
-                <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
-                >
-                  <option value="">Pilih Opsi</option>
-                  <option value="Kredit">Kredit</option>
-                  <option value="Tunai">Tunai</option>
-                  <option value="Hibah">Hibah</option>
-                </select>
+                <div className="relative flex items-center">
+                  <select
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
+                    value={formData.option_acquisition}
+                  >
+                    <option value="">Pilih Opsi</option>
+                    <option value="Kredit">Kredit</option>
+                    <option value="Tunai">Tunai</option>
+                    <option value="Hibah">Hibah</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metode Penyusutan</label>
-                <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('metode_penyusutan', e.target.value)}
-                >
-                  <option value="">Pilih Metode</option>
-                  <option value="garis_lurus">Garis Lurus</option>
-                  <option value="saldo_menurun">Saldo Menurun</option>
-                </select>
+                <div className="relative flex items-center">
+                  <select
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    onChange={(e) => handleInputChange('metode_penyusutan', e.target.value)}
+                    value={formData.metode_penyusutan}
+                  >
+                    <option value="">Pilih Metode</option>
+                    <option value="garis_lurus">Garis Lurus</option>
+                    <option value="saldo_menurun">Saldo Menurun</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -294,46 +336,34 @@ export function GeneralJournalForm() {
                   type="checkbox"
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   onChange={(e) => handleInputChange('is_depreciable', e.target.checked)}
+                  value={formData.is_depreciable}
                 />
                 <span className="ml-2 text-sm text-gray-700">Dapat Disusutkan</span>
               </label>
             </div>
             {commonFields}
           </div>
-        );
+        )
       } else if (selectedType === 'Penjualan Aset Tetap') {
         return (
           <div className="space-y-6">
             <div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Asset</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Asset</label>
                 <div className="relative flex items-center">
-                    { spinnerRelatif ? (
-                      <div>
-                        <SpinnerRelative/>
-                      </div>
-                    ) : (
-                      <div>
-                        <select
-                        value={selectedAccount}
-                        onChange={(e) => handleAccountChange(e.target.value)}
-                        className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                        >
-                        <option value="">Pilih Asset</option>
-                        {dataAssetsStoreInternal.map((asset) => (
-                            <option 
-                            key={asset.id} 
-                            value={asset.id}
-                            // disabled={asset.name_asset}
-                            // className={account.disabled ? 'text-gray-400' : ''}
-                            >
-                            {asset.name_asset} 
-                            </option>
-                        ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
-                      </div>
-                    )}
+                  <select
+                    value={formData.id_asset || ""}
+                    onChange={(e) => handleInputChange("id_asset", e.target.value)}
+                    disabled={journalData !== null}
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Pilih Asset</option>
+                    {dataAssetsStoreInternal.map((asset) => (
+                      <option key={asset.id} value={asset.id}>
+                        {asset.name_asset}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -342,43 +372,54 @@ export function GeneralJournalForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Persentase Penjualan (%)</label>
                 <input
                   type="number"
+                  min="1"
+                  max="100"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onChange={(e) => handleInputChange('percentage_sale', e.target.value)}
+                  value={formData.percentage_sale}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metode Penjualan</label>
-                <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('option_method_sale', e.target.value)}
-                >
-                  <option value="">Pilih Metode</option>
-                  <option value="Kredit">Kredit</option>
-                  <option value="Tunai">Tunai</option>
-                </select>
+                <div className="relative flex items-center">
+                  <select
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => handleInputChange('option_method_sale', e.target.value)}
+                    value={formData.option_method_sale}
+                  >
+                    <option value="">Pilih Metode</option>
+                    <option value="Kredit">Kredit</option>
+                    <option value="Tunai">Tunai</option>
+                  </select>
+                </div>
+                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="inline w-4 h-4 mr-2" />
-                Tanggal
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('date', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <DollarSign className="inline w-4 h-4 mr-2" />
-                Jumlah
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('amount', e.target.value)}
-              />
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="inline w-4 h-4 mr-2" />
+                  Tanggal
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  value={formData.date}
+                />
+              </div>
+              <div className="w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <DollarSign className="inline w-4 h-4 mr-2" />
+                  Jumlah
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  value={formData.amount}
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -391,6 +432,7 @@ export function GeneralJournalForm() {
                 placeholder="Maksimal 50 karakter"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('keterangan', e.target.value)}
+                value={formData.keterangan}
               />
             </div>
           </div>
@@ -399,69 +441,31 @@ export function GeneralJournalForm() {
     }
 
     // beban gaji
-    if (selectedAccount === 'Beban Gaji' || selectedAccount === 'Beban Sewa' || selectedAccount === 'Beban Promosi Dan Pemasaran' || selectedAccount === 'Beban Operasional Lainnya') {
-      if (selectedType === 'Pencatatan Beban Gaji' || selectedType === 'Pencatatan Beban Sewa' || selectedType === 'Pencatatan Beban Promosi Dan Pemasaran' || selectedType === 'Pencatatan Beban Operasional Lainnya') {
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Pembayaran</label>
-                <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('payment_option', e.target.value)}
-                >
-                  <option value="">Pilih Opsi Pembayaran</option>
-                  <option value="Tunai">Tunai</option>
-                  <option value="Kredit">Kredit</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                />
-              </div>
-            </div>
+    if (selectedType === 'Pencatatan Beban Sewa' || selectedType === 'Pencatatan Beban Promosi dan Pemasaran' || selectedType === 'Pencatatan Beban Operasional Lainnya') {
+      return (
+        <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-              <input
-                type="number"
-                min="1"
-                placeholder="Masukkan jumlah beban gaji"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('amount', e.target.value)}
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Pembayaran</label>
+                <div className="relative items-center">    
+                  <select
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    onChange={(e) => handleInputChange('payment_option', e.target.value)}
+                    value={formData.payment_option}
+                  >
+                    <option value="">Pilih Opsi Pembayaran</option>
+                    <option value="Tunai">Tunai</option>
+                    <option value="Kredit">Kredit</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-              <textarea
-                rows="3"
-                placeholder="Contoh: Gaji karyawan bulan Januari 2024"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                onChange={(e) => handleInputChange('keterangan', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('action', e.target.value)}
-              >
-                <option value="">Pilih Status</option>
-                <option value="DRAF">Draf</option>
-                <option value="FINALIZE">Finalisasi</option>
-              </select>
-            </div>
-            {commonFields}
-          </div>
-        )
-      }
-  }
+          {commonFields}
+        </div>
+      )
+    }
 
     // Aset Tidak Berwujud
-    if (selectedAccount === 'Aset Tidak Berwujud' && selectedType === 'Pencatatan Aset Tidak Berwujud') {
+    if (selectedType === 'Pencatatan Aset Tidak Berwujud') {
       return (
         <div className="space-y-6">
           <div>
@@ -472,6 +476,7 @@ export function GeneralJournalForm() {
               placeholder="Contoh: Lisensi Adobe"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onChange={(e) => handleInputChange('name_asset', e.target.value)}
+              value={formData.name_asset}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -482,6 +487,7 @@ export function GeneralJournalForm() {
                 min="1"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
+                value={formData.harga_perolehan}
               />
             </div>
             <div>
@@ -490,6 +496,7 @@ export function GeneralJournalForm() {
                 type="date"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('tanggal_perolehan', e.target.value)}
+                value={formData.tanggal_perolehan}
               />
             </div>
           </div>
@@ -501,6 +508,7 @@ export function GeneralJournalForm() {
                 min="1"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
+                value={formData.umur_manfaat_tahun}
               />
             </div>
             <div>
@@ -510,6 +518,7 @@ export function GeneralJournalForm() {
                 min="1"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
+                value={formData.nilai_sisa}
               />
             </div>
             <div>
@@ -519,33 +528,42 @@ export function GeneralJournalForm() {
                 max="100"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={(e) => handleInputChange('rate', e.target.value)}
+                value={formData.rate}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Akuisisi</label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
-              >
-                <option value="">Pilih Opsi</option>
-                <option value="Kredit">Kredit</option>
-                <option value="Tunai">Tunai</option>
-                <option value="Hibah">Hibah</option>
-                <option value="dibuat_sendiri">Dibuat Sendiri</option>
-              </select>
+              <div className="relative flex items-center">
+                <select
+                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  onChange={(e) => handleInputChange('option_acquisition', e.target.value)}
+                  value={formData.option_acquisition}
+                >
+                  <option value="">Pilih Opsi</option>
+                  <option value="Kredit">Kredit</option>
+                  <option value="Tunai">Tunai</option>
+                  <option value="Hibah">Hibah</option>
+                  <option value="dibuat_sendiri">Dibuat Sendiri</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Metode Amortisasi</label>
-              <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onChange={(e) => handleInputChange('metode_amortisasi', e.target.value)}
-              >
-                <option value="">Pilih Metode</option>
-                <option value="garis_lurus">Garis Lurus</option>
-                <option value="saldo_menurun">Saldo Menurun</option>
-              </select>
+              <div className="relative flex items-center">
+                <select
+                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  onChange={(e) => handleInputChange('metode_amortisasi', e.target.value)}
+                  value={formData.metode_amortisasi}
+                >
+                  <option value="">Pilih Metode</option>
+                  <option value="garis_lurus">Garis Lurus</option>
+                  <option value="saldo_menurun">Saldo Menurun</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -554,6 +572,7 @@ export function GeneralJournalForm() {
                 type="checkbox"
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 onChange={(e) => handleInputChange('is_amortizable', e.target.checked)}
+                value={formData.is_amortizable}
               />
               <span className="ml-2 text-sm text-gray-700">Dapat Diamortisasi</span>
             </label>
@@ -573,7 +592,7 @@ export function GeneralJournalForm() {
     }
 
     // Prive
-    if (selectedAccount === 'Prive' || selectedType === 'Pencatatan Prive') {
+    if (selectedAccount === 'Pencatatan Prive' || selectedType === 'Pencatatan Prive' || selectedType === 'Pencatatan Beban Gaji') {
       return (
         <div className="space-y-6">
           {commonFields}
@@ -617,6 +636,7 @@ export function GeneralJournalForm() {
                 <select
                   value={selectedAccount}
                   onChange={(e) => handleAccountChange(e.target.value)}
+                  disabled={journalData !== null}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                 >
                   <option value="">Pilih Akun</option>
@@ -634,7 +654,7 @@ export function GeneralJournalForm() {
                 <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
-
+            
             {/* Type Selection */}
             {selectedAccount && getTypeOptions(selectedAccount).length > 0 && (
               <div className="mb-8">
@@ -645,6 +665,7 @@ export function GeneralJournalForm() {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
+                    disabled={journalData !== null}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                   >
                     <option value="">Pilih Jenis Transaksi</option>
@@ -654,7 +675,7 @@ export function GeneralJournalForm() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
               </div>
             )}
@@ -670,14 +691,12 @@ export function GeneralJournalForm() {
                     onClick={() => handleSubmit('DRAF')}
                     className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center"
                   >
-                    <Save className="mr-2 h-4 w-4" />
                     Simpan sebagai Draft
                   </button>
                   <button
                     onClick={() => handleSubmit('FINALIZE')}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                   >
-                    <Save className="mr-2 h-4 w-4" />
                     Finalisasi
                   </button>
                 </div>

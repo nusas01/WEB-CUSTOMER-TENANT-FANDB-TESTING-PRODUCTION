@@ -28,7 +28,7 @@ import SetUsername from './component/setUsername'
 import {UsedSSEContainer} from './actions/sse'
 import ServiceRenewalNotice from './component/serviceRenewal'
 import Cashier from './casier/cashier'
-
+import GeneralJournalDashboard from './casier/finance/generalJournal'
 function App() {
   const dispatch = useDispatch()
   
@@ -124,7 +124,8 @@ function App() {
           </Route>
 
           <Route path='/internal/access' element={<RegisterPage/>}/>
-          <Route path="/internal/admin/general/journal/input" element={<GeneralJournalForm/>}/>
+          <Route path="/internal/admin/general/journal/form" element={<GeneralJournalForm/>}/>
+          <Route path='/internal/admin/general/journal' element={<GeneralJournalDashboard/>}/>
           <Route element={<PrivateRouteInternal/>}>
             <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
             <Route path='/internal/admin/cashier' element={<Cashier/>}/>

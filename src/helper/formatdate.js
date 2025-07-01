@@ -23,3 +23,16 @@ export const FormatDate = (dateString) => {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+export const FormatIndoDate = (dateStr) => {
+  const bulanIndo = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  const [year, month, day] = dateStr.split("-");
+  const namaBulan = bulanIndo[parseInt(month, 10) - 1];
+
+  return `${day} ${namaBulan} ${year}`;
+};
+
