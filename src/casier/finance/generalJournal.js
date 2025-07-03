@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Calendar, 
   Filter, 
@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
 import {FormatIndoDate} from '../../helper/formatdate'
+import {DrafVoidDataComponent} from './drafVoidGeneralJournal'
+import { useNavigate } from 'react-router-dom';
 
 export default function GeneralJournalDashboard() {
     const [activeMenu, setActiveMenu] = useState("General Journals")
@@ -35,8 +37,128 @@ export default function GeneralJournalDashboard() {
 }
 
 const JournalDashboard = () => {
+  const navigate = useNavigate()
+  const [journalDataNonAgregasi] = useState([
+    {
+      "date": "2024-12-01",
+      "event": "penjualan",
+      "transaction_id": "TX123456789",
+      "accounts": [
+        {
+          "account_name": "Kas",
+          "type": "DEBIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Pendapatan",
+          "type": "KREDIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "4001",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Kas",
+          "type": "DEBIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Pendapatan",
+          "type": "KREDIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "4001",
+          "keterangan": ""
+        }, 
+        {
+          "account_name": "Kas",
+          "type": "DEBIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Pendapatan",
+          "type": "KREDIT",
+          "amount": 150000.0,
+          "action": "FINALIZE",
+          "account_code": "4001",
+          "keterangan": ""
+        }
+      ]
+    },
+    {
+      "date": "2024-12-01",
+      "event": "pembelian",
+      "transaction_id": "",
+      "accounts": [
+        {
+          "account_name": "Persediaan Bahan Baku",
+          "type": "DEBIT",
+          "amount": 200000.0,
+          "action": "FINALIZE",
+          "account_code": "1201",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Kas",
+          "type": "KREDIT",
+          "amount": 200000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        }, 
+        {
+          "account_name": "Persediaan Bahan Baku",
+          "type": "DEBIT",
+          "amount": 200000.0,
+          "action": "FINALIZE",
+          "account_code": "1201",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Kas",
+          "type": "KREDIT",
+          "amount": 200000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        }
+      ]
+    },
+    {
+      "date": "2024-12-01",
+      "event": "retur_penjualan",
+      "transaction_id": "TX123456790",
+      "accounts": [
+        {
+          "account_name": "Retur Penjualan",
+          "type": "DEBIT",
+          "amount": 50000.0,
+          "action": "FINALIZE",
+          "account_code": "4002",
+          "keterangan": ""
+        },
+        {
+          "account_name": "Kas",
+          "type": "KREDIT",
+          "amount": 50000.0,
+          "action": "FINALIZE",
+          "account_code": "1001",
+          "keterangan": ""
+        }
+      ]
+    }
+  ]);
   // Sample data dengan berbagai status
-  const [journalData] = useState([
+  const [journalDataAgregasi] = useState([
     {
       "date": "2024-12-01",
       "event": "penjualan",
@@ -69,7 +191,7 @@ const JournalDashboard = () => {
           "account_name": "Persediaan Bahan Baku",
           "type": "DEBIT",
           "amount": 200000.0,
-          "action": "DRAFT",
+          "action": "FINALIZE",
           "account_code": "1201",
           "keterangan": ""
         },
@@ -77,7 +199,7 @@ const JournalDashboard = () => {
           "account_name": "Kas",
           "type": "KREDIT",
           "amount": 200000.0,
-          "action": "DRAFT",
+          "action": "FINALIZE",
           "account_code": "1001",
           "keterangan": ""
         }
@@ -92,7 +214,7 @@ const JournalDashboard = () => {
           "account_name": "Retur Penjualan",
           "type": "DEBIT",
           "amount": 50000.0,
-          "action": "VOID",
+          "action": "FINALIZE",
           "account_code": "4002",
           "keterangan": ""
         },
@@ -100,43 +222,107 @@ const JournalDashboard = () => {
           "account_name": "Kas",
           "type": "KREDIT",
           "amount": 50000.0,
-          "action": "VOID",
-          "account_code": "1001",
-          "keterangan": ""
-        }
-      ]
-    },
-    {
-      "date": "2024-11-30",
-      "event": "penjualan",
-      "transaction_id": "TX123456788",
-      "accounts": [
-        {
-          "account_name": "Kas",
-          "type": "DEBIT",
-          "amount": 300000.0,
           "action": "FINALIZE",
           "account_code": "1001",
-          "keterangan": ""
-        },
-        {
-          "account_name": "Pendapatan",
-          "type": "KREDIT",
-          "amount": 300000.0,
-          "action": "FINALIZE",
-          "account_code": "4001",
           "keterangan": ""
         }
       ]
     }
   ]);
 
+  const [journalDataDraf] = useState([
+    {
+      account_name: "Persediaan Bahan Baku",
+      detail: {
+        type: "Pembelian Bahan Baku",
+        date: "2024-01-15",
+        option_acquisition: "Tunai",
+        amount: 5000000,
+        keterangan: "Pembelian bahan baku untuk produksi",
+        data_general_journal: {
+          "Persediaan Bahan Baku": "uuid-1",
+          "Kas": "uuid-2"
+        }
+      }
+    },
+    {
+      account_name: "Aset Tetap",
+      detail: {
+        type: "Pencatatan Aset Tetap",
+        date: "2024-01-20",
+        option_acquisition: "Kredit",
+        harga_perolehan: 50000000,
+        keterangan: "Pembelian mesin produksi",
+        name_asset: "Mesin Produksi A",
+        tanggal_perolehan: "2024-01-20",
+        umur_manfaat_tahun: 10,
+        metode_penyusutan: "Garis Lurus",
+        nilai_sisa: 5000000,
+        is_depreciable: true,
+        rate: 0.1,
+        data_general_journal: {
+          "Aset Tetap": "uuid-3",
+          "Utang Usaha": "uuid-4"
+        },
+        asset_id: "asset-uuid-1"
+      }
+    }
+  ]);
+
+  const [journalDataVoid] = useState([
+    {
+      account_name: "Persediaan Bahan Baku",
+      detail: {
+        type: "Pembelian Bahan Baku",
+        date: "2024-01-15",
+        option_acquisition: "Tunai",
+        amount: 5000000,
+        keterangan: "Pembelian bahan baku untuk produksi",
+        data_general_journal: {
+          "Persediaan Bahan Baku": "uuid-1",
+          "Kas": "uuid-2"
+        }
+      }
+    },
+    {
+      account_name: "Aset tetap",
+      detail: {
+        type: "Pencatatan Aset Tetap",
+        date: "2024-01-20",
+        option_acquisition: "Kredit",
+        harga_perolehan: 50000000,
+        keterangan: "Pembelian mesin produksi",
+        name_asset: "Mesin Produksi A",
+        tanggal_perolehan: "2024-01-20",
+        umur_manfaat_tahun: 10,
+        metode_penyusutan: "Garis Lurus",
+        nilai_sisa: 5000000,
+        is_depreciable: true,
+        rate: 0.1,
+        data_general_journal: {
+          "Aset Tetap": "uuid-3",
+          "Utang Usaha": "uuid-4"
+        },
+        asset_id: "asset-uuid-1"
+      }
+    }
+  ]);
+
+  const groupedData = journalDataAgregasi.reduce((acc, entry) => {
+    if (!acc[entry.event]) {
+      acc[entry.event] = [];
+    }
+    acc[entry.event].push(entry);
+    return acc;
+  }, {});
+  
+
   // Filter states
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [statusFilter, setStatusFilter] = useState('FINALIZE');
-  const [eventFilter, setEventFilter] = useState('');
+  const [eventFilter, setEventFilter] = useState('Agregasi');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Format currency
@@ -152,9 +338,9 @@ const JournalDashboard = () => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'FINALIZE':
-        return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-100', label: 'Finalized' };
-      case 'DRAFT':
-        return { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-100', label: 'Draft' };
+        return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-100', label: 'Finalize' };
+      case 'DRAF':
+        return { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-100', label: 'Draf' };
       case 'VOID':
         return { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-100', label: 'Void' };
       default:
@@ -164,14 +350,14 @@ const JournalDashboard = () => {
 
   // Filter data
   const filteredData = useMemo(() => {
-    return journalData.filter(entry => {
+    return journalDataAgregasi.filter(entry => {
       const entryDate = new Date(entry.date).toISOString().split('T')[0];
       const matchDate =
         (!startDate || entryDate >= startDate) &&
         (!endDate || entryDate <= endDate);
   
       const matchStatus = !statusFilter || entry.accounts.some(acc => acc.action === statusFilter);
-      const matchEvent = !eventFilter || entry.event === eventFilter;
+      // const matchEvent = !eventFilter || entry.event === eventFilter;
       const matchSearch = !searchTerm || 
         entry.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
         entry.transaction_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -180,21 +366,9 @@ const JournalDashboard = () => {
           acc.account_code.includes(searchTerm)
         );
       
-      return matchDate && matchStatus && matchEvent && matchSearch;
+      return matchDate && matchStatus && matchSearch;
     });
-  }, [journalData, startDate, endDate, statusFilter, eventFilter, searchTerm]);
-  
-  // Group by event
-  const groupedData = useMemo(() => {
-    const grouped = {};
-    filteredData.forEach(entry => {
-      if (!grouped[entry.event]) {
-        grouped[entry.event] = [];
-      }
-      grouped[entry.event].push(entry);
-    });
-    return grouped;
-  }, [filteredData]);
+  }, [journalDataAgregasi, startDate, endDate, statusFilter, searchTerm]);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -215,7 +389,20 @@ const JournalDashboard = () => {
   }, [filteredData]);
 
   // Get unique events for filter
-  const uniqueEvents = [...new Set(journalData.map(entry => entry.event))];
+  const uniqueEvents = ["Agregasi", 'Non Agregasi']
+
+  // handle status filtered
+  const [isDataEmpty, setDataEmpty] = useState(false);
+  useEffect(() => {
+    const dataMap = {
+      'FINALIZE': journalDataAgregasi.length === 0 && journalDataNonAgregasi.length === 0,
+      'DRAF': journalDataDraf.length === 0,
+      'VOID': journalDataVoid.length === 0,
+    };
+  
+    setDataEmpty(dataMap[statusFilter || ''] || false);
+  }, [statusFilter, journalDataAgregasi, journalDataNonAgregasi, journalDataDraf, journalDataVoid]);
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -232,7 +419,7 @@ const JournalDashboard = () => {
                 <p className="text-gray-600">Kelola catatan jurnal akuntansi</p>
               </div>
             </div>
-            <button className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+            <button onClick={() => navigate('/internal/admin/general/journal/form')} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
               <Plus className="h-4 w-4" />
               <span>Tambah Entry</span>
             </button>
@@ -240,7 +427,7 @@ const JournalDashboard = () => {
         </div>
 
         {/* Filters & Stats Combined */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="bg-white rounded-lg shadow-sm mb-3">
           {/* Filter Section */}
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -274,27 +461,27 @@ const JournalDashboard = () => {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-32"
                 >
-                  <option value="">Semua</option>
-                  <option value="FINALIZE">Finalized</option>
-                  <option value="DRAFT">Draft</option>
+                  <option value="FINALIZE">Finalize</option>
+                  <option value="DRAF">Draf</option>
                   <option value="VOID">Void</option>
                 </select>
               </div>
 
               {/* Event Filter */}
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Event</label>
-                <select
-                  value={eventFilter}
-                  onChange={(e) => setEventFilter(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-36"
-                >
-                  <option value="">Semua Event</option>
-                  {uniqueEvents.map(event => (
-                    <option key={event} value={event}>{event.replace('_', ' ').toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
+              { statusFilter === 'FINALIZE' &&  (
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Event</label>
+                  <select
+                    value={eventFilter}
+                    onChange={(e) => setEventFilter(e.target.value)}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-36"
+                  >
+                    {uniqueEvents.map(event => (
+                      <option key={event} value={event}>{event}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Search */}
               <div className="flex-1 min-w-64">
@@ -348,8 +535,8 @@ const JournalDashboard = () => {
           </div>
         </div>
 
-        {startDate === today && endDate === today && (
-        <div className="text-sm text-red-800 rounded mb-1">
+        {statusFilter === 'FINALIZE' && journalDataAgregasi.length > 0 && journalDataNonAgregasi.length > 0 && startDate === today && endDate === today && (
+        <div className="text-sm text-red-800 rounded mb-3">
             Menampilkan data untuk <strong>hari ini</strong> {FormatIndoDate(today)}
         </div>
         )}
@@ -357,7 +544,7 @@ const JournalDashboard = () => {
 
         {/* Journal Entries */}
         <div className="space-y-6">
-          {Object.keys(groupedData).length === 0 ? (
+          {  isDataEmpty? (
             <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                 <FileText className="h-10 w-10 text-gray-500" />
@@ -392,107 +579,107 @@ const JournalDashboard = () => {
                     </div>
                 )}
                 </div>
-                <button className="mt-6 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 mx-auto transition-colors shadow-sm">
+                <button onClick={() => navigate('/internal/admin/general/journal/form')} className="mt-6 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 mx-auto transition-colors shadow-sm">
                 <Plus className="h-4 w-4" />
                 <span>Buat Entry Pertama</span>
                 </button>
             </div>
           ) : (
-            Object.entries(groupedData).map(([event, entries]) => (
-
-              <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="bg-gray-800 px-6 py-4">
-                  <h3 className="text-lg font-semibold text-white capitalize">
-                    {event.replace('_', ' ')} ({entries.length} entries)
-                  </h3>
-                </div>
-                
-                <div className="divide-y divide-gray-200">
-                  {entries.map((entry, entryIndex) => {
-                    const status = entry.accounts[0]?.action || 'UNKNOWN';
-                    const statusConfig = getStatusConfig(status);
-                    const StatusIcon = statusConfig.icon;
+            <>
+              { statusFilter === 'FINALIZE' ? (
+                Object.entries(groupedData).map(([event, entries]) => (
+                  <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="bg-gray-800 flex justify-between px-6 py-4">
+                      <h4 className="text-lg font-semibold text-white capitalize">
+                        {event.replace('_', ' ')}{' '}
+                      </h4>
+                      <h4 className="text-lg font-semibold text-white capitalize">
+                        {(eventFilter === 'Non Agregasi' && statusFilter === 'FINALIZE') && `${entries.length} entries`}
+                      </h4>
+                    </div>
                     
-                    // Sort accounts: DEBIT first, then KREDIT
-                    const sortedAccounts = [...entry.accounts].sort((a, b) => {
-                      if (a.type === 'DEBIT' && b.type === 'KREDIT') return -1;
-                      if (a.type === 'KREDIT' && b.type === 'DEBIT') return 1;
-                      return 0;
-                    });
-                    
-                    return (
-                      <div key={entryIndex} className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-3">
-                            <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
-                              <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium text-gray-900">{entry.date}</span>
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
-                                  {statusConfig.label}
-                                </span>
-                              </div>
-                              {entry.transaction_id && (
-                                <p className="text-sm text-gray-600">ID: {entry.transaction_id}</p>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                              <Edit3 className="h-4 w-4" />
-                            </button>
-                            <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
+                    <div className="divide-y divide-gray-200">
+                      {entries.map((entry, entryIndex) => {
+                        const status = entry.accounts[0]?.action || 'UNKNOWN';
+                        const statusConfig = getStatusConfig(status);
+                        const StatusIcon = statusConfig.icon;
                         
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-gray-200">
-                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
-                                <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
-                                <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
-                                <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedAccounts.map((account, accIndex) => (
-                                <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
-                                  <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
-                                  <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
-                                  <td className="py-3 px-3 text-sm text-right font-medium">
-                                    {account.type === 'DEBIT' ? (
-                                      <span className="text-green-600">{formatCurrency(account.amount)}</span>
-                                    ) : (
-                                      <span className="text-gray-400">-</span>
-                                    )}
-                                  </td>
-                                  <td className="py-3 px-3 text-sm text-right font-medium">
-                                    {account.type === 'KREDIT' ? (
-                                      <span className="text-blue-600">{formatCurrency(account.amount)}</span>
-                                    ) : (
-                                      <span className="text-gray-400">-</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
+                        // Sort accounts: DEBIT first, then KREDIT
+                        const sortedAccounts = [...entry.accounts].sort((a, b) => {
+                          if (a.type === 'DEBIT' && b.type === 'KREDIT') return -1;
+                          if (a.type === 'KREDIT' && b.type === 'DEBIT') return 1;
+                          return 0;
+                        });
+                        
+                        return (
+                          <div key={entryIndex} className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center space-x-3">
+                                <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
+                                  <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
+                                </div>
+                                <div>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-medium text-gray-900">{entry.date}</span>
+                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                                      {statusConfig.label}
+                                    </span>
+                                  </div>
+                                  {entry.transaction_id && (
+                                    <p className="text-sm text-gray-600">ID: {entry.transaction_id}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead>
+                                  <tr className="border-b border-gray-200">
+                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
+                                    <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
+                                    <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
+                                    <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {sortedAccounts.map((account, accIndex) => (
+                                    <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
+                                      <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
+                                      <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
+                                      <td className="py-3 px-3 text-sm text-right font-medium">
+                                        {account.type === 'DEBIT' ? (
+                                          <span className="text-green-600">{formatCurrency(account.amount)}</span>
+                                        ) : (
+                                          <span className="text-gray-400">-</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-3 text-sm text-right font-medium">
+                                        {account.type === 'KREDIT' ? (
+                                          <span className="text-blue-600">{formatCurrency(account.amount)}</span>
+                                        ) : (
+                                          <span className="text-gray-400">-</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              ) : (statusFilter === 'DRAF' ?  (
+                <DrafVoidDataComponent drafData={journalDataDraf} typeComponent={"DRAF"}/>
+              ) : (
+                statusFilter === 'VOID' && (
+                <DrafVoidDataComponent drafData={journalDataVoid} typeComponent={"VOID"}/>
+                )
+              )) }
+            </>
           )}
         </div>
       </div>

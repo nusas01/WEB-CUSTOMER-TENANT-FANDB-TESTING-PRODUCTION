@@ -5,6 +5,8 @@ import { SpinnerRelative } from '../../helper/spinner';
 import { fetchAssetsStoreInternal } from '../../actions/get';
 import { useLocation } from 'react-router-dom';
 import { useHandleDataUpdateGeneralJournal } from './updateGeneralJournal'
+
+
 export function GeneralJournalForm() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -12,6 +14,82 @@ export function GeneralJournalForm() {
   const [spinnerRelatif, setSpinnerRelatif] = useState(false);
   const dispatch = useDispatch();
   const location = useLocation();
+  const [requiredDate, setRequiredDate] = useState(false)
+  const [requiredAmount, setRequiredAmount] = useState(false)
+  const [requiredKeterangan, setRequiredKeterangan] = useState(false)
+  const [requiredOptionReturn, setRequiredOptionReturn] = useState(false)
+  const [requiredOptionAcquisition, setRequiredOptionAcquisition] = useState(false)
+  const [requiredNameAsset, setRequiredNameAsset] = useState(false)
+  const [requiredTanggalPerolehan, setRequiredTanggalPerolehan] = useState(false)
+  const [requiredUmurManfaatTahun, setRequiredUmurManfaatTahun] = useState(false)
+  const 
+
+  const validateCommonFields = () => {
+    if (formData.date === "") {
+      setRequiredDate(true)
+    }
+
+    if (formData.amount <= 0) {
+      setRequiredAmount(true)
+    }
+
+    if (formData.keterangan === "") {
+      setRequiredKeterangan(true)
+    }
+
+    if (requiredDate || requiredAmount || requiredKeterangan) {
+      return 
+    }
+  }
+
+  const ValidatePencatatanAsetTetap = () => {
+    if (formData.name_asset === "") {
+      setRequiredNameAsset(true)
+    }
+
+    if (formData.date === "") {
+      setRequiredDate(true)
+    }
+
+    if(formData.tanggal_perolehan === "") {
+      setRequiredTanggalPerolehan(true)
+    }
+
+    if (formData.umur_manfaat_tahun <= 0) {
+      setRequiredUmurManfaatTahun(true)
+    }
+
+
+  }
+  const handleInputJournal = (data) => {
+
+    switch (selectedType) {
+      case 'Retur Pembelian Bahan Baku':
+        validateCommonFields()
+        if (formData.option_return === "") {
+          setRequiredOptionReturn(true)
+        }
+
+        if (requiredOptionReturn) {
+          return
+        }
+      case 'Pembeliaan Bahan Baku':
+        validateCommonFields()
+        if (formData.option_acquisition === "") {
+          setRequiredOptionAcquisition(true)
+        }
+        
+        if (requiredOptionAcquisition) {
+          setRequiredOptionAcquisition(true)
+        }
+      case 'Pencatatan Piutang Usaha':
+        validateCommonFields()
+      case 'Pelunasan Piutang Usaha':
+        validateCommonFields()
+      case 'Pencatatan Aset Tetap':
+        
+    }
+  }
 
   const journalData = location.state?.journalData || null;
 
@@ -20,6 +98,9 @@ export function GeneralJournalForm() {
     selectedType: journalDataSelectedType,
     formData: journalDataFormData
   } = useHandleDataUpdateGeneralJournal(journalData);
+  console.log(journalData)
+  console.log(selectedAccount)
+  console.log(selectedType)
   
   useEffect(() => {
     if (journalData !== null) {
@@ -221,7 +302,7 @@ export function GeneralJournalForm() {
     }
 
     // Piutang Usaha
-    if (selectedAccount === 'Piutang Usaha') {
+    if (selectedType === 'Pencatatan Piutang Usaha' || selectedType === 'Pelunasan Piutang Usaha') {
       return (
         <div className="space-y-6">
           {commonFields}
@@ -246,13 +327,15 @@ export function GeneralJournalForm() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Harga Perolehan</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="inline w-4 h-4 mr-2" />
+                  Tanggal
+                </label>
                 <input
-                  type="number"
-                  min="1"
+                  type="date"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
-                  value={formData.harga_perolehan}
+                  value={formData.date || ""}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
                 />
               </div>
               <div>
@@ -297,6 +380,17 @@ export function GeneralJournalForm() {
                 />
               </div>
             </div>
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  onChange={(e) => handleInputChange('is_depreciable', e.target.checked)}
+                  value={formData.is_depreciable}
+                />
+                <span className="ml-2 text-sm text-gray-700">Dapat Disusutkan</span>
+              </label>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Opsi Akuisisi</label>
@@ -323,25 +417,37 @@ export function GeneralJournalForm() {
                     value={formData.metode_penyusutan}
                   >
                     <option value="">Pilih Metode</option>
-                    <option value="garis_lurus">Garis Lurus</option>
-                    <option value="saldo_menurun">Saldo Menurun</option>
+                    <option value="Garis Lurus">Garis Lurus</option>
+                    <option value="Saldo Menurun">Saldo Menurun</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Harga Perolehan</label>
                 <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  onChange={(e) => handleInputChange('is_depreciable', e.target.checked)}
-                  value={formData.is_depreciable}
+                  type="number"
+                  min="1"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
+                  value={formData.harga_perolehan}
                 />
-                <span className="ml-2 text-sm text-gray-700">Dapat Disusutkan</span>
+              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText className="inline w-4 h-4 mr-2" />
+                Keterangan
               </label>
+              <input
+                type="text"
+                maxLength="50"
+                value={formData.keterangan}
+                placeholder="Maksimal 50 karakter"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => handleInputChange('keterangan', e.target.value)}
+              />
             </div>
-            {commonFields}
           </div>
         )
       } else if (selectedType === 'Penjualan Aset Tetap') {
@@ -355,7 +461,8 @@ export function GeneralJournalForm() {
                     value={formData.id_asset || ""}
                     onChange={(e) => handleInputChange("id_asset", e.target.value)}
                     disabled={journalData !== null}
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 pr-10 border disabled:cursor-not-allowed disabled:opacity-60
+                      disabled:hover:border-gray-300 disabled:hover:bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="">Pilih Asset</option>
                     {dataAssetsStoreInternal.map((asset) => (
@@ -634,10 +741,11 @@ export function GeneralJournalForm() {
               </label>
               <div className="relative flex items-center">
                 <select
-                  value={selectedAccount}
+                  value={journalData !== null ? journalDataSelectedAccount : selectedAccount}
                   onChange={(e) => handleAccountChange(e.target.value)}
                   disabled={journalData !== null}
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  className="w-full px-4 py-3 pr-10 border border-gray-300 disabled:cursor-not-allowed disabled:opacity-60
+                  disabled:hover:border-gray-300 disabled:hover:bg-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                 >
                   <option value="">Pilih Akun</option>
                   {accounts.map((account) => (
@@ -666,7 +774,8 @@ export function GeneralJournalForm() {
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
                     disabled={journalData !== null}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    className="w-full px-4 py-3 border disabled:cursor-not-allowed disabled:opacity-60
+                    disabled:hover:border-gray-300 disabled:hover:bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                   >
                     <option value="">Pilih Jenis Transaksi</option>
                     {getTypeOptions(selectedAccount).map((type) => (
@@ -691,7 +800,7 @@ export function GeneralJournalForm() {
                     onClick={() => handleSubmit('DRAF')}
                     className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center"
                   >
-                    Simpan sebagai Draft
+                    Simpan sebagai Draf
                   </button>
                   <button
                     onClick={() => handleSubmit('FINALIZE')}
