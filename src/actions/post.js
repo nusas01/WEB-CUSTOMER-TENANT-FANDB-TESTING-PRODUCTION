@@ -347,7 +347,7 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
     }
 }
 
-const {setSuccessInputGeneralJournalInternal, setErrorInputGeneralJournalIntenal} = inputGeneralJournalInternalSlice.actions 
+const {setSuccessInputGeneralJournalInternal, setErrorInputGeneralJournalIntenal, setLoadingInputGeneralJournalInternal} = inputGeneralJournalInternalSlice.actions 
 export const inputGeneralJournalInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
@@ -356,6 +356,7 @@ export const inputGeneralJournalInternal = (data) => async (dispatch) => {
         },
         withCredentials: true,
     }
+    dispatch(setLoadingInputGeneralJournalInternal(true))
     try {
         const response = await axios.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
@@ -381,5 +382,7 @@ export const inputGeneralJournalInternal = (data) => async (dispatch) => {
         }
         dispatch(setErrorInputGeneralJournalIntenal(error.response?.data?.error))
         console.log("response data create transacrion internal: ", error)
+    } finally {
+        dispatch(setLoadingInputGeneralJournalInternal(false))
     }
 }

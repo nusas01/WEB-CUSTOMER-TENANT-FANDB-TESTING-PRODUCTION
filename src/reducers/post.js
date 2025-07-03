@@ -333,6 +333,7 @@ export const deleteProductInternalSlice = createSlice({
 const initialInputGeneralJournalInternalState = {
     successInputGeneralJournal: null,
     errorInputGeneralJournal: null,
+    loadingInputGeneralJournal: null,
 }
 export const inputGeneralJournalInternalSlice = createSlice({
     name: "inputGeneralJournalInternal",
@@ -346,9 +347,12 @@ export const inputGeneralJournalInternalSlice = createSlice({
             state.errorInputGeneralJournal = action.payload
             state.successInputGeneralJournal = null
         },
+        setLoadingInputGeneralJournalInternal: (state, action) => {
+            state.loadingInputGeneralJournal = action.payload
+        },      
         resetInputGeneralJournalInternal: (state) => {
             state.errorInputGeneralJournal = null
             state.successInputGeneralJournal = null
-        }       
+        },
     }
 })
