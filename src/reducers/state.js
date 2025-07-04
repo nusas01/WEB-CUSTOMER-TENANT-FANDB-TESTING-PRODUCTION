@@ -6,6 +6,7 @@ import { cartSlice, cartCashierSlice } from './cartSlice';
 import {
   orderTypeSlice,
   buttonActivityCustomerSlice,
+  filterGeneralJournalInternalSlice,
 } from './reducers'
 import { 
   getProductsCustomerSlice, 
@@ -56,6 +57,7 @@ import {
   setUsernameCustomerSlice,
   buyTransactionCashOnGoingInternalSlice,
   availbaleProductlSlice,
+  voidGeneralJournalInternalSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice
@@ -92,6 +94,7 @@ const persistedReducers = combineReducers({
   getGeneralJournalVoidInternal: getGeneralJournalVoidInternalSlice.reducer,
   getGeneralJournalDrafInternal: getGeneralJournalDrafInternalSlice.reducer,
   getAssetsStoreInternal: getAssetsStoreInternalSlice.reducer,
+  filterGeneralJournalInternal: filterGeneralJournalInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist
@@ -127,6 +130,7 @@ const nonPersistedReducers = {
   deleteProductInternalState: deleteProductInternalSlice.reducer,
   inputGeneralJournalInternalState: inputGeneralJournalInternalSlice.reducer,
   updateGeneralJournalInternalState: updateGeneralJournalInternalSlice.reducer, 
+  voidGeneralJournalInternalState: voidGeneralJournalInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

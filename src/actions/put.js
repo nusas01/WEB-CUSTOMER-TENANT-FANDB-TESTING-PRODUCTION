@@ -53,14 +53,14 @@ const { successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, 
 export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState) => {
     const configJson = {
         headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
     }
     dispatch(setLoadingUpdateGeneralJournalInternal(true))
     try {
-        const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_INTERNAL_URL}`, data, configJson)
+        const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
         
         dispatch(successUpdateGeneralJournalInternal(response.data?.success))

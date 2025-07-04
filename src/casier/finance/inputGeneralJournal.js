@@ -60,14 +60,53 @@ export function GeneralJournalForm() {
     loadStateRequired() 
   }, [selectedAccount, selectedType])
 
-  useEffect(() => {
-    setRequiredUmurManfaatTahun(false)
-    setRequiredNilaiSisa(false)
-    setRequiredRate(false)
-    setRequiredMetodePenyusutan(false)
-    setRequiredMetodeAmortisasi(false)
-  }, [formData.is_depreciable, formData.is_amortizable])
+  const journalData = location.state?.journalData || null;
 
+  const {
+    selectedAccount: journalDataSelectedAccount,
+    selectedType: journalDataSelectedType,
+    formData: journalDataFormData
+  } = useHandleDataUpdateGeneralJournal(journalData);
+  console.log(journalData)
+  console.log(selectedAccount)
+  console.log(selectedType)
+
+  console.log('🚀 formData:', formData);
+console.log('🧾 is_depreciable:', formData.is_depreciable);
+useEffect(() => {
+  if (journalData !== null) {
+    setSelectedAccount(journalDataSelectedAccount);
+    setSelectedType(journalDataSelectedType);
+    setFormData(journalDataFormData);
+  }
+}, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
+
+  useEffect(() => {
+  
+    const updatedData = { ...formData };
+
+    const shouldDeleteDepreciationFields = formData.is_depreciable !== true;
+    const shouldDeleteAmortizationFields = formData.is_amortizable !== true;
+  
+    if (shouldDeleteDepreciationFields && shouldDeleteAmortizationFields) {
+      // Kalau keduanya false, hapus semua
+      delete updatedData.umur_manfaat_tahun;
+      delete updatedData.nilai_sisa;
+      delete updatedData.rate;
+      delete updatedData.metode_penyusutan;
+      delete updatedData.metode_amortisasi;
+      setRequiredUmurManfaatTahun(false)
+      setRequiredNilaiSisa(false)
+      setRequiredRate(false)
+      setRequiredMetodePenyusutan(false)
+      setRequiredMetodeAmortisasi(false)
+    }
+    
+
+    setFormData(updatedData);
+  }, [formData.is_depreciable, formData.is_amortizable]);
+  
+  
   const validateCommonFields = () => {
     let isValid = true;
   
@@ -128,12 +167,7 @@ export function GeneralJournalForm() {
         setRequiredMetodePenyusutan(true);
         isValid = false;
       }
-    } else {
-      delete formData.umur_manfaat_tahun;
-      delete formData.nilai_sisa;
-      delete formData.rate;
-      delete formData.metode_penyusutan;
-    }
+    } 
 
     if (!formData.option_acquisition || formData.option_acquisition === "") {
       setRequiredOptionAcquisition(true)
@@ -228,12 +262,7 @@ export function GeneralJournalForm() {
         setRequiredMetodeAmortisasi(true);
         isValid = false;
       } 
-    } else {
-      delete formData.umur_manfaat_tahun
-      delete formData.nilai_sisa
-      delete formData.rate
-      delete formData.metode_amortisasi
-    }
+    } 
 
     if (!formData.option_acquisition || formData.option_acquisition === "") {
       setRequiredOptionAcquisition(true)
@@ -263,7 +292,7 @@ export function GeneralJournalForm() {
     return isValid;
   }
   
-  const handleInputJournal = () => {
+  const handleInputJournal = (action) => {
     loadStateRequired() 
 
     switch (selectedType) {
@@ -328,28 +357,8 @@ export function GeneralJournalForm() {
         break;
     }
     
-    handleSubmitJournal()
+    handleSubmitJournal(action)
   };
-  
-
-  const journalData = location.state?.journalData || null;
-
-  const {
-    selectedAccount: journalDataSelectedAccount,
-    selectedType: journalDataSelectedType,
-    formData: journalDataFormData
-  } = useHandleDataUpdateGeneralJournal(journalData);
-  console.log(journalData)
-  console.log(selectedAccount)
-  console.log(selectedType)
-  
-  useEffect(() => {
-    if (journalData !== null) {
-      setSelectedAccount(journalDataSelectedAccount);
-      setSelectedType(journalDataSelectedType);
-      setFormData(journalDataFormData);
-    }
-  }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
   
   const accounts = [
     { value: 'Persediaan Bahan Baku', label: 'Persediaan Bahan Baku' },
@@ -444,11 +453,18 @@ export function GeneralJournalForm() {
     }
   })
 
-  const handleSubmitJournal = () => {
+  const handleSubmitJournal = (action) => {
+    setFormData({
+      ...formData,
+      action: action,
+    });
+    
+
+    if (journalData !== null) {
     // update Journal 
-    if (journalData.length > 0) {
       dispatch(UpdateGeneralJournalInternal(formData))
     } else {
+      // input journal
       dispatch(inputGeneralJournalInternal(formData))
     }
 
@@ -689,7 +705,7 @@ export function GeneralJournalForm() {
                       ? requiredUmurManfaatTahun ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                   onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
-                  value={formData.umur_manfaat_tahun}
+                  value={formData.umur_manfaat_tahun ?? ''}
                 />
                 {requiredUmurManfaatTahun && <p className="text-red-500 text-xs mt-1">Umur Manfaat wajib diisi dan harus lebih dari nol.</p>}
               </div>
@@ -706,7 +722,7 @@ export function GeneralJournalForm() {
                       ? requiredNilaiSisa ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                   onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
-                  value={formData.nilai_sisa}
+                  value={formData.nilai_sisa ?? ''}
                 />
                 {requiredNilaiSisa && <p className="text-red-500 text-xs mt-1">Nilai Sisa wajib diisi dan tidak boleh negatif.</p>}
               </div>
@@ -723,7 +739,7 @@ export function GeneralJournalForm() {
                       ? requiredRate ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                   onChange={(e) => handleInputChange('rate', e.target.value)}
-                  value={formData.rate}
+                  value={formData.rate ?? ''}
                 />
                 {requiredRate && <p className="text-red-500 text-xs mt-1">Rate wajib diisi antara 1-100%.</p>}
               </div>
@@ -756,7 +772,7 @@ export function GeneralJournalForm() {
                         ? requiredMetodePenyusutan ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white text-black'
                         : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                     onChange={(e) => handleInputChange('metode_penyusutan', e.target.value)}
-                    value={formData.metode_penyusutan}
+                    value={formData.metode_penyusutan ?? ''}
                   >
                     <option value="">Pilih Metode</option>
                     <option value="Garis Lurus">Garis Lurus</option>
@@ -990,7 +1006,7 @@ export function GeneralJournalForm() {
                     ? requiredUmurManfaatTahun ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                 onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
-                value={formData.umur_manfaat_tahun}
+                value={formData.umur_manfaat_tahun || ''}
               />
               {requiredUmurManfaatTahun && <p className="text-red-500 text-xs mt-1">Umur Manfaat wajib diisi dan harus lebih dari nol.</p>}
             </div>
@@ -1006,7 +1022,7 @@ export function GeneralJournalForm() {
                     ? requiredNilaiSisa ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                 onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
-                value={formData.nilai_sisa}
+                value={formData.nilai_sisa ?? ''}
               />
               {requiredNilaiSisa && <p className="text-red-500 text-xs mt-1">Nilai Sisa wajib diisi dan tidak boleh negatif.</p>}
             </div>
@@ -1023,7 +1039,7 @@ export function GeneralJournalForm() {
                     ? requiredRate ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                 onChange={(e) => handleInputChange('rate', e.target.value)}
-                value={formData.rate}
+                value={formData.rate ?? ''}
               />
               {requiredRate && <p className="text-red-500 text-xs mt-1">Rate wajib diisi antara 1-100%.</p>}
             </div>
@@ -1057,7 +1073,7 @@ export function GeneralJournalForm() {
                       ? requiredMetodePenyusutan ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white' // Reusing requiredMetodePenyusutan for simplicity
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
                   onChange={(e) => handleInputChange('metode_amortisasi', e.target.value)}
-                  value={formData.metode_amortisasi}
+                  value={formData.metode_amortisasi ?? ''}
                 >
                   <option value="">Pilih Metode</option>
                   <option value="garis_lurus">Garis Lurus</option>
@@ -1093,7 +1109,7 @@ export function GeneralJournalForm() {
       )}
 
       { spinner && (
-        <SpinnerFixed/>
+        <SpinnerFixed colors={'fill-gray-800'}/>
       )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -1171,7 +1187,7 @@ export function GeneralJournalForm() {
               <div className="mt-8 pt-6 border-t border-gray-200">
                 <div className="flex flex-col sm:flex-row gap-4 justify-end">
                   <button
-                    onClick={() => handleInputJournal()}
+                    onClick={() => handleInputJournal('DRAF')}
                     className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center"
                   >
                     Simpan sebagai Draf

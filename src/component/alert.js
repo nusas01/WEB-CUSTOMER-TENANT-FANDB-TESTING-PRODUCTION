@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle, Ban } from "lucide-react"
 import { useRef } from "react"
 import { X } from 'lucide-react'
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
@@ -410,6 +410,45 @@ export const DeleteConfirmationModal = ({ onConfirm, onCancel, colorsType }) => 
   );
 };
 
+
+export const VoidJournalConfirmationModal = ({
+  onConfirm,
+  onCancel,
+  journalName = 'Jurnal Umum',
+}) => {
+  return (
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-6">
+        <div className="flex flex-col items-center text-center space-y-2">
+          <AlertTriangle className="text-yellow-500 w-10 h-10" />
+          <h2 className="text-xl font-semibold text-gray-800">
+            Void {journalName}?
+          </h2>
+          <p className="text-gray-600 text-sm">
+            Apakah Anda yakin ingin melakukan <strong>void</strong> pada{" "}
+            <span className="text-gray-800">{journalName}</span>? Data akan tetap disimpan namun tidak akan dianggap aktif.
+          </p>
+        </div>
+
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={onCancel}
+            className="border border-gray-300 text-gray-600 px-5 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition"
+          >
+            <Ban className="w-4 h-4" />
+            Void Jurnal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
   
 

@@ -19,28 +19,59 @@ import Sidebar from '../../component/sidebar';
 import {FormatIndoDate} from '../../helper/formatdate'
 import {DrafVoidDataComponent} from './drafVoidGeneralJournal'
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {voidGeneralJournalInternal} from '../../actions/patch'
+import {voidGeneralJournalInternalSlice} from '../../reducers/patch'
+import{VoidJournalConfirmationModal, ErrorAlert} from '../../component/alert'
+import {filterGeneralJournalInternalSlice} from '../../reducers/reducers'
 
 export default function GeneralJournalDashboard() {
     const [activeMenu, setActiveMenu] = useState("General Journals")
+    const dispatch = useDispatch()
+
+    // handle response error journal draf to 
+    const [errorAllertVoid, setErrorAlertVoid] = useState(false)
+    const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
+    const {errorVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
+
+    useEffect(() => {
+      if (errorVoidGeneralJournal) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setErrorAlertVoid(true);
+    
+        const timeOut = setTimeout(() => {
+          setErrorAlertVoid(false);
+          dispatch(resetVoidGeneralJournal());
+        }, 3000); 
+    
+        return () => clearTimeout(timeOut);
+      }
+    }, [errorVoidGeneralJournal]);
 
     return (
-        <div className="flex">
-            <div className="w-1/10 min-w-[250px]">
-                <Sidebar activeMenu={activeMenu}/>
-            </div>
+      <div className="flex">
+        {errorAllertVoid && (
 
-            <div className="flex-1">
-                <JournalDashboard/>
-            </div>
+          <ErrorAlert message={"There was an error on the internal server, we are fixing it."}/>
+        )}
+
+          <div className="w-1/10 min-w-[250px]">
+              <Sidebar activeMenu={activeMenu}/>
+          </div>
+
+          <div className="flex-1">
+              <JournalDashboard/>
+          </div>
         </div>
     )
 }
 
 const JournalDashboard = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [journalDataNonAgregasi] = useState([
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "penjualan",
       "transaction_id": "TX123456789",
       "accounts": [
@@ -95,7 +126,7 @@ const JournalDashboard = () => {
       ]
     },
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "pembelian",
       "transaction_id": "",
       "accounts": [
@@ -134,7 +165,7 @@ const JournalDashboard = () => {
       ]
     },
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "retur_penjualan",
       "transaction_id": "TX123456790",
       "accounts": [
@@ -160,7 +191,7 @@ const JournalDashboard = () => {
   // Sample data dengan berbagai status
   const [journalDataAgregasi] = useState([
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "penjualan",
       "transaction_id": "TX123456789",
       "accounts": [
@@ -183,7 +214,7 @@ const JournalDashboard = () => {
       ]
     },
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "pembelian",
       "transaction_id": "",
       "accounts": [
@@ -206,7 +237,7 @@ const JournalDashboard = () => {
       ]
     },
     {
-      "date": "2024-12-01",
+      "date": "2025-07-04",
       "event": "retur_penjualan",
       "transaction_id": "TX123456790",
       "accounts": [
@@ -319,11 +350,22 @@ const JournalDashboard = () => {
 
   // Filter states
   const today = new Date().toISOString().split('T')[0];
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
-  const [statusFilter, setStatusFilter] = useState('FINALIZE');
-  const [eventFilter, setEventFilter] = useState('Agregasi');
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [startDate, setStartDate] = useState(today);
+  // const [endDate, setEndDate] = useState(today);
+  // const [statusFilter, setStatusFilter] = useState('FINALIZE');
+  // const [eventFilter, setEventFilter] = useState('Agregasi');
+  // const [searchTerm, setSearchTerm] = useState('');
+  const {startDate, endDate, statusFilter, eventFilter, searchTerm} = useSelector((state) => state.persisted.filterGeneralJournalInternal)
+  const {setStartDate, setEndDate, setStatusFilter, setEventFilter, setSearchTerm, resetFilterGeneralJournal} = filterGeneralJournalInternalSlice.actions
+  useEffect(() => {
+    if (statusFilter === null) {
+      dispatch(setStartDate(today))
+      dispatch(setEndDate(today))
+      dispatch(setStatusFilter('FINALIZE'))
+      dispatch(setEventFilter('Agregasi'))
+    }
+  }, [statusFilter])
+
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -349,15 +391,10 @@ const JournalDashboard = () => {
   };
 
   // Filter data
+  const activeJournalData = eventFilter === 'Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
   const filteredData = useMemo(() => {
-    return journalDataAgregasi.filter(entry => {
-      const entryDate = new Date(entry.date).toISOString().split('T')[0];
-      const matchDate =
-        (!startDate || entryDate >= startDate) &&
-        (!endDate || entryDate <= endDate);
-  
+    return activeJournalData.filter(entry => {
       const matchStatus = !statusFilter || entry.accounts.some(acc => acc.action === statusFilter);
-      // const matchEvent = !eventFilter || entry.event === eventFilter;
       const matchSearch = !searchTerm || 
         entry.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
         entry.transaction_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -365,28 +402,37 @@ const JournalDashboard = () => {
           acc.account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           acc.account_code.includes(searchTerm)
         );
-      
-      return matchDate && matchStatus && matchSearch;
+  
+      return matchStatus && matchSearch;
     });
-  }, [journalDataAgregasi, startDate, endDate, statusFilter, searchTerm]);
-
+  }, [activeJournalData, statusFilter, searchTerm]);
+  
+  
+  
   // Calculate totals
   const totals = useMemo(() => {
     let totalDebit = 0;
     let totalKredit = 0;
-    
+  
     filteredData.forEach(entry => {
       entry.accounts.forEach(acc => {
-        if (acc.type === 'DEBIT') {
-          totalDebit += acc.amount;
-        } else {
-          totalKredit += acc.amount;
+        if (acc.action === 'FINALIZE') { // tetap cek status di level akun
+          if (acc.type === 'DEBIT') {
+            totalDebit += acc.amount;
+          } else if (acc.type === 'KREDIT') {
+            totalKredit += acc.amount;
+          }
         }
       });
     });
-    
+  
     return { totalDebit, totalKredit };
   }, [filteredData]);
+  console.log("totoal debit: " , totals.totalDebit)
+  console.log("total kredit: ", totals.totalKredit)
+  console.log("Status Filter:", statusFilter);
+  console.log("filteredData:", filteredData);
+
 
   // Get unique events for filter
   const uniqueEvents = ["Agregasi", 'Non Agregasi']
@@ -404,11 +450,42 @@ const JournalDashboard = () => {
   }, [statusFilter, journalDataAgregasi, journalDataNonAgregasi, journalDataDraf, journalDataVoid]);
 
 
+
+  // handle Draf To void general journal 
+  const [journalVoid, setjournalVoid] = useState(null)
+  const [modelConfirmVoid, setModelConfirmVoid] = useState(false)
+  const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
+  const {successVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
+
+  const handeSubmitVoid = ({data}) => {
+    dispatch(voidGeneralJournalInternal(data))
+  }
+
+  const handleConfirmModelVoid = (data) => {
+    setjournalVoid(data)
+    setModelConfirmVoid(true)
+  }
+
+  const handleCloseConfirmModelVoid = () => {
+    setjournalVoid(null)
+    setModelConfirmVoid(false)
+  }
+
+  useEffect(() => {
+    if (successVoidGeneralJournal) {
+      dispatch(resetVoidGeneralJournal())
+    }
+  }, [successVoidGeneralJournal])
+  
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">        
+
+        { modelConfirmVoid && (
+          <VoidJournalConfirmationModal onConfirm={handeSubmitVoid} onCancel={handleCloseConfirmModelVoid} journalName={journalVoid}/>
+        )}
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
               <div className="bg-gray-800 p-2 rounded-lg">
@@ -427,7 +504,7 @@ const JournalDashboard = () => {
         </div>
 
         {/* Filters & Stats Combined */}
-        <div className="bg-white rounded-lg shadow-sm mb-3">
+        <div className="bg-white rounded-lg shadow-sm mb-4">
           {/* Filter Section */}
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -438,7 +515,7 @@ const JournalDashboard = () => {
                     <input
                     type="date"
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => dispatch(setStartDate(e.target.value))}
                     className="pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30"
                     />
                 </div>
@@ -447,7 +524,7 @@ const JournalDashboard = () => {
                     <input
                     type="date"
                     value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    onChange={(e) => dispatch(setEndDate(e.target.value))}
                     className="pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30"
                     />
                 </div>
@@ -458,7 +535,7 @@ const JournalDashboard = () => {
                 <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Status</label>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => dispatch(setStatusFilter(e.target.value))}
                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-32"
                 >
                   <option value="FINALIZE">Finalize</option>
@@ -473,7 +550,7 @@ const JournalDashboard = () => {
                   <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Event</label>
                   <select
                     value={eventFilter}
-                    onChange={(e) => setEventFilter(e.target.value)}
+                    onChange={(e) => dispatch(setEventFilter(e.target.value))}
                     className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-36"
                   >
                     {uniqueEvents.map(event => (
@@ -491,7 +568,7 @@ const JournalDashboard = () => {
                     type="text"
                     placeholder="Cari berdasarkan event, transaction ID, atau akun..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => dispatch(setSearchTerm(e.target.value))}
                     className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
                   />
                 </div>
@@ -500,39 +577,41 @@ const JournalDashboard = () => {
           </div>
 
           {/* Stats Section */}
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100">
-                <div>
-                  <p className="text-sm font-medium text-green-700">Total Debit</p>
-                  <p className="text-xl font-bold text-green-800">{formatCurrency(totals.totalDebit)}</p>
+          { statusFilter === 'FINALIZE' && (
+            <div className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100">
+                  <div>
+                    <p className="text-sm font-medium text-green-700">Total Debit</p>
+                    <p className="text-xl font-bold text-green-800">{formatCurrency(totals.totalDebit)}</p>
+                  </div>
+                  <div className="bg-green-200 p-2 rounded-full">
+                    <TrendingUp className="h-5 w-5 text-green-700" />
+                  </div>
                 </div>
-                <div className="bg-green-200 p-2 rounded-full">
-                  <TrendingUp className="h-5 w-5 text-green-700" />
+                
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div>
+                    <p className="text-sm font-medium text-blue-700">Total Kredit</p>
+                    <p className="text-xl font-bold text-blue-800">{formatCurrency(totals.totalKredit)}</p>
+                  </div>
+                  <div className="bg-blue-200 p-2 rounded-full">
+                    <DollarSign className="h-5 w-5 text-blue-700" />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-                <div>
-                  <p className="text-sm font-medium text-blue-700">Total Kredit</p>
-                  <p className="text-xl font-bold text-blue-800">{formatCurrency(totals.totalKredit)}</p>
-                </div>
-                <div className="bg-blue-200 p-2 rounded-full">
-                  <DollarSign className="h-5 w-5 text-blue-700" />
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
-                <div>
-                  <p className="text-sm font-medium text-purple-700">Total Entries</p>
-                  <p className="text-xl font-bold text-purple-800">{filteredData.length}</p>
-                </div>
-                <div className="bg-purple-200 p-2 rounded-full">
-                  <FileText className="h-5 w-5 text-purple-700" />
+                
+                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
+                  <div>
+                    <p className="text-sm font-medium text-purple-700">Total Entries</p>
+                    <p className="text-xl font-bold text-purple-800">{filteredData.length}</p>
+                  </div>
+                  <div className="bg-purple-200 p-2 rounded-full">
+                    <FileText className="h-5 w-5 text-purple-700" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {statusFilter === 'FINALIZE' && journalDataAgregasi.length > 0 && journalDataNonAgregasi.length > 0 && startDate === today && endDate === today && (
@@ -587,14 +666,12 @@ const JournalDashboard = () => {
           ) : (
             <>
               { statusFilter === 'FINALIZE' ? (
-                Object.entries(groupedData).map(([event, entries]) => (
+                (eventFilter === 'Agregasi' ? Object.entries(groupedData) : journalDataNonAgregasi.map((entry) => [entry.event, [entry]])).map(
+                  ([event, entries], index) => (
                   <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div className="bg-gray-800 flex justify-between px-6 py-4">
                       <h4 className="text-lg font-semibold text-white capitalize">
                         {event.replace('_', ' ')}{' '}
-                      </h4>
-                      <h4 className="text-lg font-semibold text-white capitalize">
-                        {(eventFilter === 'Non Agregasi' && statusFilter === 'FINALIZE') && `${entries.length} entries`}
                       </h4>
                     </div>
                     
@@ -673,7 +750,7 @@ const JournalDashboard = () => {
                   </div>
                 ))
               ) : (statusFilter === 'DRAF' ?  (
-                <DrafVoidDataComponent drafData={journalDataDraf} typeComponent={"DRAF"}/>
+                <DrafVoidDataComponent drafData={journalDataDraf} typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
               ) : (
                 statusFilter === 'VOID' && (
                 <DrafVoidDataComponent drafData={journalDataVoid} typeComponent={"VOID"}/>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { 
   Eye, 
   Edit3, 
@@ -11,9 +11,12 @@ import {
 import {GeneralJournalForm} from './inputGeneralJournal'
 import { data, useNavigate } from 'react-router-dom';
 
-export const DrafVoidDataComponent = ({ drafData = [], typeComponent }) => {
+export const DrafVoidDataComponent = ({ 
+  drafData = [], 
+  typeComponent,
+  handleConfirmModelVoid,
+  }) => {
     const navigate = useNavigate()
-
     const handleDrafJournal = (data) => {
       navigate('/internal/admin/general/journal/form', { state: { journalData: data } });
     }
@@ -314,7 +317,7 @@ export const DrafVoidDataComponent = ({ drafData = [], typeComponent }) => {
                           <button onClick={() => handleDrafJournal(entry)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <Edit3 className="h-4 w-4" />
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <button onClick={() => handleConfirmModelVoid(entry.account_name)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>

@@ -31,6 +31,41 @@ export const buttonActivityCustomerSlice = createSlice({
     }
 })
 
+const initialFilterGeneralJournalInternalState = {
+    startDate: null,
+    endDate: null,
+    statusFilter: null,
+    eventFilter: null, 
+    searchTerm: null,
+}
+export const filterGeneralJournalInternalSlice = createSlice({
+    name: "filterGeneralJournal",
+    initialState: initialFilterGeneralJournalInternalState,
+    reducers: {
+        setStartDate: (state, action) => {
+            state.startDate = action.payload
+        },
+        setEndDate: (state, action) => {
+            state.endDate = action.payload
+        },
+        setStatusFilter: (state, action) => {
+            state.statusFilter = action.payload
+        },
+        setEventFilter: (state, action) => {
+            state.eventFilter = action.payload
+        },
+        setSearchTerm: (state, action) => {
+            state.searchTerm = action.payload
+        },
+        resetFilterGeneralJournal: (state) => {
+            state.startDate = null
+            state.endDate = null
+            state.statusFilter = null
+            state.eventFilter = null
+            state.searchTerm = null            
+        }
+    }
+})
 
 
 
