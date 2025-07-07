@@ -1,222 +1,534 @@
 import { useState } from "react";
 import Sidebar from "../component/sidebar";
-import IncomeOutcomeChart from "../component/grafik";
-import DonutChart from "../component/donutChart";
-import { SalesLineChart, Heatmap } from "../component/grafik";
+import { 
+  TrendingUp, 
+  ShoppingCart, 
+  DollarSign, 
+  Users, 
+  Clock, 
+  Star,
+  Package,
+  Calendar,
+  ChartNoAxesCombined,
+  Bell,
+  Settings,
+  BarChart3,
+  PieChart,
+  Activity,
+  UserCheck,
+  ChevronDown,
+  Filter,
+  Download,
+  RefreshCw,
+  CalendarDays,
+  AlertCircle
+} from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 export default function KasirStatistik() {
-    const [activeMenu, setActiveMenu] = useState("statistik")
-    const stats = [
-        { label: "Profit Margin", value: "98.5%" },
-        { label: "Total Keuntungan", value: `IDR 100.000.000` },
-        { label: "Total Modal", value: `IDR 150.000.000` },
-        { label: "Total Pendapatan", value: `IDR 250.000.000` },
-      ];
-      const transaction = [
-        { label: "Total Transaksi", value: "98.5%" },
-        { label: "Rata-rata Harga per Pesanan", value: `IDR 50.000` },
-        { label: "Jam Sibuk", value: "16.00 - 17.00" },
-      ];
-      const donutChartTransaction = {
-        data: [20, 30, 50, 100, 55, 80, 99, 120],
-        labels: ["Qris", "BCA", "BRI", "BNI", "Mandiri", "Dana", "Gopay", "ShopeePay"],
-        colors: [
-          "#000000", // Qris (Black)
-          "#0d47a1", // BCA (Deep Blue)
-          "#ff6600", // BRI (Orange)
-          "#0077c8", // BNI (Blue)
-          "#ffcc00", // Mandiri (Yellow)
-          "#008ef6", // Dana (Sky Blue)
-          "#00aa13", // Gopay (Green)
-          "#ff5722", // ShopeePay (Red-Orange)
-        ],
-      };
-      const transactionGrafik = {
-        data: [0, 27000, 25000, 27000, 40000],
-        labels: [
-            "25 January 2023",
-            "28 January 2023",
-            "31 January 2023",
-            "1 February 2023",
-            "3 February 2023",
-          ],
-        colors: ["#111827"],
+  const navigate = useNavigate()
+  const [activeMenu, setActiveMenu] = useState('statistics')
+  const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  const [salesDateRange, setSalesDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+  const [channelDateRange, setChannelDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+  const [productsDateRange, setProductsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+  const [customerDateRange, setCustomerDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+  const [timeStatsDateRange, setTimeStatsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+  const [dailyPerfDateRange, setDailyPerfDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+
+  // Validation function for date range (max 31 days)
+  const validateDateRange = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 31;
+  };
+
+  // Date range handler with validation
+  const handleDateRangeChange = (setter, field, value) => {
+    setter(prev => {
+      const newRange = { ...prev, [field]: value };
+      if (validateDateRange(newRange.start, newRange.end)) {
+        return newRange;
       }
-    const options = {
-    chart: {
-        type: "area",
-        height: 300,
-        toolbar: { show: false },
-        zoom: { enabled: false },
-    },
-    colors: ["#2563eb", "#9333ea"],
-    stroke: {
-        curve: "smooth",
-        width: 2,
-    },
-    fill: {
-        type: "gradient",
-        gradient: {
-        shadeIntensity: 0.1,
-        opacityFrom: 0.5,
-        opacityTo: 0,
-        stops: [50, 100, 100, 100],
-        },
-    },
-    grid: {
-        strokeDashArray: 2,
-        borderColor: "#e5e7eb",
-    },
-    xaxis: {
-        categories: [
-        "25 Jan", "26 Jan", "27 Jan", "28 Jan", "29 Jan", "30 Jan", "31 Jan",
-        "1 Feb", "2 Feb", "3 Feb", "4 Feb", "5 Feb"
-        ],
-        labels: {
-        style: { colors: "#9ca3af", fontSize: "13px" },
-        },
-    },
-    yaxis: {
-        labels: {
-        style: { colors: "#9ca3af", fontSize: "13px" },
-        formatter: (value) => (value >= 1000 ? `${value / 1000}k` : value),
-        },
-    },
-    legend: { show: false },
-    dataLabels: { enabled: false },
-    tooltip: {
-        x: { format: "dd MMM" },
-        y: {
-        formatter: (value) => `$${value >= 1000 ? `${value / 1000}k` : value}`,
-        },
-    },
-    };
+      return prev;
+    });
+  };
 
-    const series = [
-    {
-        name: "Income",
-        data: [18000, 51000, 60000, 38000, 88000, 50000, 40000, 52000, 88000, 80000, 60000, 70000],
-    },
-    {
-        name: "Outcome",
-        data: [27000, 38000, 60000, 77000, 40000, 50000, 49000, 29000, 42000, 27000, 42000, 50000],
-    },
-    ];
+  // Sample data
+  const salesData = {
+    daily: { revenue: 15250000, transactions: 156, aov: 97756 },
+    weekly: { revenue: 89500000, transactions: 892, aov: 100336 },
+    monthly: { revenue: 385000000, transactions: 3847, aov: 100078 }
+  };
 
-    const product = [
-        { label: "Terjual", value: "12500" },
-        { label: "Paling Laris", value: `steak babi`},
-        { label: "Jarang di Pesana", value: "rusa"},
-        { label: "Profit Tertinggi", value: "anggur merah"},
-        { label: "Penurunan Keuntungan", value: "Jasuke"},
-    ]
-    const dataHeatmap = [
-        [40, 70, 65, 27, 86, 12, 63, 52, 46, 42],
-        [37, 10, 16, 70, 33, 31, 51, 47, 1, 21],
-        [51, 85, 6, 21, 53, 73, 19, 19, 22, 8],
-        [57, 46, 59, 6, 73, 4, 25, 39, 55, 8],
-        [62, 47, 53, 46, 4, 34, 80, 59, 38, 73],
-        [42, 62, 32, 83, 7, 39, 79, 85, 58, 4],
-        [69, 60, 62, 25, 32, 7, 8, 25, 13, 2],
-        [11, 29, 7, 41, 63, 35, 28, 30, 56, 41]
-      ];
-      
-      const labelsHeatmap = [
-        "Product A",
-        "Product B",
-        "Product C",
-        "Product D",
-        "Product E",
-        "Product F",
-        "Product G",
-        "Product H"
-      ];
-      
-      const datesHeatmap = [
-        "01", "02", "03", "04", "05", 
-        "06", "07", "08", "09", "10"
-      ];
+  const channelData = [
+    { name: 'Kasir', revenue: 125000000, percentage: 45, transactions: 1234, color: 'bg-gradient-to-r from-gray-800 to-gray-700' },
+    { name: 'Website', revenue: 89000000, percentage: 32, transactions: 876, color: 'bg-gradient-to-r from-blue-600 to-blue-500' },
+  ];
+
+  const topProducts = [
+    { name: 'Nasi Gudeg Special', sold: 234, revenue: 35100000, growth: 12, category: 'Main Course' },
+    { name: 'Ayam Bakar Bumbu', sold: 198, revenue: 29700000, growth: 8, category: 'Main Course' },
+    { name: 'Sate Kambing', sold: 167, revenue: 25050000, growth: -3, category: 'Grilled' },
+    { name: 'Es Teh Manis', sold: 445, revenue: 13350000, growth: 15, category: 'Beverages' },
+    { name: 'Gudeg Jogja', sold: 123, revenue: 18450000, growth: 5, category: 'Traditional' }
+  ];
+
+  const customerStats = {
+    totalCustomers: 2847,
+    registeredCustomers: 1892,
+    guestCustomers: 955,
+    repeatCustomerRate: 68,
+    newCustomersThisMonth: 234
+  };
+
+  const topCustomers = [
+    { name: 'Ahmad Wijaya', orders: 24, spent: 4850000, lastOrder: '2 hari lalu', level: 'VIP' },
+    { name: 'Siti Nurhaliza', orders: 18, spent: 3420000, lastOrder: '1 hari lalu', level: 'Gold' },
+    { name: 'Budi Santoso', orders: 15, spent: 2950000, lastOrder: '3 hari lalu', level: 'Silver' },
+    { name: 'Dewi Lestari', orders: 12, spent: 2340000, lastOrder: '1 hari lalu', level: 'Silver' }
+  ];
+
+  const peakHours = [
+    { hour: '06:00', orders: 12 },
+    { hour: '07:00', orders: 28 },
+    { hour: '08:00', orders: 45 },
+    { hour: '09:00', orders: 32 },
+    { hour: '10:00', orders: 18 },
+    { hour: '11:00', orders: 67 },
+    { hour: '12:00', orders: 89 },
+    { hour: '13:00', orders: 78 },
+    { hour: '14:00', orders: 45 },
+    { hour: '15:00', orders: 23 },
+    { hour: '16:00', orders: 34 },
+    { hour: '17:00', orders: 56 },
+    { hour: '18:00', orders: 87 },
+    { hour: '19:00', orders: 92 },
+    { hour: '20:00', orders: 67 },
+    { hour: '21:00', orders: 34 }
+  ];
+
+  const weeklyData = [
+    { day: 'Senin', orders: 234, revenue: 35600000 },
+    { day: 'Selasa', orders: 198, revenue: 29800000 },
+    { day: 'Rabu', orders: 267, revenue: 42300000 },
+    { day: 'Kamis', orders: 289, revenue: 45600000 },
+    { day: 'Jumat', orders: 345, revenue: 56700000 },
+    { day: 'Sabtu', orders: 423, revenue: 67800000 },
+    { day: 'Minggu', orders: 389, revenue: 62400000 }
+  ];
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const StatCard = ({ title, value, icon: Icon, change, changeType, subtitle }) => (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 hover:scale-20 group">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-3 rounded-xl group-hover:shadow-md transition-shadow">
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+          </div>
+        </div>
+        {change && (
+          <div className={`flex items-center space-x-1 px-3 py-1 rounded-full ${changeType === 'positive' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm font-medium">{change}%</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const DateRangeFilter = ({ dateRange, setDateRange, label }) => (
+    <div className="flex items-center space-x-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <CalendarDays className="h-5 w-5 text-gray-600" />
+      <div className="flex items-center space-x-2">
+        <label className="text-sm font-medium text-gray-700">{label}:</label>
+        <input
+          type="date"
+          value={dateRange.start}
+          onChange={(e) => handleDateRangeChange(setDateRange, 'start', e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm"
+        />
+        <span className="text-gray-500">-</span>
+        <input
+          type="date"
+          value={dateRange.end}
+          onChange={(e) => handleDateRangeChange(setDateRange, 'end', e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm"
+        />
+      </div>
+      {!validateDateRange(dateRange.start, dateRange.end) && (
+        <div className="flex items-center space-x-1 text-red-600">
+          <AlertCircle className="h-4 w-4" />
+          <span className="text-xs">Max 31 hari</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const maxOrders = Math.max(...peakHours.map(h => h.orders));
+  const maxRevenue = Math.max(...weeklyData.map(d => d.revenue));
+
     return (
         <div className="flex">
             <div className="w-1/10 min-w-[250px]">
-                <Sidebar 
-                activeMenu={activeMenu}
-                />
+                <Sidebar activeMenu={activeMenu}/>
             </div>
 
-            <div className="p-6 w-full min-h-screen">
-                {/* Financial Summary  */}
-                <div className="bg-white rounded-md shadow-lg p-5">
-                    <p className="font-semibold text-lg mb-6">Financial Summary</p>
-                    <div className="flex justify-between w-full bg-gray-900 px-8 rounded-md space-x-10">
-                        {stats.map((stat, index) => (
-                        <div key={index} className="py-4 w-full border-r border-white last:border-r-0">
-                            <p className="text-gray-400 text-sm">{stat.label}</p>
-                            <p className="text-xl text-white font-semibold mt-2">{stat.value}</p>
-                        </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-center space-x-10 mt-5">
-                        <span className="cursor-pointer text-[#00A676] border-b-2 border-[#00A676]">1D</span>
-                        <span className="cursor-pointer">1M</span>
-                        <span className="cursor-pointer">3M</span>
-                        <span className="cursor-pointer">1Y</span>
-                        <span className="cursor-pointer">3Y</span>
-                    </div>
-                </div>
-
-                {/* Transaksi */}
-                <div className="bg-white rounded-md shadow-lg mt-6 p-5">
-                    <p className="font-semibold text-lg mb-6">Transaction Summary</p>
-                    <div className="flex justify-between w-full bg-gray-900 px-8 rounded-md space-x-10">
-                        {transaction.map((stat, index) => (
-                            <div key={index} className="py-4 w-full border-r border-white last:border-r-0">
-                                <p className="text-gray-400 text-sm">{stat.label}</p>
-                                <p className="text-xl text-white font-semibold mt-2">{stat.value}</p>
+            <div className="w-full min-h-screen">
+                <div className="max-w-7xl mx-auto">
+                  {/* Header */}
+                  <div className="bg-white shadow-sm border-b border-gray-200">
+                      <div className="max-w-7xl mx-auto px-4 py-3">
+                      <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                                <ChartNoAxesCombined className="w-6 h-6 text-white" />
                             </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-center space-x-10 mt-5">
-                        <span className="cursor-pointer text-[#00A676] border-b-2 border-[#00A676]">1D</span>
-                        <span className="cursor-pointer">1M</span>
-                        <span className="cursor-pointer">3M</span>
-                        <span className="cursor-pointer">1Y</span>
-                        <span className="cursor-pointer">3Y</span>
-                    </div>
-                    <div className="mt-5">
-                        <SalesLineChart data={transactionGrafik.data} labels={transactionGrafik.labels} colors={transactionGrafik.colors}/>
-                    </div>
-                    <div className="pb-2 mt-5">
-                        <DonutChart data={donutChartTransaction.data} labels={donutChartTransaction.labels} colors={donutChartTransaction.colors}/>
-                    </div>
-                </div>
+                          <div>
+                              <h1 className="text-xl font-bold text-gray-800">Statistics</h1>
+                              <p className="text-gray-600 text-xs">Monitoring performa bisnis secara real-time</p>
+                          </div>
+                          </div>
+                          <div className="flex items-center space-x-3 mt-4 md:mt-0">
+                            <select
+                              value={selectedPeriod}
+                              onChange={(e) => setSelectedPeriod(e.target.value)}
+                              className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
+                            >
+                              <option value="daily">Harian</option>
+                              <option value="weekly">Mingguan</option>
+                              <option value="monthly">Bulanan</option>
+                            </select>
+                            <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
+                              <RefreshCw className="h-4 w-4" />
+                              <span>Refresh</span>
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                <Bell className="w-5 h-5 text-gray-600" />
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
+                                <Settings className="w-5 h-5 text-gray-600" />
+                            </button>
+                          </div>
+                      </div>
+                      </div>
+                  </div>
 
-                {/* Product Profitability */}
-                <div className="bg-white rounded-md shadow-lg mt-6 p-5">
-                    <div className="">
-                        <p className="font-semibold text-lg mb-6">Product Profitability</p>
-                        <div className="flex justify-between w-full bg-gray-900 px-8 rounded-md space-x-10">
-                            {product.map((stat, index) => (
-                                <div key={index} className="py-4 w-full border-r border-white last:border-r-0">
-                                    <p className="text-gray-400 text-sm">{stat.label}</p>
-                                    <p className="text-xl text-white font-semibold mt-2">{stat.value}</p>
+                  {/* Sales Statistics */}
+                  <div className="px-4 pt-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                          <BarChart3 className="h-6 w-6 text-white" />
+                        </div>
+                        Statistik Penjualan
+                      </h2>
+                      <DateRangeFilter 
+                        dateRange={salesDateRange} 
+                        setDateRange={setSalesDateRange} 
+                        label="Periode Penjualan"
+                      />
+                    </div>
+                    <div>
+                      <StatCard
+                        title="Total Pendapatan"
+                        value={formatCurrency(salesData[selectedPeriod].revenue)}
+                        icon={DollarSign}
+                        change={12}
+                        changeType="positive"
+                        subtitle={`Periode ${selectedPeriod}`}
+                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3">
+                        <StatCard
+                          title="Jumlah Transaksi"
+                          value={salesData[selectedPeriod].transactions.toLocaleString()}
+                          icon={ShoppingCart}
+                          change={8}
+                          changeType="positive"
+                          subtitle={`Orders ${selectedPeriod}`}
+                        />
+                        <StatCard
+                          title="Average Order Value"
+                          value={formatCurrency(salesData[selectedPeriod].aov)}
+                          icon={TrendingUp}
+                          change={5}
+                          changeType="positive"
+                          subtitle="Per transaksi"
+                        />
+                        <StatCard
+                          title="Growth Rate"
+                          value="12.5%"
+                          icon={Activity}
+                          change={3}
+                          changeType="positive"
+                          subtitle="Vs periode sebelumnya"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Channel Performance */}
+                  <div className="bg-white mx-4 my-8 rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                          <PieChart className="h-5 w-5 text-white" />
+                        </div>
+                        Performa Channel
+                      </h3>
+                      <DateRangeFilter 
+                        dateRange={channelDateRange} 
+                        setDateRange={setChannelDateRange} 
+                        label="Channel"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      {channelData.map((channel, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-4 h-4 rounded-full ${channel.color}`}></div>
+                            <div>
+                              <span className="font-semibold text-gray-900">{channel.name}</span>
+                              <p className="text-sm text-gray-600">{channel.transactions} orders</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-gray-900">{formatCurrency(channel.revenue)}</p>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-20 bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full ${channel.color}`}
+                                  style={{ width: `${channel.percentage}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium text-gray-600">{channel.percentage}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top Products */}
+                  <div className="bg-white rounded-2xl mb-8 mx-4 shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                          <Package className="h-5 w-5 text-white" />
+                        </div>
+                        Top Selling Products
+                      </h3>
+                      <DateRangeFilter 
+                        dateRange={productsDateRange} 
+                        setDateRange={setProductsDateRange} 
+                        label="Produk"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      {topProducts.map((product, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-10 h-10 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl flex items-center justify-center">
+                              <span className="text-white font-bold text-sm">{index + 1}</span>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">{product.name}</p>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-gray-600">{product.sold} terjual</span>
+                                <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{product.category}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-gray-900">{formatCurrency(product.revenue)}</p>
+                            <div className={`flex items-center space-x-1 ${product.growth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              <TrendingUp className="h-3 w-3" />
+                              <span className="text-sm font-medium">{product.growth > 0 ? '+' : ''}{product.growth}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Customer Statistics */}
+                  <div className="my-8 mx-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                          <Users className="h-6 w-6 text-white" />
+                        </div>
+                        Statistik Customer
+                      </h2>
+                      <DateRangeFilter 
+                        dateRange={customerDateRange} 
+                        setDateRange={setCustomerDateRange} 
+                        label="Customer"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-4">
+                      <StatCard
+                        title="Total Customers"
+                        value={customerStats.totalCustomers.toLocaleString()}
+                        icon={Users}
+                        change={15}
+                        changeType="positive"
+                      />
+                      <StatCard
+                        title="Registered"
+                        value={customerStats.registeredCustomers.toLocaleString()}
+                        icon={UserCheck}
+                        subtitle={`${Math.round((customerStats.registeredCustomers / customerStats.totalCustomers) * 100)}% dari total`}
+                      />
+                      <StatCard
+                        title="Guest Orders"
+                        value={customerStats.guestCustomers.toLocaleString()}
+                        icon={Users}
+                        subtitle={`${Math.round((customerStats.guestCustomers / customerStats.totalCustomers) * 100)}% dari total`}
+                      />
+                      <StatCard
+                        title="Repeat Rate"
+                        value={`${customerStats.repeatCustomerRate}%`}
+                        icon={RefreshCw}
+                        change={5}
+                        changeType="positive"
+                      />
+                      <StatCard
+                        title="New Customers"
+                        value={customerStats.newCustomersThisMonth.toLocaleString()}
+                        icon={TrendingUp}
+                        subtitle="Bulan ini"
+                      />
+                    </div>
+
+                    {/* Top Customers */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Top Customers</h3>
+                      <div className="space-y-4">
+                        {topCustomers.map((customer, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:shadow-md transition-all">
+                            <div className="flex items-center space-x-4">
+                              <div className="w-12 h-12 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl flex items-center justify-center">
+                                <span className="text-white font-bold">{customer.name.charAt(0)}</span>
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <p className="font-semibold text-gray-900">{customer.name}</p>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    customer.level === 'VIP' ? 'bg-yellow-100 text-yellow-800' :
+                                    customer.level === 'Gold' ? 'bg-yellow-50 text-yellow-600' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {customer.level}
+                                  </span>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-center space-x-10 my-5">
-                            <span className="cursor-pointer text-[#00A676] border-b-2 border-[#00A676]">1D</span>
-                            <span className="cursor-pointer">1M</span>
-                            <span className="cursor-pointer">3M</span>
-                            <span className="cursor-pointer">1Y</span>
-                            <span className="cursor-pointer">3Y</span>
-                        </div>
-                        <div className="flex justify-center">
-                            <Heatmap data={dataHeatmap} labels={labelsHeatmap} dates={datesHeatmap}/>
-                        </div>
+                                <p className="text-sm text-gray-600">{customer.orders} orders • {customer.lastOrder}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-gray-900">{formatCurrency(customer.spent)}</p>
+                              <p className="text-sm text-gray-600">Total spent</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                </div>
-            </div>
+                  </div>
 
+                  {/* Time Statistics */}
+                  <div className="mb-8 px-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                          <Clock className="h-6 w-6 text-white" />
+                        </div>
+                        Statistik Waktu
+                      </h2>
+                      <DateRangeFilter 
+                        dateRange={timeStatsDateRange} 
+                        setDateRange={setTimeStatsDateRange} 
+                        label="Waktu"
+                      />
+                    </div>
+                    
+                    <div>
+                      {/* Peak Hours */}
+                      <div className="bg-white rounded-2xl shadow-sm mb-4 border border-gray-100 p-4 hover:shadow-lg transition-shadow">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">Jam Sibuk (Peak Hours)</h3>
+                        <div className="space-y-2">
+                          {peakHours.map((hour, index) => (
+                            <div key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                              <span className="text-sm font-semibold text-gray-700 w-16">{hour.hour}</span>
+                              <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div 
+                                  className="bg-gradient-to-r from-gray-800 to-gray-600 h-3 rounded-full transition-all duration-500 ease-out"
+                                  style={{ width: `${(hour.orders / maxOrders) * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-bold text-gray-900 w-10">{hour.orders}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Weekly Performance */}
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-xl font-bold text-gray-900">Performa Harian</h3>
+                        </div>
+                        <div className="space-y-2">
+                          {weeklyData.map((day, index) => (
+                            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                              <div className="flex items-center space-x-4">
+                                <div className="w-4 h-4 bg-gradient-to-r from-gray-800 to-gray-700 rounded-full"></div>
+                                <span className="font-semibold text-gray-900">{day.day}</span>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-gray-900">{formatCurrency(day.revenue)}</p>
+                                <p className="text-sm text-gray-600">{day.orders} orders</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Metrics */}
+                  <div className="grid px-4 pb-4 sm:grid-cols-1 lg:grid-cols-2 gap-4">
+                    <StatCard
+                      title="Menu Items"
+                      value="47"
+                      icon={Package}
+                      subtitle="Total produk aktif"
+                    />
+                    <StatCard
+                      title="Monthly Growth"
+                      value="23.5%"
+                      icon={TrendingUp}
+                      change={12}
+                      changeType="positive"
+                      subtitle="Vs bulan lalu"
+                    />
+                  </div>
+              </div>
+            </div>
         </div>
     )
 }

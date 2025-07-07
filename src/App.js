@@ -29,6 +29,9 @@ import {UsedSSEContainer} from './actions/sse'
 import ServiceRenewalNotice from './component/serviceRenewal'
 import Cashier from './casier/cashier'
 import GeneralJournalDashboard from './casier/finance/generalJournal'
+import ProfitLossStatement from './casier/finance/profitAndLoss'
+import CashFlowDashboard from './casier/finance/cashFlow'
+
 function App() {
   const dispatch = useDispatch()
   
@@ -124,18 +127,20 @@ function App() {
           </Route>
 
           <Route path='/internal/access' element={<RegisterPage/>}/>
-          <Route path="/internal/admin/general/journal/form" element={<GeneralJournalForm/>}/>
-          <Route path='/internal/admin/general/journal' element={<GeneralJournalDashboard/>}/>
-          <Route element={<PrivateRouteInternal/>}>
+          <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
+          <Route path='/internal/admin/general-journal' element={<GeneralJournalDashboard/>}/>
+          <Route path='/internal/admin/profit-and-loss' element={<ProfitLossStatement/>}/>
+          <Route path='/internal/admin/cash-flow' element={<CashFlowDashboard/>}/>
+          <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
+            <Route path="/internal/admin/statistics" element={<KasirStatistik/>}/>
             <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
             <Route path='/internal/admin/cashier' element={<Cashier/>}/>
-            <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/>
-            <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
-            <Route path="/internal/admin/order/details" element={<OrderDetails/>}/>
             <Route path="/internal/admin/products" element={<KasirProducts/>}/>
             <Route path="/internal/admin/tables" element={<KasirTables/>}/>
-            <Route path="/internal/admin/statistiks" element={<KasirStatistik/>}/>
             <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
+          <Route element={<PrivateRouteInternal/>}>
+            <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/>
+            <Route path="/internal/admin/order/details" element={<OrderDetails/>}/>
           </Route>
         </Routes>
 

@@ -18,7 +18,7 @@ export const DrafVoidDataComponent = ({
   }) => {
     const navigate = useNavigate()
     const handleDrafJournal = (data) => {
-      navigate('/internal/admin/general/journal/form', { state: { journalData: data } });
+      navigate('/internal/admin/general-journal/form', { state: { journalData: data } });
     }
 
     const handleVoidJournal = () => {

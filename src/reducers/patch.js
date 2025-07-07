@@ -182,6 +182,58 @@ export const voidGeneralJournalInternalSlice = createSlice({
     }
 })
 
+const initialToProgressOrderInternalState = {
+    successToProgressOrder: null,
+    errorToProgressOrder: null,
+    loadingToProgressOrder: false,
+}
+export const toProgressOrderInternalSlice = createSlice({
+    name: 'toProgressOrder',
+    initialState: initialToProgressOrderInternalState,
+    reducers: {
+        setSuccessToProgressOrder: (state, action) => {
+            state.successToProgressOrder = action.payload
+            state.errorToProgressOrder = null
+        },
+        setErrorToProgressOrder: (state, action) => {
+            state.errorToProgressOrder = action.payload
+            state.successToProgressOrder = null
+        },
+        setLoadingToProgressOrder: (state, action) => {
+            state.loadingToProgressOrder = action.payload
+        },
+        resetToProgressOrder: (state) => {
+            state.successToProgressOrder = null
+            state.errorToProgressOrder = null
+        }
+    }
+})
 
 
+const initialToFinishedOrderInternalState = {
+    successToFinishedOrder: null,
+    errorToFinishedOrder: null,
+    loadingToFinishedOrder: false,
+}
+export const toFinishedOrderInternalSlice = createSlice({
+    name: 'toFinishedOrder',
+    initialState: initialToFinishedOrderInternalState,
+    reducers: {
+        setSuccessToFinishedOrder: (state, action) => {
+            state.successToFinishedOrder = action.payload
+            state.errorToFinishedOrder = null
+        },
+        setErrorToFinishedOrder: (state, action) => {
+            state.errorToFinishedOrder = action.payload
+            state.successToFinishedOrder = null
+        },
+        setLoadingToFinishedOrder: (state, action) => {
+            state.loadingToFinishedOrder = action.payload
+        },
+        resetToFinishedOrder: (state) => {
+            state.successToFinishedOrder = null
+            state.errorToFinishedOrder = null
+        }
+    }
+})
 

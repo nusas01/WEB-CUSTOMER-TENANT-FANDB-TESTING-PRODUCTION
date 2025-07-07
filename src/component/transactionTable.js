@@ -1,5 +1,5 @@
 import { useState, useRef } from "react"
-import { ArrowDown, ArrowUp, Search, Currency, History,  Download, CalendarRange } from "lucide-react"
+import { ArrowDown, ArrowUp, Search, Currency, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
 import { CalendarIcon } from "@heroicons/react/24/outline"
 import { data, useNavigate } from "react-router-dom"
 import FilterPanel from "./dateFilter"
@@ -474,9 +474,29 @@ const TransactionTable = () => {
 
   return (
     <div>
-        {/* header  */}
-        <div className="w-full shadow-lg items-center py-5 z-5 bg-white">
-            <p className="font-semibold mx-4 text-lg">Transaction</p>
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                    <ScanBarcode className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                    <h1 className="text-xl font-bold text-gray-800">Transactions Management</h1>
+                    <p className="text-gray-600 text-xs">Kelola transaksi masuk dan pantau status pembayaran</p>
+                </div>
+                </div>
+                <div className="flex items-center gap-3">
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Bell className="w-5 h-5 text-gray-600" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
+                    <Settings className="w-5 h-5 text-gray-600" />
+                </button>
+                </div>
+            </div>
+            </div>
         </div>
 
         <div className="p-5 min-h-screen text-white">

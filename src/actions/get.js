@@ -23,6 +23,9 @@ import {
     getGeneralJournalVoidInternalSlice,
     getGeneralJournalDrafInternalSlice,
     getAssetsStoreInternalSlice,
+    getOrdersInternalSlice,
+    getOrdersFinishedInternalSlice,
+    getTablesInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -535,7 +538,7 @@ export const fetchLabaRugiInternal = () => {
 }
 
 const {fetchSuccessGeneralJournalByEventAllInternal, fetchErrorGeneralJournalByEventAllInternal, setLoadingGeneralJournalByEventAllInternal} = getGeneralJournalByEventAllInternalSlice.actions 
-export const fetchGeneralJournalByEventAllInternal = () => {
+export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalByEventAllInternal(true))
       try {
@@ -544,6 +547,10 @@ export const fetchGeneralJournalByEventAllInternal = () => {
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
+          params: {
+            startDate: startDate,
+            endDate: endDate
+          }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessGeneralJournalByEventAllInternal(response?.data))
@@ -560,7 +567,7 @@ export const fetchGeneralJournalByEventAllInternal = () => {
 }
 
 const {fetchSuccessGeneralJournalByEventPerDayInternal, fetchErrorGeneralJournalByEventPerDayInternal, setLoadingGeneralJournalByEventPerDayInternal} = getGeneralJournalByEventPerDayInternalSlice.actions 
-export const fetchGeneralJournalByEventPerDayInternal = () => {
+export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate) => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalByEventPerDayInternal(true))
       try {
@@ -569,6 +576,10 @@ export const fetchGeneralJournalByEventPerDayInternal = () => {
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
+          params: {
+            startDate: startDate,
+            endDate: endDate
+          }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessGeneralJournalByEventPerDayInternal(response?.data))
@@ -585,7 +596,7 @@ export const fetchGeneralJournalByEventPerDayInternal = () => {
 }
 
 const {fetchSuccessGeneralJournalVoidInternal, fetchErrorGeneralJournalVoidInternal, setLoadingGeneralJournalVoidInternal} = getGeneralJournalVoidInternalSlice.actions 
-export const fetchGeneralJournalVoidInternal = () => {
+export const fetchGeneralJournalVoidInternal = (startDate, endDate) => {
     return async (dispatch) => {
         dispatch(setLoadingGeneralJournalVoidInternal(true))
       try {
@@ -594,6 +605,10 @@ export const fetchGeneralJournalVoidInternal = () => {
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
+          params: {
+            startDate: startDate,
+            endDate: endDate
+          }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessGeneralJournalVoidInternal(response?.data))
@@ -656,6 +671,92 @@ export const fetchAssetsStoreInternal = (data) => {
         dispatch(fetchErrorAssetsStoreInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingAssetsStoreInternal(false))
+      }
+  }
+}
+
+
+const {fetchSuccessOrdersInternal, fetchErrorOrdersInternal, setLoadingOrdersInternal} = getOrdersInternalSlice.actions
+export const fetchOrdersInternal = (startDate, endDate) => {
+  return async (dispatch) => {
+    dispatch(setLoadingOrdersInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+          params: {
+            startDate: startDate,
+            endDate: endDate
+          }
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessOrdersInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorOrdersInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingOrdersInternal(false))
+      }
+  }
+}
+
+const {fetchSuccessOrdersFinishedInternal, fetchErrorOrdersFinishedInternal, setLoadingOrdersFinishedInternal} = getOrdersFinishedInternalSlice.actions
+export const fetchOrdersFinishedInternal = (startDate, endDate) => {
+  return async (dispatch) => {
+    dispatch(setLoadingOrdersFinishedInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+          params: {
+            startDate: startDate,
+            endDate: endDate,
+            status_fineshed: 'FINISHED',
+          }
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessOrdersFinishedInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingOrdersFinishedInternal(false))
+      }
+  }
+}
+
+
+const {fetchSuccessTablesInternal, fetchErrorTablesInternal, setLoadingTablesInternal} = getTablesInternalSlice.actions
+export const fetchTablesInternal = () => {
+  return async (dispatch) => {
+    dispatch(setLoadingTablesInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessTablesInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorTablesInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingTablesInternal(false))
       }
   }
 }

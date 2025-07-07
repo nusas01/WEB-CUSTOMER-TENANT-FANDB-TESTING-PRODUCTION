@@ -819,7 +819,7 @@ useEffect(() => {
           <div className="space-y-6">
             <div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Asset</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Pilih Asset</label>
                 <div className="relative flex items-center">
                   <select
                     value={formData.id_asset || ""}
@@ -835,6 +835,7 @@ useEffect(() => {
                       </option>
                     ))}
                   </select>
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
                 {requiredIdAsset && <p className="text-red-500 text-xs mt-1">Pilih aset yang akan dijual.</p>}
               </div>
@@ -853,10 +854,10 @@ useEffect(() => {
                 {requiredPercentageSale && <p className="text-red-500 text-xs mt-1">Persentase Penjualan wajib diisi antara 1-100%.</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Metode Penjualan</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Metode Penjualan</label>
                 <div className="relative flex items-center">
                   <select
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredOptionMethodSale ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 border appearance-none rounded-lg  focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredOptionMethodSale ? 'border-red-500' : 'border-gray-300'}`}
                     onChange={(e) => handleInputChange('option_method_sale', e.target.value)}
                     value={formData.option_method_sale}
                   >
@@ -864,8 +865,8 @@ useEffect(() => {
                     <option value="Kredit">Kredit</option>
                     <option value="Tunai">Tunai</option>
                   </select>
+                  <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
                 </div>
-                <ChevronDown className="absolute right-3 top-3 bottom-3 my-auto h-5 w-5 text-gray-400 pointer-events-none" />
                 {requiredOptionMethodSale && <p className="text-red-500 text-xs mt-1">Metode Penjualan wajib dipilih.</p>}
               </div>
             </div>
@@ -1184,7 +1185,7 @@ useEffect(() => {
 
             {/* Action Buttons */}
             {selectedAccount && selectedType && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="mt-2 pt-6 border-gray-200">
                 <div className="flex flex-col sm:flex-row gap-4 justify-end">
                   <button
                     onClick={() => handleInputJournal('DRAF')}

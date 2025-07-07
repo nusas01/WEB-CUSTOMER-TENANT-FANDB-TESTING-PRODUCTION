@@ -33,6 +33,9 @@ import {
   getGeneralJournalVoidInternalSlice,
   getGeneralJournalDrafInternalSlice,
   getAssetsStoreInternalSlice,
+  getOrdersInternalSlice,
+  getOrdersFinishedInternalSlice,
+  getTablesInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -58,6 +61,8 @@ import {
   buyTransactionCashOnGoingInternalSlice,
   availbaleProductlSlice,
   voidGeneralJournalInternalSlice,
+  toProgressOrderInternalSlice,
+  toFinishedOrderInternalSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice
@@ -95,6 +100,9 @@ const persistedReducers = combineReducers({
   getGeneralJournalDrafInternal: getGeneralJournalDrafInternalSlice.reducer,
   getAssetsStoreInternal: getAssetsStoreInternalSlice.reducer,
   filterGeneralJournalInternal: filterGeneralJournalInternalSlice.reducer,
+  dataOrdersInternal: getOrdersInternalSlice.reducer,
+  dataOrdersFinishedInternal: getOrdersFinishedInternalSlice.reducer,
+  getTablesInternal: getTablesInternalSlice.reducer, 
 })
 
 // 2. Konfigurasi persist
@@ -131,6 +139,8 @@ const nonPersistedReducers = {
   inputGeneralJournalInternalState: inputGeneralJournalInternalSlice.reducer,
   updateGeneralJournalInternalState: updateGeneralJournalInternalSlice.reducer, 
   voidGeneralJournalInternalState: voidGeneralJournalInternalSlice.reducer,
+  toProgressOrderInternalState: toProgressOrderInternalSlice.reducer, 
+  toFinishedOrderInternalState: toFinishedOrderInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

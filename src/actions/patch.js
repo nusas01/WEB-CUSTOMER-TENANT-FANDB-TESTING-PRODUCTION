@@ -6,12 +6,16 @@ import axios from "axios"
     buyTransactionCashOnGoingInternalSlice,
     availbaleProductlSlice,
     voidGeneralJournalInternalSlice,
+    toProgressOrderInternalSlice,
+    toFinishedOrderInternalSlice,
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice
  } from "../reducers/expToken.js"
 import {
-    getCategoryAndProductInternalSlice
+    getCategoryAndProductInternalSlice,
+    getOrdersInternalSlice, 
+    getOrdersFinishedInternalSlice,
 } from "../reducers/get"
 
 
@@ -178,6 +182,72 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorVoidGeneralJournal(error.response?.data?.error));
     } 
+}
+
+const {updateOrderStatusById, deleteOrderById} = getOrdersInternalSlice.actions
+const {setSuccessToProgressOrder, setErrorToProgressOrder, setLoadingToProgressOrder} = toProgressOrderInternalSlice.actions
+export const toProgressOrderInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingToProgressOrder(true))
+    try {
+        const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
+        dispatch(setSuccessToProgressOrder(response.data?.success))
+        if (response.data?.success) {
+            const data = {
+                id: data.transaction_id, 
+                newStatus: "PROGRESS",
+            }
+            dispatch(updateOrderStatusById(data))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorToProgressOrder(error.response?.data?.error));
+    } finally {
+        dispatch(setLoadingToProgressOrder(false))
+    }
+}
+
+const { addOrderFinishedInternal } = getOrdersFinishedInternalSlice.actions
+const {setSuccessToFinishedOrder, setErrorToFinishedOrder, setLoadingToFinishedOrder} = toFinishedOrderInternalSlice.actions
+export const toFinishedOrderInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingToFinishedOrder(true))
+    try {
+        const formData = {
+            transaction_id: data.id,
+        }
+        const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
+        dispatch(setSuccessToFinishedOrder(response.data?.success))
+        if (response.data?.success) {
+            dispatch(addOrderFinishedInternal(data))
+            dispatch(deleteOrderById(data.id))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorToFinishedOrder(error.response?.data?.error));
+    } finally {
+        dispatch(setLoadingToFinishedOrder(false))
+    }
 }
 
 

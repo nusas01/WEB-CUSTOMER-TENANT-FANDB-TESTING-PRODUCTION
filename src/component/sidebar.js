@@ -1,11 +1,10 @@
 import { useState, useEffect, use } from "react"
-import { ScanBarcode, Ticket, Computer, Box, Settings, LogOut, ChartNoAxesCombined, ChevronRight, Menu, X } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { ScanBarcode, Ticket, Wallet, Computer, Box, Settings, LogOut, ChartNoAxesCombined, ChevronDown, ChevronRight, Menu, X } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { logoutInternal } from "../actions/get"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
-import { se } from "date-fns/locale"
 
 
 const Sidebar = ({activeMenu}) => {
@@ -14,10 +13,26 @@ const Sidebar = ({activeMenu}) => {
   const [isOpen, setIsOpen] = useState(false)
   const [spinner, setSpinner] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
+  const [openFinance, setOpenFinance] = useState(false);
+  const location = useLocation()
 
   const handleNavigate = (value) => {
     navigate(value)
   }
+
+  useEffect(() => {
+    if (location.pathname.includes('/internal/admin/general-journal')) {
+      setOpenFinance(true);
+    }
+
+    if (location.pathname.includes('/internal/admin/profit-and-loss')) {
+      setOpenFinance(true);
+    }
+
+    if (location.pathname.includes('/internal/admin/cash-flow')) {
+      setOpenFinance(true);
+    }
+  }, [location.pathname])
 
   
   // handle response logout
@@ -81,7 +96,7 @@ const Sidebar = ({activeMenu}) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 pt-2">
+        <nav className="flex-1 px-3 py-2 overflow-y-auto max-h-screen">
           <ul className="space-y-2">
             <div onClick={() => handleNavigate('/internal/admin/transaction')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Transaction' && 'bg-gray-200'}`}>
                 <NavItem Icon={ScanBarcode} title="Transactions" />
@@ -104,12 +119,47 @@ const Sidebar = ({activeMenu}) => {
                   <svg  xmlns="http://www.w3.org/2000/svg"  width="26"  height="26"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-databricks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01" /></svg>
                   <p>Tables</p>
                 </div>
+                  <ChevronRight/>
+            </div>
+            <div onClick={() => handleNavigate('/internal/admin/statistics')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "statistics" && 'bg-gray-200'}`}>
+                <NavItem Icon={ChartNoAxesCombined} title="Statistics"/>
                 <ChevronRight/>
             </div>
-            <div onClick={() => handleNavigate('/internal/admin/statistiks')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "statistik" && 'bg-gray-200'}">`}>
-                <NavItem Icon={ChartNoAxesCombined} title="Statistiks" />
+            <div
+              onClick={() => setOpenFinance(!openFinance)}
+              className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "finances" && 'bg-gray-200'}`}
+            >
+              <NavItem Icon={Wallet} title="Finances" />
+              { openFinance ? (
+                <ChevronDown/>
+              ) : (
                 <ChevronRight/>
+              )}
             </div>
+
+            {openFinance && (
+              <div className="ml-6 space-y-2 mt-2">
+                <div
+                  onClick={() => handleNavigate('/internal/admin/general-journal')}
+                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "general-journal" && 'bg-gray-100'}`}
+                >
+                  <span className="text-sm text-gray-800">General Journal</span>
+                </div>
+                <div
+                  onClick={() => handleNavigate('/internal/admin/profit-and-loss')}
+                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "profit-and-loss" && 'bg-gray-100'}`}
+                >
+                  <span className="text-sm text-gray-800">Profit And Loss</span>
+                </div>
+                <div
+                  onClick={() => handleNavigate('/internal/admin/cash-flow')}
+                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "cash-flow" && 'bg-gray-100'}`}
+                >
+                  <span className="text-sm text-gray-800">Cash flow</span>
+                </div>
+              </div>
+            )}
+
             <div onClick={() => handleNavigate('/internal/admin/settings')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "settings" && 'bg-gray-200'}`}>
                 <NavItem Icon={Settings} title="Settings" />
                 <ChevronRight/>

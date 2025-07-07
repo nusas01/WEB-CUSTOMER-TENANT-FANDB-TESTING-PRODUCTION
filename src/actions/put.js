@@ -66,7 +66,7 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
         dispatch(successUpdateGeneralJournalInternal(response.data?.success))
         
         if (response.status === 200) {
-            const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
+            // const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
 
             if (data.action === "VOID") {
                 dispatch(fetchGeneralJournalVoidInternal())
@@ -76,15 +76,17 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
             if (data.action === "FINALIZE") {
                 dispatch(fetchGeneralJournalByEventAllInternal())
 
-                if (dataGeneralJournalByEventPerDayInternal || dataGeneralJournalByEventPerDayInternal.length > 0) {
+                // if (dataGeneralJournalByEventPerDayInternal || dataGeneralJournalByEventPerDayInternal.length > 0) {
                     dispatch(fetchGeneralJournalByEventPerDayInternal())
-                }
+                // }
                 
                 dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))
             }
 
             if (data.action === "DRAF") {
                 dispatch(fetchGeneralJournalDrafInternal())
+
+                dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))
             }
         }
     } catch(error) {

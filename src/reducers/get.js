@@ -802,3 +802,105 @@ export const getAssetsStoreInternalSlice = createSlice({
         },
     }
 })
+
+
+const initialOrdersInternalState = {
+    dataOrdersInternal: [],
+    errorOrdersInternal: null,
+    loadingOrdersInternal: false,
+} 
+export const getOrdersInternalSlice = createSlice({
+    name: "dataOrdersInternal",
+    initialState: initialOrdersInternalState,
+    reducers: {
+        setLoadingOrdersInternal: (state, action) => {
+            state.loadingOrdersInternal = action.payload
+        },
+        fetchSuccessOrdersInternal: (state, action) => {
+            state.dataOrdersInternal = action.payload
+            state.errorOrdersInternal = null
+        },
+        fetchErrorOrdersInternal: (state, action) => {
+           state.errorOrdersInternal = action.payload
+           state.dataOrdersInternal = []
+        },
+        resetErrorOrdersInternal: (state) => {
+            state.errorOrdersInternal = null
+        },
+        deleteOrderById: (state, action) => {
+            const idToDelete = action.payload
+            state.dataOrdersInternal = state.dataOrdersInternal.filter(item => item.id !== idToDelete)
+        },
+        updateOrderStatusById: (state, action) => {
+            const { id, newStatus } = action.payload
+            const transaction = state.dataOrdersInternal.find(item => item.id === id)
+            if (transaction) {
+                transaction.order_status = newStatus
+            }
+        },
+    }
+})
+
+
+const initialOrdersFinishedInternalState = {
+    dataOrdersFinishedInternal: [],
+    errorOrdersFinishedInternal: null,
+    loadingOrdersFinishedInternal: false,
+} 
+export const getOrdersFinishedInternalSlice = createSlice({
+    name: "dataOrdersFinishedInternal",
+    initialState: initialOrdersFinishedInternalState,
+    reducers: {
+        setLoadingOrdersFinishedInternal: (state, action) => {
+            state.loadingOrdersFinishedInternal = action.payload
+        },
+        fetchSuccessOrdersFinishedInternal: (state, action) => {
+            state.dataOrdersFinishedInternal = action.payload
+            state.errorOrdersFinishedInternal = null
+        },
+        fetchErrorOrdersFinishedInternal: (state, action) => {
+           state.errorOrdersFinishedInternal = action.payload
+           state.dataOrdersFinishedInternal = []
+        },
+        resetErrorOrdersFinishedInternal: (state) => {
+            state.errorOrdersFinishedInternal = null
+        },
+        addOrderFinishedInternal: (state, action) => {
+            const newTransaction = {
+                ...action.payload,
+                order_status: "FINISHED"
+            }
+            state.dataOrdersFinishedInternal.push(newTransaction)
+        }
+    }
+})
+
+const initialTablesInternalState = {
+    dataTablesInternal: [],
+    errorTablesInternal: null,
+    loadingTablesInternal: false,
+} 
+export const getTablesInternalSlice = createSlice({
+    name: "dataTablesInternal",
+    initialState: initialTablesInternalState,
+    reducers: {
+        setLoadingTablesInternal: (state, action) => {
+            state.loadingTablesInternal = action.payload
+        },
+        fetchSuccessTablesInternal: (state, action) => {
+            state.dataTablesInternal = action.payload
+            state.errorTablesInternal = null
+        },
+        fetchErrorTablesInternal: (state, action) => {
+           state.errorTablesInternal = action.payload
+           state.dataTablesInternal = []
+        },
+        resetErrorTablesInternal: (state) => {
+            state.errorTablesInternal = null
+        },
+    }
+})
+
+
+
+
