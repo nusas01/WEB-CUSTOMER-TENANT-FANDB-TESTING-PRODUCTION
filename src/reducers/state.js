@@ -49,6 +49,7 @@ import {
   createProductInternalSlice,
   deleteProductInternalSlice,
   inputGeneralJournalInternalSlice,
+  createTableInternalSlice,
 } from './post'
 import {
   updateInternalSlice,
@@ -71,6 +72,9 @@ import {
   paymentSuccessTransactionCashierSlice,
   dataTempUpdateProductSlice,
 } from './notif'
+import {
+  deleteTableInternalSlice
+} from './delete'
 
 
 // 1. Reducer yang ingin dipersist
@@ -141,6 +145,8 @@ const nonPersistedReducers = {
   voidGeneralJournalInternalState: voidGeneralJournalInternalSlice.reducer,
   toProgressOrderInternalState: toProgressOrderInternalSlice.reducer, 
   toFinishedOrderInternalState: toFinishedOrderInternalSlice.reducer,
+  createTableInternalState: createTableInternalSlice.reducer,
+  deleteTableInternalState: deleteTableInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

@@ -356,3 +356,31 @@ export const inputGeneralJournalInternalSlice = createSlice({
         },
     }
 })
+
+
+const initialCreateTableInternalState = {
+    successCreateTable: null,
+    errorCreateTable: null,
+    loadingCreateTable: null,
+}
+export const createTableInternalSlice = createSlice({
+    name: "createTableInternal",
+    initialState: initialCreateTableInternalState,
+    reducers: {
+        setSuccessCreateTableInternal: (state, action) => {
+            state.successCreateTable = action.payload.success
+            state.errorCreateTable = null
+        },
+        setErrorCreateTableIntenal: (state, action) => {
+            state.errorCreateTable = action.payload
+            state.successCreateTable = null
+        },
+        setLoadingCreateTableInternal: (state, action) => {
+            state.loadingCreateTable = action.payload
+        },      
+        resetCreateTableInternal: (state) => {
+            state.errorCreateTable = null
+            state.successCreateTable = null
+        },
+    }
+})

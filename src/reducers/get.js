@@ -898,6 +898,14 @@ export const getTablesInternalSlice = createSlice({
         resetErrorTablesInternal: (state) => {
             state.errorTablesInternal = null
         },
+        addTableInternal: (state, action) => {
+            state.dataTablesInternal.push(action.payload);
+        },
+        deleteTableInternalByNumber: (state, action) => {
+            state.dataTablesInternal = state.dataTablesInternal.filter(
+                table => table.number_table !== action.payload
+            );
+        },
     }
 })
 

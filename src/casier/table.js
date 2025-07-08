@@ -11,9 +11,15 @@ import {
 import Sidebar from '../component/sidebar';
 import { useNavigate } from 'react-router-dom';
 import { SpinnerRelative, SpinnerFixed } from '../helper/spinner';
-import { ErrorAllert, SuccessAlert } from '../component/alert'
+import { ErrorAlert, SuccessAlert, DeleteConfirmationModalTable } from '../component/alert'
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTablesInternal } from '../actions/get'
+import { deleteTableInternalSlice } from '../reducers/delete'
+import { deleteTableInternal } from '../actions/delete'
+import { createTabelInternal } from '../actions/post'
+import { createTableInternalSlice } from '../reducers/post'
+import { getTablesInternalSlice } from '../reducers/get'
+
 
 // QR Code Component (placeholder - in real app you'd use a QR library)
 const QRCodePlaceholder = ({ size = 120, tableNumber = null }) => (
@@ -49,6 +55,7 @@ export default function ModernKasirDashboard() {
     const [spinnerFixed, setSpinnerFixed] = useState(false)
     const [errorAllert, setErrotAllert] = useState(false)
     const [successAlert, setSuccessAllert] = useState(false)
+    const [confirmModel, setConfirmModel] = useState(false)
   const [tables, setTables] = useState([
     { nomor: 1 },
     { nomor: 2 },
@@ -87,7 +94,61 @@ export default function ModernKasirDashboard() {
         return () => clearTimeout(timer)
     }
   }, [errorTablesInternal])
-  
+
+
+  // handle add table
+  const {resetCreateTableInternal} = createTableInternalSlice.actions
+  const {successCreateTable, errorCreateTable, loadingCreateTable} = useSelector((state) => state.createTableInternalState)
+
+  useEffect(() => {
+    setSpinnerFixed(loadingCreateTable)
+  }, [loadingCreateTable])
+
+  const handleAddTable = () => {
+    dispatch(createTabelInternal())
+  };
+
+
+  // handle delete table
+  const {resetDeleteTableInternal} = deleteTableInternalSlice.actions
+  const {successDeleteTable, errorDeleteTable, loadingDeleteTable} = useSelector((state) => state.deleteTableInternalState)
+
+  const handleDeleteLastTable = () => {
+    setConfirmModel(false)
+    dispatch(deleteTableInternal())
+  };
+
+  useEffect(() => {
+    setSpinnerFixed(loadingDeleteTable)
+  }, [loadingDeleteTable])
+
+  useEffect(() => {
+    if (successDeleteTable || successCreateTable) {
+      setSuccessAllert(true)
+
+      const timer = setTimeout(() => {
+        setSuccessAllert(false)
+        dispatch(resetDeleteTableInternal())
+        dispatch(resetCreateTableInternal())
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [successDeleteTable, successCreateTable])
+
+  useEffect(() => {
+    if (errorDeleteTable || errorCreateTable) {
+      setErrotAllert(true)
+
+      const timer = setTimeout(() => {
+        setErrotAllert(false)
+        dispatch(resetDeleteTableInternal())
+        dispatch(resetCreateTableInternal())
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [errorDeleteTable, errorCreateTable])
 
 
   const [toast, setToast] = useState(null);
@@ -106,21 +167,6 @@ export default function ModernKasirDashboard() {
     showToast(`QR Code ${tableNumber ? `Table ${tableNumber}` : 'Take Away'} downloaded!`);
   };
 
-  const handleDeleteLastTable = () => {
-    if (tables.length === 0) return;
-    
-    const lastTable = tables[tables.length - 1];
-    setTables(prev => prev.slice(0, -1));
-    showToast(`Table ${lastTable.nomor} deleted successfully`);
-  };
-
-  const handleAddTable = () => {
-    const newTableNumber = tables.length > 0 ? Math.max(...tables.map(t => t.nomor)) + 1 : 1;
-    setTables(prev => [...prev, { 
-      nomor: newTableNumber
-    }]);
-    showToast(`Table ${newTableNumber} added successfully`);
-  };
 
   return (
     <div className='flex'>
@@ -128,6 +174,37 @@ export default function ModernKasirDashboard() {
         <Sidebar/>
        </div>
 
+      { spinnerFixed && (
+        <SpinnerFixed colors={"fill-gray-800"}/>
+      )}
+
+      {errorAllert && (
+        <ErrorAlert
+          message={
+            errorCreateTable
+              ? "Terjadi kesalahan saat membuat table. Server kami sedang mengalami gangguan internal. Kami sedang mengatasinya, silakan coba beberapa saat lagi."
+              : errorDeleteTable
+              ? "Terjadi kesalahan saat menghapus table. Mohon tunggu sebentar, kami sedang menangani masalah ini."
+              : "Terjadi kesalahan yang tidak terduga. Silakan coba beberapa saat lagi."
+          }
+        />
+      )}
+
+      {successAlert && (
+        <SuccessAlert
+          message={
+            successCreateTable
+              ? "Meja berhasil ditambahkan ke sistem."
+              : successDeleteTable
+              ? "Meja berhasil dihapus dari sistem."
+              : "Aksi berhasil diselesaikan."
+          }
+        />
+      )}
+
+      { confirmModel && (
+        <DeleteConfirmationModalTable submit={handleDeleteLastTable} onClose={() => setConfirmModel(false)}/>
+      )}
 
         <div className="min-h-screen bg-gray-50 flex-1">
             {/* Toast Notification */}
@@ -212,9 +289,9 @@ export default function ModernKasirDashboard() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                    {tables.length > 0 && (
+                    {dataTablesInternal.length > 0 && !spinnerRelative && (
                         <button 
-                        onClick={handleDeleteLastTable}
+                        onClick={() => setConfirmModel(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                         >
                         <Trash2 className="w-4 h-4" />
@@ -232,8 +309,14 @@ export default function ModernKasirDashboard() {
                 </div>
 
                 {/* Table Grid */}
+                {spinnerRelative && (
+                  <div className='flex justify-center h-[50vh]'>
+                    <SpinnerRelative/>
+                  </div>
+                )}
+                  
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {tables.map((table) => (
+                    {!spinnerRelative && dataTablesInternal.map((table) => (
                     <div 
                         key={table.nomor}
                         className="p-5 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all duration-200"
@@ -261,7 +344,7 @@ export default function ModernKasirDashboard() {
                 </div>
 
                 {/* Empty State */}
-                {tables.length === 0 && (
+                {dataTablesInternal.length === 0 && !spinnerRelative && (
                     <div className="text-center py-12">
                     <QrCode className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No tables available</h3>

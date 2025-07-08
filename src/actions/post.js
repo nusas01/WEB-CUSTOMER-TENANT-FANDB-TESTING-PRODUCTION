@@ -17,6 +17,7 @@ import axios from "axios"
     createProductInternalSlice,
     deleteProductInternalSlice,
     inputGeneralJournalInternalSlice,
+    createTableInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -28,6 +29,9 @@ import {
     fetchGeneralJournalByEventAllInternal,
     fetchGeneralJournalByEventPerDayInternal,
  } from './get.js'
+ import {
+    getTablesInternalSlice
+ } from '../reducers/get.js'
 import store from "../reducers/state"
 import { useSelector } from "react-redux"
 
@@ -384,5 +388,37 @@ export const inputGeneralJournalInternal = (data) => async (dispatch) => {
         console.log("response data create transacrion internal: ", error)
     } finally {
         dispatch(setLoadingInputGeneralJournalInternal(false))
+    }
+}
+
+const { addTableInternal } = getTablesInternalSlice.actions
+const { setSuccessCreateTableInternal, setErrorCreateTableIntenal, setLoadingCreateTableInternal } = createTableInternalSlice.actions
+export const createTabelInternal = (data) => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateTableInternal(true))
+    try {
+       const response = await axios.post(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+        if (response.status === 200) {
+            dispatch(setSuccessCreateTableInternal(response.data?.success))
+            const data = {
+                number_table: response.data?.number,
+                image: response.data?.imageQr 
+            }
+            dispatch(addTableInternal(data))
+        }
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        dispatch(setErrorCreateTableIntenal(error.response?.data?.error))
+        console.log("response data create transacrion internal: ", error)
+    } finally {
+        dispatch(setLoadingCreateTableInternal(false))
     }
 }

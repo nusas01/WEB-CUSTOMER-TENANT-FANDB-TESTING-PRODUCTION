@@ -450,6 +450,52 @@ export const VoidJournalConfirmationModal = ({
   );
 };
 
+export const DeleteConfirmationModalTable = ({ submit, onClose }) => {
+  const modalRef = useRef(null);
+
+  // Tutup modal saat klik di luar area
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-100 bg-black bg-opacity-50 flex items-center justify-center">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg"
+      >
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Konfirmasi Penghapusan Meja
+        </h2>
+        <p className="text-gray-700 text-sm mb-6">
+          Jika Anda menghapus meja ini, maka QR code yang sebelumnya telah
+          dibuat tidak akan berlaku lagi. Jika Anda membuat meja baru dengan
+          nomor yang sama, QR code yang dihasilkan akan berbeda dari sebelumnya.
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
+          >
+            Batal
+          </button>
+          <button
+            onClick={submit}
+            className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+          >
+            Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
   
 
 
