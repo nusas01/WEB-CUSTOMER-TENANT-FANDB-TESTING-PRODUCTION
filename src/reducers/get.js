@@ -655,17 +655,17 @@ export const getCategoryAndProductInternalSlice = createSlice({
     }
 })
 
-const initialDefaultLabaRugiInternalState = {
-    dataLabaRugiInternal: [],
+const initialLabaRugiInternalState = {
+    dataLabaRugiInternal: null,
     errorLabaRugiIntenal: null,
     loadingLabaRugiInternal: false,
 } 
 export const getLabaRugiInternalSlice = createSlice({
     name: "dataLabaRugi",
-    initialState: initialDefaultLabaRugiInternalState,
+    initialState: initialLabaRugiInternalState,
     reducers: {
         setLoadingLabaRugiInternal: (state, action) => {
-            state.loadingCategoryAndProductInternal= action.payload
+            state.loadingLabaRugiInternal = action.payload
         },
         fetchSuccessLabaRugiInternal: (state, action) => {
             state.dataLabaRugiInternal = action.payload
@@ -673,8 +673,38 @@ export const getLabaRugiInternalSlice = createSlice({
         },
         fetchErrorLabaRugiInternal: (state, action) => {
            state.errorLabaRugiIntenal = action.payload
-           state.dataLabaRugiInternal = []
+           state.dataLabaRugiInternal = null
         },
+        resetErrorLabaRugiInternal: (state) => {
+            state.errorLabaRugiIntenal = null
+        }
+    }
+})
+
+
+const initialNeracaInternalState = {
+    dataNeracaInternal: null,
+    errorNeracaIntenal: null,
+    loadingNeracaInternal: false,
+} 
+export const getNeracaInternalSlice = createSlice({
+    name: "dataNeraca",
+    initialState: initialNeracaInternalState,
+    reducers: {
+        setLoadingNeracaInternal: (state, action) => {
+            state.loadingNeracaInternal = action.payload
+        },
+        fetchSuccessNeracaInternal: (state, action) => {
+            state.dataNeracaInternal = action.payload
+            state.errorNeracaIntenal = null
+        },
+        fetchErrorNeracaInternal: (state, action) => {
+           state.errorNeracaIntenal = action.payload
+           state.dataNeracaInternal = null
+        },
+        resetErrorNeracaInternal: (state) => {
+            state.errorNeracaIntenal = null
+        }
     }
 })
 

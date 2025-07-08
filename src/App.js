@@ -30,7 +30,7 @@ import ServiceRenewalNotice from './component/serviceRenewal'
 import Cashier from './casier/cashier'
 import GeneralJournalDashboard from './casier/finance/generalJournal'
 import ProfitLossStatement from './casier/finance/profitAndLoss'
-import CashFlowDashboard from './casier/finance/cashFlow'
+import NeracaDashboard from './casier/finance/neraca'
 
 function App() {
   const dispatch = useDispatch()
@@ -130,7 +130,7 @@ function App() {
           <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
           <Route path='/internal/admin/general-journal' element={<GeneralJournalDashboard/>}/>
           <Route path='/internal/admin/profit-and-loss' element={<ProfitLossStatement/>}/>
-          <Route path='/internal/admin/cash-flow' element={<CashFlowDashboard/>}/>
+          <Route path='/internal/admin/neraca' element={<NeracaDashboard/>}/>
           <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
             <Route path="/internal/admin/statistics" element={<KasirStatistik/>}/>
             <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>

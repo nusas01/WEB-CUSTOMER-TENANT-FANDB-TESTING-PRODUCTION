@@ -60,7 +60,10 @@ export default function GeneralJournalDashboard() {
       <div className="flex">
         {errorAllertVoid && (
 
-          <ErrorAlert message={"There was an error on the internal server, we are fixing it."}/>
+          <ErrorAlert 
+          message={"There was an error on the internal server, we are fixing it."}
+          onClose={() => setErrorAlertVoid(false)}
+          />
         )}
 
           <div className="w-1/10 min-w-[250px]">
@@ -682,7 +685,7 @@ const JournalDashboard = () => {
         {/* Journal Entries */}
         <div className="space-y-6">
           {spinnerRelative ? (
-            <div className="bg-white rounded-lg h-[50vh] shadow-sm p-12 flex items-center justify-center">
+            <div className="bg-white rounded-lg h-[70vh] shadow-sm p-12 flex items-center justify-center">
               <SpinnerRelative />
             </div>
           ) : (

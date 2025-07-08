@@ -187,6 +187,7 @@ export default function ModernKasirDashboard() {
               ? "Terjadi kesalahan saat menghapus table. Mohon tunggu sebentar, kami sedang menangani masalah ini."
               : "Terjadi kesalahan yang tidak terduga. Silakan coba beberapa saat lagi."
           }
+          onClose={() => setErrotAllert(false)}
         />
       )}
 

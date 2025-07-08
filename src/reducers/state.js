@@ -7,6 +7,8 @@ import {
   orderTypeSlice,
   buttonActivityCustomerSlice,
   filterGeneralJournalInternalSlice,
+  filterDateLabaRugiInternalSlice,
+  filterDateNeracaInternalSlice,
 } from './reducers'
 import { 
   getProductsCustomerSlice, 
@@ -36,6 +38,7 @@ import {
   getOrdersInternalSlice,
   getOrdersFinishedInternalSlice,
   getTablesInternalSlice,
+  getNeracaInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -97,7 +100,6 @@ const persistedReducers = combineReducers({
   paymentMethodsInternal: getPaymentMethodsInternalSlice.reducer,
   getCategoryInternal: getCategoryInternalSlice.reducer,
   getCategoryAndProductInternal: getCategoryAndProductInternalSlice.reducer,
-  getLabaRugiInternal: getLabaRugiInternalSlice.reducer,
   getGeneralJournalByEventInternal: getGeneralJournalByEventAllInternalSlice.reducer,
   getGeneralJournalByEventPerDayInternal: getGeneralJournalByEventPerDayInternalSlice.reducer,
   getGeneralJournalVoidInternal: getGeneralJournalVoidInternalSlice.reducer,
@@ -107,6 +109,10 @@ const persistedReducers = combineReducers({
   dataOrdersInternal: getOrdersInternalSlice.reducer,
   dataOrdersFinishedInternal: getOrdersFinishedInternalSlice.reducer,
   getTablesInternal: getTablesInternalSlice.reducer, 
+  getLabaRugiInternal: getLabaRugiInternalSlice.reducer,
+  filterDateLabaRugiInternal: filterDateLabaRugiInternalSlice.reducer,
+  getNeracaInternal: getNeracaInternalSlice.reducer,
+  filterDateNeracaInternal: filterDateNeracaInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist

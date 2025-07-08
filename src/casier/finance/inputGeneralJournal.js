@@ -1106,7 +1106,10 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       { errorAlert && (
-        <ErrorAlert message={"Terjadi kesalahan di server. Sistem tidak dapat memproses permintaan Anda. Tim pengembang telah diberitahu dan sedang melakukan perbaikan."} />
+        <ErrorAlert 
+        message={"Terjadi kesalahan di server. Sistem tidak dapat memproses permintaan Anda. Tim pengembang telah diberitahu dan sedang melakukan perbaikan."} 
+        onClose={() => setErrorAlert(false)}
+        />
       )}
 
       { spinner && (

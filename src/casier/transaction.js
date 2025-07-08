@@ -27,7 +27,10 @@ export default function KasirTransaction() {
     return (
         <>
             { error && (
-                <ErrorAlert message={"there was an error on our server, we are fixing it"} />
+                <ErrorAlert 
+                message={"there was an error on our server, we are fixing it"} 
+                onClose={() => setError(false)}
+                />
             )}
 
             <div className="flex">

@@ -29,7 +29,7 @@ const Sidebar = ({activeMenu}) => {
       setOpenFinance(true);
     }
 
-    if (location.pathname.includes('/internal/admin/cash-flow')) {
+    if (location.pathname.includes('/internal/admin/neraca')) {
       setOpenFinance(true);
     }
   }, [location.pathname])
@@ -152,8 +152,8 @@ const Sidebar = ({activeMenu}) => {
                   <span className="text-sm text-gray-800">Profit And Loss</span>
                 </div>
                 <div
-                  onClick={() => handleNavigate('/internal/admin/cash-flow')}
-                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "cash-flow" && 'bg-gray-100'}`}
+                  onClick={() => handleNavigate('/internal/admin/neraca')}
+                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "neraca" && 'bg-gray-100'}`}
                 >
                   <span className="text-sm text-gray-800">Cash flow</span>
                 </div>

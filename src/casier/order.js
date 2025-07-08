@@ -156,7 +156,8 @@ export default function KasirOrders() {
                             : errorToFinishedOrder
                             ? "Gagal menyelesaikan pesanan. Silakan coba kembali atau laporkan ke admin jika masalah masih terjadi."
                             : ""
-                    }
+                          }
+                        onClose={() => setErrorAlert(false)}
                 />
             )}
 

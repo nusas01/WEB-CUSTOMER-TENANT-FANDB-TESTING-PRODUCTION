@@ -51,7 +51,7 @@ const TransactionTable = () => {
     history: false
   });
 
-
+  
 
     // get transaction cash on going
     const { removeTransactionCashOnGoingInternalById } = transactionCashOnGoingInternalSlice.actions
@@ -499,7 +499,7 @@ const TransactionTable = () => {
             </div>
         </div>
 
-        <div className="p-5 min-h-screen text-white">
+        <div className="p-4 min-h-screen text-white">
             {/* Summary Cards */}
             <div className="mb-6">
                 <div className="p-4 bg-white rounded-lg shadow-md">
@@ -605,7 +605,7 @@ const TransactionTable = () => {
             </div>
 
             {/* Transaction Table */}
-            <div className="rounded-lg shadow-md bg-white overflow-hidden min-h-[400px] p-4 relative w-full">
+            <div className="rounded-lg shadow-md bg-white overflow-hidden min-h-[70vh] p-4 relative w-full">
                  {spinnerRelatif ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
                     <SpinnerRelative />
@@ -689,7 +689,7 @@ const TransactionTable = () => {
                     <tbody>
                         <tr>
                         <td colSpan="7">
-                            <div className="flex flex-col items-center justify-center min-h-[370px] bg-white p-8 text-center">
+                            <div className="flex flex-col items-center justify-center min-h-[70vh] bg-white p-8 text-center">
                             <div className="mb-6 relative">
                                 <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
                                 <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">

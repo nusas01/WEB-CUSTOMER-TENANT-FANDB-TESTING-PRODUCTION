@@ -26,6 +26,7 @@ import {
     getOrdersInternalSlice,
     getOrdersFinishedInternalSlice,
     getTablesInternalSlice,
+    getNeracaInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -513,15 +514,19 @@ export const fetchCategoryAndProductInternal = () => {
 }
 
 const {setLoadingLabaRugiInternal, fetchSuccessLabaRugiInternal,  fetchErrorLabaRugiInternal} = getLabaRugiInternalSlice.actions 
-export const fetchLabaRugiInternal = () => {
+export const fetchLabaRugiInternal = (startDate, endDate) => {
     return async (dispatch) => {
         dispatch(setLoadingLabaRugiInternal(true))
       try {
-        const response = await axios.get(`${process.env.REACT_APP_GET_DEFAULT_LABA_RUGI_INTERNAL_URL}`, {
+        const response = await axios.get(`${process.env.REACT_APP_GET_LABA_RUGI_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
+          params: {
+            start_date: startDate, 
+            end_date: endDate,
+          }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessLabaRugiInternal(response?.data))
@@ -533,6 +538,35 @@ export const fetchLabaRugiInternal = () => {
         dispatch(fetchErrorLabaRugiInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingLabaRugiInternal(false))
+      }
+    }
+}
+
+const {fetchSuccessNeracaInternal, fetchErrorNeracaInternal, setLoadingNeracaInternal} = getNeracaInternalSlice.actions
+export const fetchNeracaInternal = (startDate, endDate) => {
+    return async (dispatch) => {
+        dispatch(setLoadingNeracaInternal(true))
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_GET_NERACA_INTERNAL_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+          params: {
+            start_date: startDate, 
+            end_date: endDate,
+          }
+        })
+        console.log("kenapa ini tidaj di ajalankan: ", response)
+        dispatch(fetchSuccessNeracaInternal(response?.data))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(fetchErrorNeracaInternal(error.response?.data?.error))
+      } finally {
+        dispatch(setLoadingNeracaInternal(false))
       }
     }
 }

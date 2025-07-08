@@ -438,7 +438,11 @@ const ComponentCartCashier = ({cartRef}) => {
 
                 {/* alertError */}
                 { error && (
-                    <ErrorAlert message={"Somthing error in our server"}/>
+                    <ErrorAlert
+                     message={"Somthing error in our server"}
+                     onClose={() => setError(false)}
+                     />
+                    
                 )}
 
                 {/* add product */}

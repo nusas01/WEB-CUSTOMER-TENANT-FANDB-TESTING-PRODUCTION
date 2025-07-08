@@ -68,6 +68,49 @@ export const filterGeneralJournalInternalSlice = createSlice({
 })
 
 
+const today = new Date();
+const lastMonth = new Date();
+lastMonth.setMonth(today.getMonth() - 1);
+
+// Format ke yyyy-mm-dd
+const formatDate = (date) => date.toISOString().split("T")[0];
+
+const initialFilterDateLabaRugiInternalState = {
+    startDate: formatDate(lastMonth), // 1 bulan ke belakang
+    endDate: formatDate(today),       // hari ini
+};
+export const filterDateLabaRugiInternalSlice = createSlice({
+    name: "filterDateLabaRugi",
+    initialState: initialFilterDateLabaRugiInternalState,
+    reducers: {
+        setStartDate: (state, action) => {
+            state.startDate = action.payload
+        }, 
+        setEndDate: (state, action) => {
+            state.endDate = action.payload
+        }
+    }
+})
+
+
+const initialFilterDateNeracaInternalState = {
+    startDate: formatDate(lastMonth), // 1 bulan ke belakang
+    endDate: formatDate(today),       // hari ini
+};
+export const filterDateNeracaInternalSlice = createSlice({
+    name: "filterDateNeraca",
+    initialState: initialFilterDateNeracaInternalState,
+    reducers: {
+        setStartDate: (state, action) => {
+            state.startDate = action.payload
+        }, 
+        setEndDate: (state, action) => {
+            state.endDate = action.payload
+        }
+    }
+})
+
+
 
 
 

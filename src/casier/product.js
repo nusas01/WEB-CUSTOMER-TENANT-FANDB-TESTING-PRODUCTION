@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useState, forwardRef, useRef } from "react"
-import { Pencil, Trash, Search, Plus, Box, Bell, Settings } from "lucide-react"
+import { Pencil, Trash, Search, Plus, Box, Bell, Settings, Package, Tag } from "lucide-react"
 import { ErrorAlert, SuccessAlert, DeleteConfirmationModal } from "../component/alert"
 import { useSelector, useDispatch } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner"
@@ -171,7 +171,10 @@ export default function KasirProducts() {
     return (
         <div className="flex">
             { error && (
-                <ErrorAlert message={"there was an error on our server, we are fixing it"}/>
+                <ErrorAlert 
+                message={"there was an error on our server, we are fixing it"}
+                onClose={() => setError(false)}
+                />
             )}
 
             { modalSuccess && (
@@ -373,36 +376,72 @@ function ProductsTable() {
             )}
 
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="p-6 flex justify-between rounded-md items-center shadow-lg bg-white text-black">
-                    <div className="flex space-x-10">
-                        <p>Category : {amountCategory}</p>
-                        <p>Product :  {amountProduct}</p>
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                {/* Header Section */}
+                <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-8 py-6 border-b border-gray-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    {/* Stats Cards */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                          <Tag className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Categories</p>
+                          <p className="text-2xl font-bold text-gray-900">{amountCategory}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                        <div className="p-2 bg-green-50 rounded-lg">
+                          <Package className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Products</p>
+                          <p className="text-2xl font-bold text-gray-900">{amountProduct}</p>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Search Bar */}
                     <div className="relative w-full max-w-md">
-                        <Search className="absolute left-3 top-1/4 text-black  transform -translate-y-1/2" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="w-full pl-10 pr-4 py-1 placeholder-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
                     </div>
-                    <div className="flex space-x-2">
-                        <div onClick={() => setAddCategory(true)} className="flex text-white gap-2 cursor-pointer px-4 py-1 rounded-md bg-gray-900 hover:bg-gray-600">
-                            <Plus/>
-                            Category
-                        </div>
-                        <div onClick={() => setAddProduct(true)} className="flex text-white gap-2 cursor-pointer px-4 py-1 rounded-md bg-[#00A676] hover:bg-[#00825B]">
-                            <Plus/>
-                            Product
-                        </div>
-                    </div>
+                  </div>
                 </div>
+
+                {/* Action Buttons Section */}
+                <div className="px-8 py-4 bg-white">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                    <button
+                      onClick={() => setAddCategory(true)}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl"
+                    >
+                      <Plus size={18} />
+                      Add Category
+                    </button>
+                    
+                    <button
+                      onClick={() => setAddProduct(true)}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-[#00A676] hover:bg-[#00825B] text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl z-10 relative"
+                    >
+                      <Plus size={18} />
+                      Add Product
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-md  min-h-[70vh] shadow-lg p-6 mb-8">
+              <div className="bg-white rounded-md  min-h-[70vh] shadow-lg p-6">
                 { !spinnerProduct ? (
                   <>
                     {dataCategoryAndProduct && dataCategoryAndProduct.length > 0 ? (
@@ -487,41 +526,55 @@ function ProductsTable() {
                         </div>
                       ))
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-20">
-                        <div className="relative mb-5">
-                          <div className="absolute -inset-4 bg-gray-200 rounded-full blur-md opacity-70 animate-pulse"></div>
-                          <div className="relative bg-white p-6 rounded-full shadow-lg">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-16 w-16 text-gray-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                              />
-                            </svg>
+                      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 py-6">
+                          {/* Animated Icon Container */}
+                          <div className="relative mb-6">
+                            {/* Outer glow effect */}
+                            <div className="absolute -inset-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                            
+                            {/* Middle ring */}
+                            <div className="absolute -inset-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full opacity-50"></div>
+                            
+                            {/* Icon container */}
+                            <div className="relative bg-white p-6 rounded-full shadow-2xl border border-gray-100 transform transition-all duration-300 hover:scale-105">
+                              <Package className="h-14 w-14 text-gray-400 stroke-1" />
+                            </div>
                           </div>
+
+                          {/* Content */}
+                          <div className="text-center max-w-lg mx-auto space-y-4">
+                            <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                              Belum Ada Produk
+                            </h2>
+                            
+                            <p className="text-gray-500 text-lg sm:text-xl leading-relaxed">
+                              {search
+                                ? `Tidak ada produk yang cocok dengan pencarian "${search}"`
+                                : "Dashboard produk masih kosong. Mulai tambahkan produk pertama Anda!"}
+                            </p>
+                            
+                            {/* Action buttons */}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+                              {search && (
+                                <button
+                                  onClick={() => setSearch("")}
+                                  className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 shadow-sm hover:shadow-md"
+                                >
+                                  Hapus Filter
+                                </button>
+                              )}
+                              
+                              <button onClick={() => setAddProduct(true)}  className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                                + Tambah Produk
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Decorative elements */}
+                          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-200 rounded-full opacity-60 animate-bounce"></div>
+                          <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-purple-200 rounded-full opacity-60 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
+                          <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-indigo-200 rounded-full opacity-60 animate-bounce" style={{ animationDelay: '1s' }}></div>
                         </div>
-    
-                        <h3 className="text-2xl font-bold text-gray-700 mb-2">Tidak Ada Produk Ditemukan</h3>
-                        <p className="text-gray-500 max-w-md text-center mb-6">
-                          {search
-                            ? `Hasil pencarian "${search}" tidak ditemukan`
-                            : "Belum ada produk yang tersedia untuk kategori ini"}
-                        </p>
-    
-                        <button
-                          onClick={() => setSearch("")}
-                          className="px-6 py-3 bg-gray-800 hover:bg-gray-600 text-white rounded-full shadow-md transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
-                        >
-                          Reset Pencarian
-                        </button>
-                      </div>
                     )}
                   </>
                 ) : (
