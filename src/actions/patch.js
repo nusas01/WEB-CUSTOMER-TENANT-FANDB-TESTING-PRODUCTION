@@ -8,6 +8,7 @@ import axios from "axios"
     voidGeneralJournalInternalSlice,
     toProgressOrderInternalSlice,
     toFinishedOrderInternalSlice,
+    updateDataEmployeeSlice,
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice
@@ -249,5 +250,35 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         dispatch(setLoadingToFinishedOrder(false))
     }
 }
+
+
+const {setSuccessUpdateDataEmployee, setErrorUpdateDataEmployee, setLoadingUpdateDataEmployee} = updateDataEmployeeSlice.actions
+export const updateDataEmployeeInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingUpdateDataEmployee(true))
+    try {
+        const formData = {
+            transaction_id: data.id,
+        }
+        const response = await axios.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, formData, config)
+        dispatch(setSuccessUpdateDataEmployee(response.data?.success))
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorUpdateDataEmployee(error.response?.data?.error));
+    } finally {
+        dispatch(setLoadingUpdateDataEmployee(false))
+    }
+}
+
 
 

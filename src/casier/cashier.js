@@ -177,6 +177,12 @@ const ComponentCartCashier = ({cartRef}) => {
 
         if (paymentMethod === "CASH") {
             setModelMoneyReceved(true)
+            setDataCart((prev) => ({
+                ...prev,
+                amount_price: dataCart.amount_price - dataCart.fee,
+                fee: 0
+            }))
+            setFeeTransaction(0)
         }
 
         

@@ -65,6 +65,8 @@ const ProfitAndLoss = () => {
     }
   }, [startDate, endDate]);
 
+  console.log(dataLabaRugiInternal)
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -296,7 +298,7 @@ const ProfitAndLoss = () => {
                               {dataLabaRugiInternal?.hpp?.account_name || "Tidak ada data HPP"}
                             </span>
                             <span className="font-bold">
-                              ({formatCurrency(dataLabaRugiInternal?.hpp?.total_debet || 0)})
+                              ({formatCurrency(dataLabaRugiInternal?.hpp?.total_Debet || 0)})
                             </span>
                           </div>
                         </div>
@@ -324,7 +326,7 @@ const ProfitAndLoss = () => {
                           {dataLabaRugiInternal?.beban?.map((item, index) => (
                             <div key={index} className="flex justify-between items-center p-4 bg-white rounded-xl hover:bg-gray-100">
                               <span className="font-medium">{item.account_name}</span>
-                              <span className="font-bold">({formatCurrency(item.total_debet)})</span>
+                              <span className="font-bold">({formatCurrency(item.total_Debet)})</span>
                             </div>
                           )) || (
                             <div className="flex justify-center items-center p-4 bg-white rounded-xl">

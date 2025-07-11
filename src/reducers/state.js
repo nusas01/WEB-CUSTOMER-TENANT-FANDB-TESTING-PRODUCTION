@@ -39,6 +39,7 @@ import {
   getOrdersFinishedInternalSlice,
   getTablesInternalSlice,
   getNeracaInternalSlice,
+  getDataEmployeeInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -67,6 +68,7 @@ import {
   voidGeneralJournalInternalSlice,
   toProgressOrderInternalSlice,
   toFinishedOrderInternalSlice,
+  updateDataEmployeeSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice
@@ -113,6 +115,7 @@ const persistedReducers = combineReducers({
   filterDateLabaRugiInternal: filterDateLabaRugiInternalSlice.reducer,
   getNeracaInternal: getNeracaInternalSlice.reducer,
   filterDateNeracaInternal: filterDateNeracaInternalSlice.reducer,
+  getDataEmployeeInternal: getDataEmployeeInternalSlice.reducer, 
 })
 
 // 2. Konfigurasi persist
@@ -153,6 +156,7 @@ const nonPersistedReducers = {
   toFinishedOrderInternalState: toFinishedOrderInternalSlice.reducer,
   createTableInternalState: createTableInternalSlice.reducer,
   deleteTableInternalState: deleteTableInternalSlice.reducer,
+  updateDataEmployeeState: updateDataEmployeeSlice.reducer,
 }
 
 const rootReducer = combineReducers({

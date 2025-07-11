@@ -403,21 +403,30 @@ const JournalDashboard = () => {
 
   useEffect(() => {
     if (statusFilter === 'FINALIZE') {
-      if (eventFilter === 'Agregasi' && journalDataAgregasi.length <= 0) {
+      if (eventFilter === 'Agregasi') {
         dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
-      } else if (eventFilter === 'Non Agregasi' && journalDataNonAgregasi.length <= 0) {
+      } else if (eventFilter === 'Non Agregasi') {
         dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate))
       }
     }
 
-    if (statusFilter === 'DRAF' && journalDataDraf.length <= 0) {
+    if (statusFilter === 'DRAF') {
       dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
     } 
 
-    if (statusFilter === 'VOID' && journalDataVoid.length <= 0) {
+    if (statusFilter === 'VOID') {
       dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
     }
   }, [startDate, endDate])
+
+  useEffect(() => {
+    if (eventFilter == 'Agregasi') {
+        dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
+    } 
+    if (eventFilter === 'Non Agregasi') {
+        dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate))
+    }
+  }, [eventFilter])
 
 
   // Get status icon and color
@@ -435,7 +444,7 @@ const JournalDashboard = () => {
   };
 
   // Filter data
-  const activeJournalData = eventFilter === 'Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
+  const activeJournalData = eventFilter === 'Non Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
   const filteredData = useMemo(() => {
     return activeJournalData.filter(entry => {
       const matchStatus = !statusFilter || entry.accounts.some(acc => acc.action === statusFilter);
@@ -733,7 +742,7 @@ const JournalDashboard = () => {
               ) : (
                 <>
                   { statusFilter === 'FINALIZE' ? (
-                    (eventFilter === 'Agregasi' ? Object.entries(groupedData) : journalDataNonAgregasi.map((entry) => [entry.event, [entry]])).map(
+                    (eventFilter === 'Non Agregasi' ? Object.entries(groupedData) : journalDataNonAgregasi.map((entry) => [entry.event, [entry]])).map(
                       ([event, entries], index) => (
                       <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
                         <div className="bg-gray-800 flex justify-between px-6 py-4">

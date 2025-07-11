@@ -12,7 +12,7 @@ export const statusExpiredTokenSlice = createSlice({
             state.statusExpiredToken = action.payload
         },
         clearStatusExpiredToken: (state) => {
-            state.statusExpiredToken = null
+            state.statusExpiredToken = false
         }
     }
 })

@@ -940,5 +940,50 @@ export const getTablesInternalSlice = createSlice({
 })
 
 
+const initialDataEmployeeInternalState = {
+    dataEmployeeInternal: null,
+    errorDataEmployeeInternal: null,
+    loadingDataEmployeeInternal: false,
+    updateStatus: false,
+} 
+export const getDataEmployeeInternalSlice = createSlice({
+    name: "dataEmployeeInternal",
+    initialState: initialDataEmployeeInternalState,
+    reducers: {
+        setLoadingDataEmployeeInternal: (state, action) => {
+            state.loadingDataEmployeeInternal = action.payload
+        },
+        fetchSuccessDataEmployeeInternal: (state, action) => {
+            state.dataEmployeeInternal = action.payload
+            state.errorDataEmployeeInternal = null
+        },
+        fetchErrorDataEmployeeInternal: (state, action) => {
+           state.errorDataEmployeeInternal = action.payload
+           state.dataEmployeeInternal = null
+        },
+        resetErrorDataEmployeeInternal: (state) => {
+            state.errorDataEmployeeInternal = null
+        },
+        updateEmployeeInternalFields: (state, action) => {
+            const updates = action.payload;
+            const allowedFields = ["image", "name", "phone_number", "date_of_birth"];
+
+            allowedFields.forEach((field) => {
+                if (updates[field] !== undefined) {
+                    state.dataEmployeeInternal[field] = updates[field];
+                }
+            });
+        },
+       updateEmployeeImage: (state, action) => {
+            state.dataEmployeeInternal.image = action.payload;
+            state.dataEmployeeImage = action.payload; 
+        },
+        setUpdateStatusImage: (state, action) => {
+            state.updateStatus = action.payload
+        }
+    }
+})
+
+
 
 

@@ -212,7 +212,7 @@ const OrderDashboard = () => {
   const { dataOrdersInternal, loadingOrdersInternal } = useSelector((state) => state.persisted.dataOrdersInternal)
 
   useEffect(() => {
-    if (dataOrdersInternal.length === 0 || !dataOrdersInternal) {
+    if (!dataOrdersInternal || dataOrdersInternal.length === 0) {
       dispatch(fetchOrdersInternal(startDate, endDate))
     }
   }, [])
@@ -226,7 +226,7 @@ const OrderDashboard = () => {
   const { dataOrdersFinishedInternal, loadingOrdersFinishedInternal } = useSelector((state) => state.persisted.dataOrdersFinishedInternal)
 
   useEffect(() => {
-    if (dataOrdersFinishedInternal.length === 0 || !dataOrdersFinishedInternal) {
+    if (!dataOrdersFinishedInternal || dataOrdersFinishedInternal.length === 0) {
       dispatch(fetchOrdersFinishedInternal(startDate, endDate))
     }
   }, [])
@@ -322,7 +322,7 @@ const OrderDashboard = () => {
   // };
 
   useEffect(() => {
-    const dummyOrders = dataOrdersInternal.concat(dataOrdersFinishedInternal);
+    const dummyOrders = (dataOrdersInternal || []).concat(dataOrdersFinishedInternal || []);
     setOrders(dummyOrders);
     setFilteredOrders(dummyOrders);
 

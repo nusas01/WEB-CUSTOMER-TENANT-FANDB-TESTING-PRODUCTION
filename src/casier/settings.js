@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -20,13 +20,79 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Sidebar  from '../component/sidebar';
+import { fetchDataEmployeeInternal } from '../actions/get'
+import { getDataEmployeeInternalSlice } from '../reducers/get'
+import { ErrorAlert, SuccessAlert } from '../component/alert';
+import { SpinnerFixed } from '../helper/spinner';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateDataEmployeeInternal } from '../actions/patch'
+import { updateDataEmployeeSlice } from '../reducers/patch'
 
 export default function KasirSettings() {
+  const dispatch = useDispatch
+  const [alertError, setAlertError] = useState(false)
+  const [successAlert, setSuccessAlert] = useState(false)
+  const [spinnerFixed, setSpinnerFixed] = useState(false)
+
+  const { resetErrorDataEmployeeInternal } = getDataEmployeeInternalSlice.actions
+  const { errorDataEmployeeInternal } = useSelector((state) => state.persisted.getDataEmployeeInternal)
+
+  const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
+  const { successUpdateDataEmployee, errorUpdateDataEmployee, loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+
+  useEffect(() => {
+    setSpinnerFixed(loadingUpdateDataEmployee)
+  }, [loadingUpdateDataEmployee])
+
+  useEffect(() => {
+    if (successUpdateDataEmployee) {
+      setSuccessAlert(true)
+
+      const timer = setTimeout(() => {
+        setSuccessAlert(false)
+        dispatch(resetUpdateDataEmployee())
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [successUpdateDataEmployee])
+  
+
+  useEffect(() => {
+    if (errorDataEmployeeInternal || errorUpdateDataEmployee) {
+      setAlertError(true)
+
+      const timer = setTimeout(() => {
+        setAlertError(false)
+        dispatch(resetErrorDataEmployeeInternal())
+        dispatch(resetUpdateDataEmployee())
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [errorDataEmployeeInternal, errorUpdateDataEmployee])
+
+
     return (
         <div className='flex'>
             <div className='w-1/10 min-w-[250px]'>
                 <Sidebar activeMenu="settings"/>
             </div>
+
+            {alertError && (
+                <ErrorAlert
+                  message="Terjadi kesalahan pada sistem saat memuat data customer. Kami sedang mengatasinya. Silakan coba beberapa saat lagi."
+                  onClose={() => setAlertError(false)}
+                />
+              )}
+
+              {successAlert && (
+                <SuccessAlert message={"Data berhasil diperbaruhi"} onClose={() => setSuccessAlert(false)}/>
+              )}
+
+              { spinnerFixed && (
+                <SpinnerFixed/>
+              )}
 
             <div className='flex-1'>
                 <SettingsDashboard />
@@ -36,6 +102,9 @@ export default function KasirSettings() {
 } 
 
 const SettingsDashboard = () => {
+  const dispatch = useDispatch()
+  const [spinnerFixed, setSpinnerFixed] = useState(false)
+
   // User Profile State
   const [userProfile, setUserProfile] = useState({
     name: 'John Doe',
@@ -83,10 +152,23 @@ const SettingsDashboard = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [savedStatus, setSavedStatus] = useState('');
 
+
+  // get data customer from state and call api
+  const {setUpdateStatusImage, updateEmployeeImage, updateEmployeeInternalFields} = getDataEmployeeInternalSlice.actions
+  const {dataEmployeeInternal, updateStatusImage} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+
+  useEffect(() => {
+    if (dataEmployeeInternal) {
+      dispatch(fetchDataEmployeeInternal())
+    }
+  }, [])
+
+
   // Handlers
-  const handleProfileUpdate = (field, value) => {
+ const handleProfileUpdate = (field, value) => {
     if (field === 'email' || field === 'gender' || field === 'position') return;
-    setUserProfile(prev => ({ ...prev, [field]: value }));
+
+    dispatch(updateEmployeeInternalFields({ [field]: value }));
   };
 
   const handlePasswordChange = (field, value) => {
@@ -94,19 +176,30 @@ const SettingsDashboard = () => {
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setUserProfile(prev => ({ ...prev, image: event.target.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
 
-  const handleSave = (section) => {
-    setSavedStatus(`${section} berhasil disimpan!`);
-    setTimeout(() => setSavedStatus(''), 3000);
+    reader.onload = (event) => {
+      const imageData = event.target.result; 
+
+      dispatch(updateEmployeeImage(imageData));
+      dispatch(setUpdateStatusImage(true))
+    };
+
+    reader.readAsDataURL(file);
+  }
+};
+
+  const handleSubmitUpdateEmployee = () => {
+    const data = {
+      id: dataEmployeeInternal.id,
+      image: dataEmployeeInternal.image,
+      name: dataEmployeeInternal.name,
+      phone_number: dataEmployeeInternal.phone_number,
+      date_of_birth: dataEmployeeInternal.date_of_birth,
+    }
+    dispatch(dispatch(data))
   };
 
   const formatCurrency = (value) => {
@@ -249,8 +342,18 @@ const SettingsDashboard = () => {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        {userProfile.image ? (
-                          <img src={userProfile.image} alt="Profile" className="w-full h-full object-cover" />
+                        {dataEmployeeInternal && dataEmployeeInternal.image && !updateStatusImage ? (
+                          <img
+                            src={require(`../image/${dataEmployeeInternal.image}`)}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : dataEmployeeInternal && updateStatusImage && dataEmployeeInternal.image ? (
+                          <img
+                            src={dataEmployeeInternal.image}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <User className="text-gray-400" size={32} />
                         )}
@@ -276,7 +379,7 @@ const SettingsDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField
                     label="Nama Lengkap"
-                    value={userProfile.name}
+                    value={dataEmployeeInternal?.name || ''}
                     onChange={(value) => handleProfileUpdate('name', value)}
                     icon={User}
                     placeholder="Masukkan nama lengkap"
@@ -285,8 +388,7 @@ const SettingsDashboard = () => {
                   <InputField
                     label="Email"
                     type="email"
-                    value={userProfile.email}
-                    onChange={() => {}}
+                    value={dataEmployeeInternal?.email || ''}
                     disabled={true}
                     icon={Mail}
                     placeholder="Email tidak dapat diubah"
@@ -294,7 +396,7 @@ const SettingsDashboard = () => {
                   
                   <InputField
                     label="Nomor Telepon"
-                    value={userProfile.phoneNumber}
+                    value={dataEmployeeInternal?.phone_number || ''}
                     onChange={(value) => handleProfileUpdate('phoneNumber', value)}
                     icon={Phone}
                     placeholder="+62 812 3456 7890"
@@ -303,7 +405,7 @@ const SettingsDashboard = () => {
                   <InputField
                     label="Tanggal Lahir"
                     type="date"
-                    value={userProfile.dateOfBirth}
+                    value={dataEmployeeInternal?.date_of_birth || ''}
                     onChange={(value) => handleProfileUpdate('dateOfBirth', value)}
                     icon={Calendar}
                   />
@@ -311,7 +413,7 @@ const SettingsDashboard = () => {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-800">Jenis Kelamin</label>
                     <select
-                      value={userProfile.gender}
+                      value={dataEmployeeInternal?.gender || ''}
                       disabled={true}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
                     >
@@ -322,8 +424,7 @@ const SettingsDashboard = () => {
                   
                   <InputField
                     label="Posisi"
-                    value={userProfile.position}
-                    onChange={() => {}}
+                    value={dataEmployeeInternal?.position || 0}
                     disabled={true}
                     icon={Building}
                     placeholder="Posisi tidak dapat diubah"
@@ -332,7 +433,7 @@ const SettingsDashboard = () => {
 
                 <div className="flex justify-end mt-6">
                   <button
-                    onClick={() => handleSave('Profil')}
+                    onClick={() => handleSubmitUpdateEmployee()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Save size={18} />
@@ -394,7 +495,7 @@ const SettingsDashboard = () => {
 
                 <div className="flex justify-end mt-6">
                   <button
-                    onClick={() => handleSave('Password')}
+                    // onClick={() => handleSave('Password')}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Save size={18} />
@@ -531,7 +632,7 @@ const SettingsDashboard = () => {
 
                 <div className="flex justify-end">
                   <button
-                    onClick={() => handleSave('Pengaturan Payment')}
+                    // onClick={() => handleSave('Pengaturan Payment')}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Save size={18} />

@@ -237,3 +237,30 @@ export const toFinishedOrderInternalSlice = createSlice({
     }
 })
 
+
+const initialUpdateDataEmployeeInternalState = {
+    successUpdateDataEmployee: null,
+    errorUpdateDataEmployee: null,
+    loadingUpdateDataEmployee: false,
+}
+export const updateDataEmployeeSlice = createSlice({
+    name: 'updateDataEmployee',
+    initialState: initialUpdateDataEmployeeInternalState,
+    reducers: {
+        setSuccessUpdateDataEmployee: (state, action) => {
+            state.successUpdateDataEmployee = action.payload
+            state.errorUpdateDataEmployee = null
+        },
+        setErrorUpdateDataEmployee: (state, action) => {
+            state.errorUpdateDataEmployee = action.payload
+            state.successUpdateDataEmployee = null
+        },
+        setLoadingUpdateDataEmployee: (state, action) => {
+            state.loadingUpdateDataEmployee = action.payload
+        },
+        resetUpdateDataEmployee: (state) => {
+            state.successUpdateDataEmployee = null
+            state.errorUpdateDataEmployee = null
+        }
+    }
+})
