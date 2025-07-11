@@ -338,6 +338,7 @@ const ComponentCartCashier = ({cartRef}) => {
                 money_received: 0,
             })
         }
+        dispatch(resetCreateTransactionInternal())
     }, [successCreateTransactionInternal])
 
     const handleCreateTransaction = () => {
@@ -388,7 +389,6 @@ const ComponentCartCashier = ({cartRef}) => {
         setSelectedTransaction(null)
         dispatch(resetCreateTransactionInternal())
     }
-
 
 
     // handle notif transaction non cash berhasil dibayarkan
@@ -902,6 +902,7 @@ const ComponentOrderCashier = () => {
         if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
             dispatch(removeGetAllCreateTransactionById(checkTransactionNonCashId))
             setAllertSuccessCheckTransactionNonCash(true)
+
         } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
             setAllertPendingCheckTransactionNonCash(true)
         }

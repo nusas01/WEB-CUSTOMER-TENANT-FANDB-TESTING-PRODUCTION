@@ -10,6 +10,7 @@ import {inputGeneralJournalInternalSlice} from '../../reducers/post'
 import {updateGeneralJournalInternalSlice} from '../../reducers/put'
 import {inputGeneralJournalInternal} from '../../actions/post'
 import {UpdateGeneralJournalInternal} from '../../actions/put'
+
 export function GeneralJournalForm() {
   const navigate = useNavigate()
   const [errorAlert, setErrorAlert] = useState(false)
@@ -72,16 +73,16 @@ export function GeneralJournalForm() {
   console.log(selectedType)
 
   console.log('🚀 formData:', formData);
-console.log('🧾 is_depreciable:', formData.is_depreciable);
-useEffect(() => {
-  if (journalData !== null) {
-    setSelectedAccount(journalDataSelectedAccount);
-    setSelectedType(journalDataSelectedType);
-    setFormData(journalDataFormData);
-  }
-}, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
-
+  console.log('🧾 is_depreciable:', formData.is_depreciable);
   useEffect(() => {
+    if (journalData !== null) {
+      setSelectedAccount(journalDataSelectedAccount);
+      setSelectedType(journalDataSelectedType);
+      setFormData(journalDataFormData);
+    }
+  }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
+
+    useEffect(() => {
   
     const updatedData = { ...formData };
 
@@ -357,7 +358,12 @@ useEffect(() => {
         break;
     }
     
-    handleSubmitJournal(action)
+    setFormData((prev) => ({
+      ...prev, 
+      action: action,
+    }))
+
+    handleSubmitJournal()
   };
   
   const accounts = [
@@ -430,6 +436,15 @@ useEffect(() => {
     }
   };
 
+  useEffect(() => {
+    if (selectedType) {
+      setFormData((prev) => ({
+        ...prev,
+        type: selectedType
+      }))
+    } 
+  }, [selectedType])
+
   const handleAccountChange = (account) => {
     setSelectedAccount(account);
     setSelectedType('');
@@ -437,6 +452,9 @@ useEffect(() => {
   };
 
   const handleInputChange = (field, value) => {
+    if (field === 'date') {
+      value = new Date(value).toISOString().split('T')[0]; // hasil: "2025-07-11"
+    }
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -448,24 +466,28 @@ useEffect(() => {
   // get data assets
   const {dataAssetsStoreInternal} = useSelector((state) => state.persisted.getAssetsStoreInternal)
   useEffect(() => {
-    if (dataAssetsStoreInternal.length > 0 || dataAssetsStoreInternal) {
+    if (!dataAssetsStoreInternal || dataAssetsStoreInternal.length <= 0) {
       dispatch(fetchAssetsStoreInternal())
     }
-  })
+  }, [])
 
-  const handleSubmitJournal = (action) => {
-    setFormData({
-      ...formData,
-      action: action,
-    });
-    
+  console.log("data assets: ", dataAssetsStoreInternal)
 
+  const handleSubmitJournal = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const data = {
+      account_name: selectedAccount,
+      detail: formData,
+    }
+
+    console.log('kenapa data null:', data)
     if (journalData !== null) {
     // update Journal 
-      dispatch(UpdateGeneralJournalInternal(formData))
+      dispatch(UpdateGeneralJournalInternal(data))
     } else {
       // input journal
-      dispatch(inputGeneralJournalInternal(formData))
+      dispatch(inputGeneralJournalInternal(data))
     }
 
   }
@@ -558,7 +580,7 @@ useEffect(() => {
               type="number"
               value={formData.amount}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredAmount ? 'border-red-500' : 'border-gray-300'}`}
-              onChange={(e) => handleInputChange('amount', e.target.value)}
+              onChange={(e) => handleInputChange('amount', Number(e.target.value))}
             />
             {requiredAmount && <p className="text-red-500 text-xs mt-1">Jumlah wajib diisi dan harus lebih dari nol.</p>}
           </div>
@@ -704,7 +726,7 @@ useEffect(() => {
                     ${formData.is_depreciable
                       ? requiredUmurManfaatTahun ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                  onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
+                  onChange={(e) => handleInputChange('umur_manfaat_tahun', Number(e.target.value))}
                   value={formData.umur_manfaat_tahun ?? ''}
                 />
                 {requiredUmurManfaatTahun && <p className="text-red-500 text-xs mt-1">Umur Manfaat wajib diisi dan harus lebih dari nol.</p>}
@@ -721,7 +743,7 @@ useEffect(() => {
                     ${formData.is_depreciable
                       ? requiredNilaiSisa ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                  onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
+                  onChange={(e) => handleInputChange('nilai_sisa', Number(e.target.value))}
                   value={formData.nilai_sisa ?? ''}
                 />
                 {requiredNilaiSisa && <p className="text-red-500 text-xs mt-1">Nilai Sisa wajib diisi dan tidak boleh negatif.</p>}
@@ -738,7 +760,7 @@ useEffect(() => {
                     ${formData.is_depreciable
                       ? requiredRate ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                       : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                  onChange={(e) => handleInputChange('rate', e.target.value)}
+                  onChange={(e) => handleInputChange('rate', Number(e.target.value))}
                   value={formData.rate ?? ''}
                 />
                 {requiredRate && <p className="text-red-500 text-xs mt-1">Rate wajib diisi antara 1-100%.</p>}
@@ -792,7 +814,7 @@ useEffect(() => {
                   type="number"
                   min="1"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredHargaPerolehan ? 'border-red-500' : 'border-gray-300'}`}
-                  onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
+                  onChange={(e) => handleInputChange('harga_perolehan', Number(e.target.value))}
                   value={formData.harga_perolehan}
                 />
                 {requiredHargaPerolehan && <p className="text-red-500 text-xs mt-1">Harga Perolehan wajib diisi dan harus lebih dari nol.</p>}
@@ -848,7 +870,7 @@ useEffect(() => {
                   min="1"
                   max="100"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredPercentageSale ? 'border-red-500' : 'border-gray-300'}`}
-                  onChange={(e) => handleInputChange('percentage_sale', e.target.value)}
+                  onChange={(e) => handleInputChange('percentage_sale', Number(e.target.value))}
                   value={formData.percentage_sale}
                 />
                 {requiredPercentageSale && <p className="text-red-500 text-xs mt-1">Persentase Penjualan wajib diisi antara 1-100%.</p>}
@@ -892,7 +914,7 @@ useEffect(() => {
                 <input
                   type="number"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredAmount ? 'border-red-500' : 'border-gray-300'}`}
-                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  onChange={(e) => handleInputChange('amount', Number(e.target.value))}
                   value={formData.amount}
                 />
                 {requiredAmount && <p className="text-red-500 text-xs mt-1">Jumlah wajib diisi dan harus lebih dari nol.</p>}
@@ -966,7 +988,7 @@ useEffect(() => {
                 type="number"
                 min="1"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredHargaPerolehan ? 'border-red-500' : 'border-gray-300'}`}
-                onChange={(e) => handleInputChange('harga_perolehan', e.target.value)}
+                onChange={(e) => handleInputChange('harga_perolehan', Number(e.target.value))}
                 value={formData.harga_perolehan}
               />
               {requiredHargaPerolehan && <p className="text-red-500 text-xs mt-1">Harga Perolehan wajib diisi dan harus lebih dari nol.</p>}
@@ -1006,7 +1028,7 @@ useEffect(() => {
                   ${formData.is_amortizable
                     ? requiredUmurManfaatTahun ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                onChange={(e) => handleInputChange('umur_manfaat_tahun', e.target.value)}
+                onChange={(e) => handleInputChange('umur_manfaat_tahun', Number(e.target.value))}
                 value={formData.umur_manfaat_tahun || ''}
               />
               {requiredUmurManfaatTahun && <p className="text-red-500 text-xs mt-1">Umur Manfaat wajib diisi dan harus lebih dari nol.</p>}
@@ -1022,7 +1044,7 @@ useEffect(() => {
                   ${formData.is_amortizable
                     ? requiredNilaiSisa ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                onChange={(e) => handleInputChange('nilai_sisa', e.target.value)}
+                onChange={(e) => handleInputChange('nilai_sisa', Number(e.target.value))}
                 value={formData.nilai_sisa ?? ''}
               />
               {requiredNilaiSisa && <p className="text-red-500 text-xs mt-1">Nilai Sisa wajib diisi dan tidak boleh negatif.</p>}
@@ -1039,7 +1061,7 @@ useEffect(() => {
                   ${formData.is_amortizable
                     ? requiredRate ? 'border-red-500' : 'border-gray-300 focus:ring-blue-500 bg-white'
                     : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'}`}
-                onChange={(e) => handleInputChange('rate', e.target.value)}
+                onChange={(e) => handleInputChange('rate', Number(e.target.value))}
                 value={formData.rate ?? ''}
               />
               {requiredRate && <p className="text-red-500 text-xs mt-1">Rate wajib diisi antara 1-100%.</p>}

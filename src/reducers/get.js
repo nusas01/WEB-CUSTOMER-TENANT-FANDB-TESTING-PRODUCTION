@@ -721,7 +721,7 @@ export const getGeneralJournalByEventAllInternalSlice = createSlice({
             state.loadingGeneralJournalByEventAllInternal= action.payload
         },
         fetchSuccessGeneralJournalByEventAllInternal: (state, action) => {
-            state.dataGeneralJournalByEventAllInternal = action.payload
+            state.dataGeneralJournalByEventAllInternal = action.payload || []
             state.errorGeneralJournalByEventAllIntenal = null
         },
         fetchErrorGeneralJournalByEventAllInternal: (state, action) => {
@@ -820,10 +820,10 @@ export const getAssetsStoreInternalSlice = createSlice({
     initialState: initialAssetsStoreInternalState,
     reducers: {
         setLoadingAssetsStoreInternal: (state, action) => {
-            state.loadingAssetsStoreInternal = action.payload
+            state.loadingAssetsStoreInternal = action.payload 
         },
         fetchSuccessAssetsStoreInternal: (state, action) => {
-            state.dataAssetsStoreInternal = action.payload
+            state.dataAssetsStoreInternal = action.payload || []
             state.errorAssetsStoreIntenal = null
         },
         fetchErrorAssetsStoreInternal: (state, action) => {

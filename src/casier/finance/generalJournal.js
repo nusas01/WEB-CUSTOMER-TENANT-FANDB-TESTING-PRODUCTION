@@ -428,6 +428,8 @@ const JournalDashboard = () => {
     }
   }, [eventFilter])
 
+  console.log(journalDataAgregasi)
+  console.log('non:', journalDataNonAgregasi)
 
   // Get status icon and color
   const getStatusConfig = (status) => {
@@ -444,9 +446,9 @@ const JournalDashboard = () => {
   };
 
   // Filter data
-  const activeJournalData = eventFilter === 'Non Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
-  const filteredData = useMemo(() => {
-    return activeJournalData.filter(entry => {
+  // const activeJournalData = eventFilter === 'Non Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
+  const filteredDataNonAgregasi = useMemo(() => {
+    return journalDataNonAgregasi.filter(entry => {
       const matchStatus = !statusFilter || entry.accounts.some(acc => acc.action === statusFilter);
       const matchSearch = !searchTerm || 
         entry.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -458,8 +460,7 @@ const JournalDashboard = () => {
   
       return matchStatus && matchSearch;
     });
-  }, [activeJournalData, statusFilter, searchTerm]);
-  
+  }, [journalDataNonAgregasi, statusFilter, searchTerm]);
   
   
   // Calculate totals
@@ -467,26 +468,43 @@ const JournalDashboard = () => {
     let totalDebit = 0;
     let totalKredit = 0;
   
-    filteredData.forEach(entry => {
-      entry.accounts.forEach(acc => {
-        if (acc.action === 'FINALIZE') { // tetap cek status di level akun
+    if (eventFilter === 'Non Agregasi') {
+      journalDataNonAgregasi.forEach(entry => {
+        entry.accounts.forEach(acc => {
           if (acc.type === 'DEBIT') {
             totalDebit += acc.amount;
           } else if (acc.type === 'KREDIT') {
             totalKredit += acc.amount;
           }
-        }
+        });
       });
-    });
+    }
+
+
+    if (eventFilter === 'Agregasi') {
+      journalDataAgregasi.forEach(entry => {
+        entry.accounts.forEach(acc => {
+          if (acc.action === 'FINALIZE') { // tetap cek status di level akun
+            if (acc.type === 'DEBIT') {
+              totalDebit += acc.amount;
+            } else if (acc.type === 'KREDIT') {
+              totalKredit += acc.amount;
+            }
+          }
+        });
+      });  
+    }
   
     return { totalDebit, totalKredit };
-  }, [filteredData]);
+  }, [journalDataNonAgregasi, journalDataAgregasi]);
   console.log("totoal debit: " , totals.totalDebit)
   console.log("total kredit: ", totals.totalKredit)
   console.log("Status Filter:", statusFilter);
-  console.log("filteredData:", filteredData);
+  console.log("filteredData:", filteredDataNonAgregasi);
 
-
+  console.log('panjang agregasi: ', journalDataAgregasi.length)
+  console.log('panjang non agregasi: ',filteredDataNonAgregasi.length)
+  console.log('event status: ', eventFilter)
   // Get unique events for filter
   const uniqueEvents = ["Agregasi", 'Non Agregasi']
 
@@ -672,7 +690,7 @@ const JournalDashboard = () => {
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
                   <div>
                     <p className="text-sm font-medium text-purple-700">Total Entries</p>
-                    <p className="text-xl font-bold text-purple-800">{filteredData.length}</p>
+                    <p className="text-xl font-bold text-purple-800">{eventFilter === 'Non Agregasi' ? journalDataAgregasi.length : journalDataNonAgregasi.length}</p>
                   </div>
                   <div className="bg-purple-200 p-2 rounded-full">
                     <FileText className="h-5 w-5 text-purple-700" />
@@ -754,7 +772,7 @@ const JournalDashboard = () => {
                         <div className="divide-y divide-gray-200">
                           {entries.map((entry, entryIndex) => {
                             const status = entry.accounts[0]?.action || 'UNKNOWN';
-                            const statusConfig = getStatusConfig(status);
+                            const statusConfig = eventFilter === 'Non Agregasi' ? getStatusConfig('FINALIZE') : getStatusConfig(status);
                             const StatusIcon = statusConfig.icon;
                             
                             // Sort accounts: DEBIT first, then KREDIT
@@ -778,7 +796,7 @@ const JournalDashboard = () => {
                                           {statusConfig.label}
                                         </span>
                                       </div>
-                                      {entry.transaction_id && (
+                                      {(entry.transaction_id && eventFilter === 'Non Agregasi') && (
                                         <p className="text-sm text-gray-600">ID: {entry.transaction_id}</p>
                                       )}
                                     </div>
