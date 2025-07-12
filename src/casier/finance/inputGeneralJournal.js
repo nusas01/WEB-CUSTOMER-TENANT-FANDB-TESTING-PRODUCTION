@@ -318,7 +318,7 @@ export function GeneralJournalForm() {
   
       case 'Pencatatan Piutang Usaha':
       case 'Pelunasan Piutang Usaha':
-      case 'Pencatatan Modal Usaha':
+      case 'Pencatatan Modal Awal':
       case 'Pencatatan Modal Disetor':
       case 'Pencatatan Prive':
       case 'Pencatatan Beban Gaji':
@@ -357,13 +357,9 @@ export function GeneralJournalForm() {
         // Optional: handle default if needed
         break;
     }
-    
-    setFormData((prev) => ({
-      ...prev, 
-      action: action,
-    }))
+  
 
-    handleSubmitJournal()
+    handleSubmitJournal(action)
   };
   
   const accounts = [
@@ -373,7 +369,7 @@ export function GeneralJournalForm() {
     { value: 'Aset Tidak Berwujud', label: 'Aset Tidak Berwujud' },
     { value: 'utang_usaha', label: 'Utang Usaha', disabled: true },
     { value: 'utang_bank', label: 'Utang Bank', disabled: true },
-    { value: 'Modal Usaha', label: 'Modal Usaha' },
+    { value: 'Modal Awal', label: 'Modal Awal' },
     { value: 'Modal Disetor', label: 'Modal Disetor' },
     { value: 'Prive', label: 'Prive' },
     { value: 'Beban Gaji', label: 'Beban Gaji' },
@@ -403,9 +399,9 @@ export function GeneralJournalForm() {
         return [
           { value: 'Pencatatan Aset Tidak Berwujud', label: 'Pencatatan Aset Tidak Berwujud' }
         ];
-      case 'Modal Usaha':
+      case 'Modal Awal':
         return [
-          { value: 'Pencatatan Modal Usaha', label: 'Pencatatan Modal Awal' }
+          { value: 'Pencatatan Modal Awal', label: 'Pencatatan Modal Awal' }
         ];
       case 'Modal Disetor':
         return [
@@ -473,12 +469,10 @@ export function GeneralJournalForm() {
 
   console.log("data assets: ", dataAssetsStoreInternal)
 
-  const handleSubmitJournal = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
+  const handleSubmitJournal = (action) => {
     const data = {
       account_name: selectedAccount,
-      detail: formData,
+      detail: {...formData, action: action},
     }
 
     console.log('kenapa data null:', data)
@@ -492,13 +486,15 @@ export function GeneralJournalForm() {
 
   }
 
+
+
   // handle response update journal 
   const {resetUpdateGeneralJournalInternal} = updateGeneralJournalInternalSlice.actions
   const {successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, loadingUpdateGeneralJournalInternal} = useSelector((state) => state.updateGeneralJournalInternalState)
 
   useEffect(() => {
     if (successUpdateGeneralJournalInternal) {
-      navigate("/internal/admin/general/journal")
+      navigate("/internal/admin/general-journal")
       dispatch(resetUpdateGeneralJournalInternal())
     }
   }, [successUpdateGeneralJournalInternal])
@@ -506,6 +502,7 @@ export function GeneralJournalForm() {
   useEffect(() => {
     if (errorUpdateGeneralJournalInternal) {
       setErrorAlert(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
   
       const timeout = setTimeout(() => {
         setErrorAlert(false); 
@@ -527,7 +524,7 @@ export function GeneralJournalForm() {
   
   useEffect(() => {
     if (successInputGeneralJournal) {
-      navigate("/internal/admin/general/journal")
+      navigate("/internal/admin/general-journal")
       dispatch(resetInputGeneralJournalInternal())
     }
   }, [successInputGeneralJournal])
@@ -535,6 +532,7 @@ export function GeneralJournalForm() {
   useEffect(() => {
     if (errorInputGeneralJournal) {
       setErrorAlert(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
   
       const timeout = setTimeout(() => {
         setErrorAlert(false); 
@@ -544,7 +542,6 @@ export function GeneralJournalForm() {
       return () => clearTimeout(timeout); 
     }
   }, [errorInputGeneralJournal])
-
 
   useEffect(() => {
     setSpinner(loadingInputGeneralJournal)
@@ -1113,8 +1110,8 @@ export function GeneralJournalForm() {
       );
     }
 
-    // Modal Usaha & Modal Disetor
-    if (selectedType === 'Pencatatan Modal Disetor' || selectedType === 'Pencatatan Modal Usaha' || selectedType === 'Pencatatan Beban Gaji' || selectedType === 'Pencatatan Prive') {
+    // Modal Awal & Modal Disetor
+    if (selectedType === 'Pencatatan Modal Disetor' || selectedType === 'Pencatatan Modal Awal' || selectedType === 'Pencatatan Beban Gaji' || selectedType === 'Pencatatan Prive') {
       return (
         <div className="space-y-6">
           {commonFields}

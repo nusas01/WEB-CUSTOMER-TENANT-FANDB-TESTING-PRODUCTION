@@ -213,7 +213,7 @@ const NeracaComponent = () => {
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Ekuitas</p>
             <p className="text-xl font-bold text-green-800">
-              {formatCurrency(totals.totalEkuitas)}
+               {formatCurrency(Math.abs(totals.totalEkuitas))}
             </p>
           </div>
           <DollarSign className="w-8 h-8 text-green-500" />
@@ -465,7 +465,9 @@ const NeracaComponent = () => {
                         <div className="text-right">
                           <p className="text-sm text-gray-600">Total Calculation</p>
                           <p className="text-lg font-bold text-gray-800">
-                            {formatCurrency(totals.totalAset)} = {formatCurrency(totals.totalLiabilitas + totals.totalEkuitas)}
+                            <p className="text-lg font-bold text-gray-800">
+                              {formatCurrency(totals.totalAset)} = {formatCurrency(Math.abs(totals.totalLiabilitas) + Math.abs(totals.totalEkuitas))}
+                            </p>
                           </p>
                         </div>
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${

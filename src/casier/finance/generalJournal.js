@@ -20,8 +20,8 @@ import {FormatIndoDate} from '../../helper/formatdate'
 import {DrafVoidDataComponent} from './drafVoidGeneralJournal'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {voidGeneralJournalInternal} from '../../actions/patch'
-import {voidGeneralJournalInternalSlice} from '../../reducers/patch'
+import {voidGeneralJournalInternal} from '../../actions/put'
+import {voidGeneralJournalInternalSlice} from '../../reducers/put'
 import{VoidJournalConfirmationModal, ErrorAlert} from '../../component/alert'
 import {filterGeneralJournalInternalSlice} from '../../reducers/reducers'
 import { SpinnerRelative } from '../../helper/spinner';
@@ -373,7 +373,15 @@ const JournalDashboard = () => {
 
   
 
-  const groupedData = journalDataAgregasi.reduce((acc, entry) => {
+  const groupedDataAgregasi = journalDataAgregasi.reduce((acc, entry) => {
+    if (!acc[entry.event]) {
+      acc[entry.event] = [];
+    }
+    acc[entry.event].push(entry);
+    return acc;
+  }, {});
+
+  const groupedDataNonAgregasi = journalDataNonAgregasi.reduce((acc, entry) => {
     if (!acc[entry.event]) {
       acc[entry.event] = [];
     }
@@ -411,13 +419,13 @@ const JournalDashboard = () => {
     }
 
     if (statusFilter === 'DRAF') {
-      dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
+      dispatch(fetchGeneralJournalDrafInternal())
     } 
 
     if (statusFilter === 'VOID') {
       dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
     }
-  }, [startDate, endDate])
+  }, [startDate, endDate, statusFilter])
 
   useEffect(() => {
     if (eventFilter == 'Agregasi') {
@@ -526,10 +534,17 @@ const JournalDashboard = () => {
   const [journalVoid, setjournalVoid] = useState(null)
   const [modelConfirmVoid, setModelConfirmVoid] = useState(false)
   const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
-  const {successVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
+  const {successVoidGeneralJournal, errorVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
 
-  const handeSubmitVoid = ({data}) => {
-    dispatch(voidGeneralJournalInternal(data))
+  useEffect(() => {
+    if (errorVoidGeneralJournal) {
+      setModelConfirmVoid(false)
+    }
+  }, [errorVoidGeneralJournal])
+
+  const handeSubmitVoid = () => {
+    console.log("Structure data void: ", journalDataVoid)
+    dispatch(voidGeneralJournalInternal(journalDataVoid))
   }
 
   const handleConfirmModelVoid = (data) => {
@@ -558,6 +573,7 @@ const JournalDashboard = () => {
     }
   };
   
+  console.log("data draf :", journalDataDraf)
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
@@ -760,89 +776,172 @@ const JournalDashboard = () => {
               ) : (
                 <>
                   { statusFilter === 'FINALIZE' ? (
-                    (eventFilter === 'Non Agregasi' ? Object.entries(groupedData) : journalDataNonAgregasi.map((entry) => [entry.event, [entry]])).map(
-                      ([event, entries], index) => (
-                      <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                        <div className="bg-gray-800 flex justify-between px-6 py-4">
-                          <h4 className="text-lg font-semibold text-white capitalize">
-                            {event.replace('_', ' ')}{' '}
-                          </h4>
-                        </div>
-                        
-                        <div className="divide-y divide-gray-200">
-                          {entries.map((entry, entryIndex) => {
-                            const status = entry.accounts[0]?.action || 'UNKNOWN';
-                            const statusConfig = eventFilter === 'Non Agregasi' ? getStatusConfig('FINALIZE') : getStatusConfig(status);
-                            const StatusIcon = statusConfig.icon;
-                            
-                            // Sort accounts: DEBIT first, then KREDIT
-                            const sortedAccounts = [...entry.accounts].sort((a, b) => {
-                              if (a.type === 'DEBIT' && b.type === 'KREDIT') return -1;
-                              if (a.type === 'KREDIT' && b.type === 'DEBIT') return 1;
-                              return 0;
-                            });
-                            
-                            return (
-                              <div key={entryIndex} className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                  <div className="flex items-center space-x-3">
-                                    <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
-                                      <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
-                                    </div>
-                                    <div>
-                                      <div className="flex items-center space-x-2">
-                                        <span className="font-medium text-gray-900">{entry.date}</span>
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
-                                          {statusConfig.label}
-                                        </span>
+                    eventFilter === 'Agregasi' ? (
+                      // Render data Agregasi
+                      Object.entries(groupedDataAgregasi).map(([event, entries], index) => (
+                        <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                          <div className="bg-gray-800 flex justify-between px-6 py-4">
+                            <h4 className="text-lg font-semibold text-white capitalize">
+                              {event.replace('_', ' ')}{' '}
+                            </h4>
+                          </div>
+                          
+                          <div className="divide-y divide-gray-200">
+                            {entries.map((entry, entryIndex) => {
+                              const status = entry.accounts[0]?.action || 'UNKNOWN';
+                              const statusConfig = getStatusConfig(status);
+                              const StatusIcon = statusConfig.icon;
+                              
+                              // Sort accounts: DEBIT first, then KREDIT
+                              const sortedAccounts = [...entry.accounts].sort((a, b) => {
+                                if (a.type === 'DEBIT' && b.type === 'KREDIT') return -1;
+                                if (a.type === 'KREDIT' && b.type === 'DEBIT') return 1;
+                                return 0;
+                              });
+                              
+                              return (
+                                <div key={entryIndex} className="p-6">
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
+                                        <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
                                       </div>
-                                      {(entry.transaction_id && eventFilter === 'Non Agregasi') && (
-                                        <p className="text-sm text-gray-600">ID: {entry.transaction_id}</p>
-                                      )}
+                                      <div>
+                                        <div className="flex items-center space-x-2">
+                                          <span className="font-medium text-gray-900">{entry.date}</span>
+                                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                                            {statusConfig.label}
+                                          </span>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                
-                                <div className="overflow-x-auto">
-                                  <table className="w-full">
-                                    <thead>
-                                      <tr className="border-b border-gray-200">
-                                        <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
-                                        <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
-                                        <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
-                                        <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {sortedAccounts.map((account, accIndex) => (
-                                        <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
-                                          <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
-                                          <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
-                                          <td className="py-3 px-3 text-sm text-right font-medium">
-                                            {account.type === 'DEBIT' ? (
-                                              <span className="text-green-600">{formatCurrency(account.amount)}</span>
-                                            ) : (
-                                              <span className="text-gray-400">-</span>
-                                            )}
-                                          </td>
-                                          <td className="py-3 px-3 text-sm text-right font-medium">
-                                            {account.type === 'KREDIT' ? (
-                                              <span className="text-blue-600">{formatCurrency(account.amount)}</span>
-                                            ) : (
-                                              <span className="text-gray-400">-</span>
-                                            )}
-                                          </td>
+                                  
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                      <thead>
+                                        <tr className="border-b border-gray-200">
+                                          <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
+                                          <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
+                                          <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
+                                          <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
                                         </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
+                                      </thead>
+                                      <tbody>
+                                        {sortedAccounts.map((account, accIndex) => (
+                                          <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
+                                            <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
+                                            <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
+                                            <td className="py-3 px-3 text-sm text-right font-medium">
+                                              {account.type === 'DEBIT' ? (
+                                                <span className="text-green-600">{formatCurrency(account.amount)}</span>
+                                              ) : (
+                                                <span className="text-gray-400">-</span>
+                                              )}
+                                            </td>
+                                            <td className="py-3 px-3 text-sm text-right font-medium">
+                                              {account.type === 'KREDIT' ? (
+                                                <span className="text-blue-600">{formatCurrency(account.amount)}</span>
+                                              ) : (
+                                                <span className="text-gray-400">-</span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ))
+                    ) : (
+                      // Render data Non Agregasi
+                      Object.entries(groupedDataNonAgregasi).map(([event, entries], index) => (
+                        <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                          <div className="bg-gray-800 flex justify-between px-6 py-4">
+                            <h4 className="text-lg font-semibold text-white capitalize">
+                              {event.replace('_', ' ')}{' '}
+                            </h4>
+                          </div>
+                          
+                          <div className="divide-y divide-gray-200">
+                            {entries.map((entry, entryIndex) => {
+                              const status = entry.accounts[0]?.action || 'UNKNOWN';
+                              const statusConfig = getStatusConfig('FINALIZE'); // Non agregasi selalu FINALIZE
+                              const StatusIcon = statusConfig.icon;
+                              
+                              // Sort accounts: DEBIT first, then KREDIT
+                              const sortedAccounts = [...entry.accounts].sort((a, b) => {
+                                if (a.type === 'DEBIT' && b.type === 'KREDIT') return -1;
+                                if (a.type === 'KREDIT' && b.type === 'DEBIT') return 1;
+                                return 0;
+                              });
+                              
+                              return (
+                                <div key={entryIndex} className="p-6">
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
+                                        <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center space-x-2">
+                                          <span className="font-medium text-gray-900">{entry.date}</span>
+                                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                                            {statusConfig.label}
+                                          </span>
+                                        </div>
+                                        {entry.transaction_id && (
+                                          <p className="text-sm text-gray-600">ID: {entry.transaction_id}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                      <thead>
+                                        <tr className="border-b border-gray-200">
+                                          <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
+                                          <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
+                                          <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
+                                          <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {sortedAccounts.map((account, accIndex) => (
+                                          <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
+                                            <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
+                                            <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
+                                            <td className="py-3 px-3 text-sm text-right font-medium">
+                                              {account.type === 'DEBIT' ? (
+                                                <span className="text-green-600">{formatCurrency(account.amount)}</span>
+                                              ) : (
+                                                <span className="text-gray-400">-</span>
+                                              )}
+                                            </td>
+                                            <td className="py-3 px-3 text-sm text-right font-medium">
+                                              {account.type === 'KREDIT' ? (
+                                                <span className="text-blue-600">{formatCurrency(account.amount)}</span>
+                                              ) : (
+                                                <span className="text-gray-400">-</span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))
+                    )
                   ) : (statusFilter === 'DRAF' ?  (
                     <DrafVoidDataComponent drafData={journalDataDraf} typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
                   ) : (

@@ -58,6 +58,7 @@ import {
 import {
   updateInternalSlice,
   updateGeneralJournalInternalSlice,
+  voidGeneralJournalInternalSlice,
 } from './put'
 import {
   changePasswordCustomerSlice,
@@ -65,7 +66,6 @@ import {
   setUsernameCustomerSlice,
   buyTransactionCashOnGoingInternalSlice,
   availbaleProductlSlice,
-  voidGeneralJournalInternalSlice,
   toProgressOrderInternalSlice,
   toFinishedOrderInternalSlice,
   updateDataEmployeeSlice,

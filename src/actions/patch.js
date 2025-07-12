@@ -5,7 +5,6 @@ import axios from "axios"
     setUsernameCustomerSlice,
     buyTransactionCashOnGoingInternalSlice,
     availbaleProductlSlice,
-    voidGeneralJournalInternalSlice,
     toProgressOrderInternalSlice,
     toFinishedOrderInternalSlice,
     updateDataEmployeeSlice,
@@ -159,29 +158,6 @@ export const availableProductInternal = (data) => async (dispatch) => {
         }
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorAvailableProduct(error.response?.data?.error));
-    } 
-}
-
-
-const {setSuccessVoidGeneralJournal, setErrorVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
-export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
-    const config = {
-        headers: {
-            "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-        },
-        withCredentials: true,
-    }
-    try {
-        const response = await axios.patch(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessVoidGeneralJournal(response.data?.success))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
-    } catch(error) {
-        if (error.response?.data?.code === "TOKEN_EXPIRED") {
-            dispatch(setStatusExpiredToken(true))
-        }
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
-        dispatch(setErrorVoidGeneralJournal(error.response?.data?.error));
     } 
 }
 

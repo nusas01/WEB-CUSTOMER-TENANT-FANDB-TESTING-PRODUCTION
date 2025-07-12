@@ -54,3 +54,26 @@ export const updateGeneralJournalInternalSlice = createSlice({
         }
     }
 })
+
+const initialVoidGeneralJournalInternalState = {
+    successVoidGeneralJournal: null,
+    errorVoidGeneralJournal: null,
+}
+export const voidGeneralJournalInternalSlice = createSlice({
+    name: 'voidGeneralJournal',
+    initialState: initialVoidGeneralJournalInternalState,
+    reducers: {
+        setSuccessVoidGeneralJournal: (state, action) => {
+            state.successVoidGeneralJournal = action.payload
+            state.errorVoidGeneralJournal = null
+        },
+        setErrorVoidGeneralJournal: (state, action) => {
+            state.errorVoidGeneralJournal = action.payload
+            state.successVoidGeneralJournal = null
+        },
+        resetVoidGeneralJournal: (state) => {
+            state.successVoidGeneralJournal = null
+            state.errorVoidGeneralJournal = null
+        }
+    }
+})
