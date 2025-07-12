@@ -473,38 +473,78 @@ const JournalDashboard = () => {
   
   // Calculate totals
   const totals = useMemo(() => {
-    let totalDebit = 0;
-    let totalKredit = 0;
+  let totalDebit = 0;
+  let totalKredit = 0;
   
-    if (eventFilter === 'Non Agregasi') {
-      journalDataNonAgregasi.forEach(entry => {
-        entry.accounts.forEach(acc => {
-          if (acc.type === 'DEBIT') {
-            totalDebit += acc.amount;
-          } else if (acc.type === 'KREDIT') {
-            totalKredit += acc.amount;
-          }
-        });
+  // Debug: tambahkan console.log untuk melihat data
+  console.log('eventFilter:', eventFilter);
+  console.log('journalDataNonAgregasi length:', journalDataNonAgregasi?.length || 0);
+  console.log('journalDataAgregasi length:', journalDataAgregasi?.length || 0);
+  
+  if (eventFilter === 'Non Agregasi') {
+    journalDataNonAgregasi.forEach(entry => {
+      entry.accounts.forEach(acc => {
+        if (acc.type === 'DEBIT') {
+          totalDebit += acc.amount;
+        } else if (acc.type === 'KREDIT') {
+          totalKredit += acc.amount;
+        }
       });
-    }
-
-
-    if (eventFilter === 'Agregasi') {
-      journalDataAgregasi.forEach(entry => {
-        entry.accounts.forEach(acc => {
-          if (acc.action === 'FINALIZE') { // tetap cek status di level akun
-            if (acc.type === 'DEBIT') {
-              totalDebit += acc.amount;
-            } else if (acc.type === 'KREDIT') {
-              totalKredit += acc.amount;
-            }
-          }
-        });
-      });  
-    }
+    });
+  }
   
-    return { totalDebit, totalKredit };
-  }, [journalDataNonAgregasi, journalDataAgregasi]);
+  if (eventFilter === 'Agregasi') {
+    journalDataAgregasi.forEach(entry => {
+      entry.accounts.forEach(acc => {
+        // Hapus pengecekan acc.action karena semua data sudah FINALIZE
+        if (acc.type === 'DEBIT') {
+          totalDebit += acc.amount;
+        } else if (acc.type === 'KREDIT') {
+          totalKredit += acc.amount;
+        }
+      });
+    });
+  }
+  
+  // Debug: tampilkan hasil perhitungan
+  console.log('Final totals:', { totalDebit, totalKredit });
+  
+  return { totalDebit, totalKredit };
+}, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
+
+// Alternatif: Jika ingin menghitung keduanya sekaligus
+const totalsAlternative = useMemo(() => {
+  let totalDebit = 0;
+  let totalKredit = 0;
+  
+  // Hitung Non Agregasi
+  if (eventFilter === 'Non Agregasi' && journalDataNonAgregasi) {
+    journalDataNonAgregasi.forEach(entry => {
+      entry.accounts.forEach(acc => {
+        if (acc.type === 'DEBIT') {
+          totalDebit += acc.amount;
+        } else if (acc.type === 'KREDIT') {
+          totalKredit += acc.amount;
+        }
+      });
+    });
+  }
+  
+  // Hitung Agregasi
+  if (eventFilter === 'Agregasi' && journalDataAgregasi) {
+    journalDataAgregasi.forEach(entry => {
+      entry.accounts.forEach(acc => {
+        if (acc.type === 'DEBIT') {
+          totalDebit += acc.amount;
+        } else if (acc.type === 'KREDIT') {
+          totalKredit += acc.amount;
+        }
+      });
+    });
+  }
+  
+  return { totalDebit, totalKredit };
+}, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
   console.log("totoal debit: " , totals.totalDebit)
   console.log("total kredit: ", totals.totalKredit)
   console.log("Status Filter:", statusFilter);
@@ -547,7 +587,7 @@ const JournalDashboard = () => {
     dispatch(voidGeneralJournalInternal(journalDataVoid))
   }
 
-  const handleConfirmModelVoid = (data) => {
+  const handleConfirmModelVoid = ({data}) => {
     setjournalVoid(data)
     setModelConfirmVoid(true)
   }
@@ -578,7 +618,7 @@ const JournalDashboard = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
         { modelConfirmVoid && (
-          <VoidJournalConfirmationModal onConfirm={handeSubmitVoid} onCancel={handleCloseConfirmModelVoid} journalName={journalVoid}/>
+          <VoidJournalConfirmationModal onConfirm={handeSubmitVoid} onCancel={handleCloseConfirmModelVoid} journalName={'Void'}/>
         )}
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -706,7 +746,7 @@ const JournalDashboard = () => {
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
                   <div>
                     <p className="text-sm font-medium text-purple-700">Total Entries</p>
-                    <p className="text-xl font-bold text-purple-800">{eventFilter === 'Non Agregasi' ? journalDataAgregasi.length : journalDataNonAgregasi.length}</p>
+                    <p className="text-xl font-bold text-purple-800">{eventFilter === 'Agregasi' ? journalDataAgregasi.length : journalDataNonAgregasi.length}</p>
                   </div>
                   <div className="bg-purple-200 p-2 rounded-full">
                     <FileText className="h-5 w-5 text-purple-700" />
@@ -788,8 +828,7 @@ const JournalDashboard = () => {
                           
                           <div className="divide-y divide-gray-200">
                             {entries.map((entry, entryIndex) => {
-                              const status = entry.accounts[0]?.action || 'UNKNOWN';
-                              const statusConfig = getStatusConfig(status);
+                              const statusConfig = getStatusConfig('FINALIZE');
                               const StatusIcon = statusConfig.icon;
                               
                               // Sort accounts: DEBIT first, then KREDIT
@@ -943,7 +982,7 @@ const JournalDashboard = () => {
                       ))
                     )
                   ) : (statusFilter === 'DRAF' ?  (
-                    <DrafVoidDataComponent drafData={journalDataDraf} typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
+                    <DrafVoidDataComponent drafData={journalDataDraf}  typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
                   ) : (
                     statusFilter === 'VOID' && (
                     <DrafVoidDataComponent drafData={journalDataVoid} typeComponent={"VOID"}/>

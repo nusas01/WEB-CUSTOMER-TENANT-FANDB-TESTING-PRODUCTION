@@ -768,7 +768,7 @@ export const getGeneralJournalVoidInternalSlice = createSlice({
             state.loadingGeneralJournalVoidInternal = action.payload
         },
         fetchSuccessGeneralJournalVoidInternal: (state, action) => {
-            state.dataGeneralJournalVoidInternal = action.payload
+            state.dataGeneralJournalVoidInternal = action.payload || []
             state.errorGeneralJournalVoidIntenal = null
         },
         fetchErrorGeneralJournalVoidInternal: (state, action) => {

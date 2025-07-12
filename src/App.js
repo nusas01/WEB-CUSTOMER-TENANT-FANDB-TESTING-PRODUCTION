@@ -18,7 +18,7 @@ import KasirStatistik from './casier/statistik'
 import KasirSettings from './casier/settings'
 import KasirTables from './casier/table'
 import CreateTransaction from './casier/createTransaction'
-import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer } from './actions/get'
+import { loginStatusInternal, loginStatusCustomer, fetchProductsCustomer, fetchGetDataCustomer, fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer, fetchAssetsStoreInternal } from './actions/get'
 import { GeneralJournalForm } from './casier/finance/inputGeneralJournal'
 import { useDispatch, useSelector } from 'react-redux'
 import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute'
@@ -106,6 +106,15 @@ function App() {
       dispatch(clearStatusExpiredToken())
     }
   }, [statusExpiredToken])
+
+
+  const {dataAssetsStoreInternal} = useSelector((state) => state.persisted.getAssetsStoreInternal)
+  useEffect(() => {
+      dispatch(fetchAssetsStoreInternal())
+    
+  }, [])
+
+  console.log("data assets: ", dataAssetsStoreInternal)
 
 
   return (

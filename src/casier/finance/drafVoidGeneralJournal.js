@@ -109,7 +109,9 @@ export const DrafVoidDataComponent = ({
         </div>
       );
     }
-  
+    
+    console.log('data entry: ', drafData)
+
     return (
       <div className="space-y-6">
         {drafData.map((entry, entryIndex) => {
@@ -127,7 +129,8 @@ export const DrafVoidDataComponent = ({
                   {formatDate(entry.date)}
                 </div>
               </div>
-              
+
+
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
