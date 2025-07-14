@@ -68,12 +68,7 @@ export function GeneralJournalForm() {
     selectedType: journalDataSelectedType,
     formData: journalDataFormData
   } = useHandleDataUpdateGeneralJournal(journalData);
-  console.log(journalData)
-  console.log(selectedAccount)
-  console.log(selectedType)
 
-  console.log('🚀 formData:', formData);
-  console.log('🧾 is_depreciable:', formData.is_depreciable);
   useEffect(() => {
     if (journalData !== null) {
       setSelectedAccount(journalDataSelectedAccount);
@@ -82,7 +77,7 @@ export function GeneralJournalForm() {
     }
   }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
 
-    useEffect(() => {
+  useEffect(() => {
   
     const updatedData = { ...formData };
 
@@ -367,8 +362,8 @@ export function GeneralJournalForm() {
     { value: 'Piutang Usaha', label: 'Piutang Usaha' },
     { value: 'Aset Tetap', label: 'Aset Tetap' },
     { value: 'Aset Tidak Berwujud', label: 'Aset Tidak Berwujud' },
-    { value: 'utang_usaha', label: 'Utang Usaha', disabled: true },
-    { value: 'utang_bank', label: 'Utang Bank', disabled: true },
+    // { value: 'utang_usaha', label: 'Utang Usaha', disabled: true },
+    // { value: 'utang_bank', label: 'Utang Bank', disabled: true },
     { value: 'Modal Awal', label: 'Modal Awal' },
     { value: 'Modal Disetor', label: 'Modal Disetor' },
     { value: 'Prive', label: 'Prive' },
@@ -493,6 +488,7 @@ export function GeneralJournalForm() {
   const {successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, loadingUpdateGeneralJournalInternal} = useSelector((state) => state.updateGeneralJournalInternalState)
 
   useEffect(() => {
+    console.log("succesUpdatetGeneralJournal changed: ", successUpdateGeneralJournalInternal)
     if (successUpdateGeneralJournalInternal) {
       navigate("/internal/admin/general-journal")
       dispatch(resetUpdateGeneralJournalInternal())
@@ -521,8 +517,9 @@ export function GeneralJournalForm() {
   // handle response input journal
   const {resetInputGeneralJournalInternal} = inputGeneralJournalInternalSlice.actions
   const {successInputGeneralJournal, errorInputGeneralJournal, loadingInputGeneralJournal} = useSelector((state) => state.inputGeneralJournalInternalState)
-  
+
   useEffect(() => {
+    console.log("successInputGeneralJournal changed: ", successInputGeneralJournal)
     if (successInputGeneralJournal) {
       navigate("/internal/admin/general-journal")
       dispatch(resetInputGeneralJournalInternal())
@@ -850,7 +847,7 @@ export function GeneralJournalForm() {
                     <option value="">Pilih Asset</option>
                     {dataAssetsStoreInternal.map((asset) => (
                       <option key={asset.id} value={asset.id}>
-                        {asset.name_asset}
+                        {asset.nama_asset}
                       </option>
                     ))}
                   </select>

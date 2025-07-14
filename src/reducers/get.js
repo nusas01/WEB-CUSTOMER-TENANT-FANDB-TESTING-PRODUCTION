@@ -744,7 +744,7 @@ export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
             state.loadingGeneralJournalByEventPerDayInternal= action.payload
         },
         fetchSuccessGeneralJournalByEventPerDayInternal: (state, action) => {
-            state.dataGeneralJournalByEventPerDayInternal = action.payload
+            state.dataGeneralJournalByEventPerDayInternal = action.payload || []
             state.errorGeneralJournalByEventPerDayIntenal = null
         },
         fetchErrorGeneralJournalByEventPerDayInternal: (state, action) => {
@@ -792,20 +792,30 @@ export const getGeneralJournalDrafInternalSlice = createSlice({
             state.loadingGeneralJournalDrafInternal = action.payload
         },
         fetchSuccessGeneralJournalDrafInternal: (state, action) => {
-            state.dataGeneralJournalDrafInternal = action.payload
+            state.dataGeneralJournalDrafInternal = action.payload || []
             state.errorGeneralJournalDrafIntenal = null
         },
         fetchErrorGeneralJournalDrafInternal: (state, action) => {
            state.errorGeneralJournalDrafIntenal = action.payload
            state.dataGeneralJournalDrafInternal = []
         },
-        removeGeneralJournalDrafInternalByDataObject: (state, action) => {
-            const targetDataObjStr = JSON.stringify(action.payload)
+        // removeGeneralJournalDrafInternalByDataObject: (state, action) => {
+        //     const targetDataObjStr = JSON.stringify(action.payload)
 
-            state.dataGeneralJournalDrafInternal = state.dataGeneralJournalDrafInternal.filter(
-                (item) => JSON.stringify(item.detail?.data_general_journal) !== targetDataObjStr
-            )
-        },
+        //     state.dataGeneralJournalDrafInternal = state.dataGeneralJournalDrafInternal.filter(
+        //         (item) => JSON.stringify(item.detail?.data_general_journal) !== targetDataObjStr
+        //     )
+        // },
+        removeGeneralJournalDrafInternalByAccountId: (state, action) => {
+            const targetIds = Object.values(action.payload.detail.data_general_journal)
+            console.log("reducers draf data: ", state.dataGeneralJournalDrafInternal)
+            console.log("reducers payload draf data: ", action.payload)
+            state.dataGeneralJournalDrafInternal = state.dataGeneralJournalDrafInternal.filter((entry) => {
+                // Cek apakah semua id dalam `accounts` tidak ada di targetIds
+                const hasMatchingAccount = entry.accounts.some(account => targetIds.includes(account.id))
+                return !hasMatchingAccount // Hapus jika ada salah satu akun yang cocok
+            })
+        }
     }
 })
 

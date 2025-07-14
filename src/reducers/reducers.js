@@ -111,6 +111,23 @@ export const filterDateNeracaInternalSlice = createSlice({
 })
 
 
+const initialDataDrafToVoidInternalState = {
+    dataDrafToVoid: {},
+};
+export const dataDrafToVoidInternalSlice = createSlice({
+    name: "dataDrafToVoid",
+    initialState: initialDataDrafToVoidInternalState,
+    reducers: {
+        setDataDrafToVoid: (state, action) => {
+            state.dataDrafToVoid = action.payload
+        }, 
+        resetDataDrafToVoid: (state) => {
+            state.dataDrafToVoid = {}
+        }
+    }
+})
+
+
 
 
 

@@ -352,7 +352,7 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
 }
 
 const {setSuccessInputGeneralJournalInternal, setErrorInputGeneralJournalIntenal, setLoadingInputGeneralJournalInternal} = inputGeneralJournalInternalSlice.actions 
-export const inputGeneralJournalInternal = (data) => async (dispatch) => {
+export const inputGeneralJournalInternal = (data) => async (dispatch, getState) => {
     const configJson = {
         headers: {
             "Content-Type": "application/json",
@@ -365,18 +365,19 @@ export const inputGeneralJournalInternal = (data) => async (dispatch) => {
         const response = await axios.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
         dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
-        if (response.status === 200) {
-            const {dataGeneralJournalByEventPerDayInternal} = useSelector((state) => state.getGeneralJournalByEventPerDayInternal)
-            
+        if (response.status === 200 || response.status === 201) {
+            const state = getState();
+            const { dataGeneralJournalByEventPerDayInternal } = state.getGeneralJournalByEventPerDayInternal || {};
+
             if (data.action === "DRAF") {
-                dispatch(fetchGeneralJournalDrafInternal())
+                dispatch(fetchGeneralJournalDrafInternal());
             }
 
             if (data.action === "FINALIZE") {
-                dispatch(fetchGeneralJournalByEventAllInternal())
+                dispatch(fetchGeneralJournalByEventAllInternal());
 
-                if (dataGeneralJournalByEventPerDayInternal.length > 0 || dataGeneralJournalByEventPerDayInternal) {
-                    dispatch(fetchGeneralJournalByEventPerDayInternal())
+                if (Array.isArray(dataGeneralJournalByEventPerDayInternal) && dataGeneralJournalByEventPerDayInternal.length > 0) {
+                dispatch(fetchGeneralJournalByEventPerDayInternal());
                 }
             }
         }

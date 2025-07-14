@@ -10,16 +10,21 @@ import {
 } from 'lucide-react';
 import {GeneralJournalForm} from './inputGeneralJournal'
 import { data, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { dataDrafToVoidInternalSlice } from '../../reducers/reducers';
 
 export const DrafVoidDataComponent = ({ 
   drafData = [], 
   typeComponent,
   handleConfirmModelVoid,
   }) => {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const handleDrafJournal = (data) => {
       navigate('/internal/admin/general-journal/form', { state: { journalData: data } });
     }
+
+    console.log("draf data tidak terprint: ", drafData)
 
     const handleVoidJournal = () => {
     }
@@ -109,8 +114,50 @@ export const DrafVoidDataComponent = ({
         </div>
       );
     }
-    
-    console.log('data entry: ', drafData)
+
+    const {setDataDrafToVoid} = dataDrafToVoidInternalSlice.actions
+    const handleNewVoid = (entry) => {
+      console.log("Original entry:", entry);
+      
+      // Validasi entry
+      if (!entry || !entry.accounts || !Array.isArray(entry.accounts)) {
+        console.error("Invalid entry data:", entry);
+        return;
+      }
+      
+      // Buat data_general_journal yang menggabungkan semua account
+      const dataGeneralJournal = {};
+      
+      // Loop semua account dan masukkan ke data_general_journal
+      entry.accounts.forEach(account => {
+        // Gunakan account_name sebagai key, account_id sebagai value
+        dataGeneralJournal[account.account_name] = account.id;
+      });
+      
+      // Tentukan type berdasarkan event name
+      let typeValue = "VOID";
+      if (entry.event === "Pencatatan Aset Tetap"
+          || entry.event === "Pencatatan Aset Tidak Berwujud"  
+          || entry.event === "Penjualan Aset Tetap" 
+          || entry.event === "Penjualan Aset Tidak Berwujud") {
+        typeValue = entry.event; // Ambil type dari account pertama
+      }
+      
+      // Struktur data final - hanya satu objek per event
+      const voidData = {
+        account_name: "VOID", // String kosong sesuai requirement
+        detail: {
+          action: "VOID", // Action diubah menjadi VOID
+          type: typeValue, // String kosong kecuali untuk event aset
+          data_general_journal: dataGeneralJournal // Semua account_id dari event ini
+        }
+      };
+
+      console.log("Transformed void data:", voidData);
+
+      dispatch(setDataDrafToVoid(voidData))
+      handleConfirmModelVoid()
+    };
 
     return (
       <div className="space-y-6">
@@ -160,7 +207,7 @@ export const DrafVoidDataComponent = ({
                       <button onClick={() => handleDrafJournal(entry)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Edit3 className="h-4 w-4" />
                       </button>
-                      <button onClick={() => handleConfirmModelVoid(entry)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <button onClick={() => handleNewVoid(entry)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>

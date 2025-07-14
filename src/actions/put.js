@@ -49,7 +49,7 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
     }
 }
 
-const { removeGeneralJournalDrafInternalByDataObject } = getGeneralJournalDrafInternalSlice.actions
+const { removeGeneralJournalDrafInternalByAccountId } = getGeneralJournalDrafInternalSlice.actions
 const { successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, setLoadingUpdateGeneralJournalInternal } = updateGeneralJournalInternalSlice.actions
 export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState) => {
     const configJson = {
@@ -59,6 +59,7 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
         },
         withCredentials: true,
     }
+
     dispatch(setLoadingUpdateGeneralJournalInternal(true))
     try {
         const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, configJson)
@@ -66,28 +67,28 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
         
         dispatch(successUpdateGeneralJournalInternal(response.data?.success))
         
-        if (response.status === 200) {
+        if (response.status === 200 || response.status === 201) {
             // const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
 
-            if (data.action === "VOID") {
+            if (data.detail.action === "VOID") {
                 dispatch(fetchGeneralJournalVoidInternal())
-                dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))
+                dispatch(removeGeneralJournalDrafInternalByAccountId(data))
             }
 
-            if (data.action === "FINALIZE") {
+            if (data.detail.action === "FINALIZE") {
                 dispatch(fetchGeneralJournalByEventAllInternal())
 
                 // if (dataGeneralJournalByEventPerDayInternal || dataGeneralJournalByEventPerDayInternal.length > 0) {
                     dispatch(fetchGeneralJournalByEventPerDayInternal())
                 // }
                 
-                dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))
+                dispatch(removeGeneralJournalDrafInternalByAccountId(data))
             }
 
-            if (data.action === "DRAF") {
+            if (data.detail.action === "DRAF") {
                 dispatch(fetchGeneralJournalDrafInternal())
 
-                dispatch(removeGeneralJournalDrafInternalByDataObject(data.detail.data_general_journal))
+                dispatch(removeGeneralJournalDrafInternalByAccountId(data))
             }
         }
     } catch(error) {
@@ -111,9 +112,11 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         },
         withCredentials: true,
     }
+    console.log("data draf to void: ", data)
     try {
         const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
         dispatch(setSuccessVoidGeneralJournal(response.data?.success))
+        dispatch(removeGeneralJournalDrafInternalByAccountId(data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {

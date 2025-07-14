@@ -155,7 +155,7 @@ const Sidebar = ({activeMenu}) => {
                   onClick={() => handleNavigate('/internal/admin/neraca')}
                   className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "neraca" && 'bg-gray-100'}`}
                 >
-                  <span className="text-sm text-gray-800">Cash flow</span>
+                  <span className="text-sm text-gray-800">Neraca</span>
                 </div>
               </div>
             )}

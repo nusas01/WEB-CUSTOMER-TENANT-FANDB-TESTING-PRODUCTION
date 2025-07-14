@@ -278,7 +278,7 @@ const NeracaComponent = () => {
             </div>
             <div className="flex items-center space-x-3">
               <span className="text-lg font-bold text-gray-800">
-                {formatCurrency(sectionTotal)}
+                {formatCurrency(Math.abs(sectionTotal))}
               </span>
               {isExpanded ? (
                 <ChevronUp className="w-5 h-5 text-gray-600" />
@@ -311,7 +311,7 @@ const NeracaComponent = () => {
                         <div key={itemIndex} className="flex justify-between text-gray-800 font-medium items-center py-2 px-3 bg-gray-50 rounded-md">
                           <span>{item.nama_akun || 'Akun tidak tersedia'}</span>
                           <span>
-                            {formatCurrency(item.saldo_akhir || 0)}
+                            {formatCurrency(Math.abs(item.saldo_akhir)|| 0)}
                           </span>
                         </div>
                       ))

@@ -23,7 +23,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import {voidGeneralJournalInternal} from '../../actions/put'
 import {voidGeneralJournalInternalSlice} from '../../reducers/put'
 import{VoidJournalConfirmationModal, ErrorAlert} from '../../component/alert'
-import {filterGeneralJournalInternalSlice} from '../../reducers/reducers'
+import {
+  filterGeneralJournalInternalSlice, 
+  dataDrafToVoidInternalSlice,
+} from '../../reducers/reducers'
 import { SpinnerRelative } from '../../helper/spinner';
 import {
   fetchGeneralJournalByEventAllInternal, 
@@ -545,14 +548,8 @@ const totalsAlternative = useMemo(() => {
   
   return { totalDebit, totalKredit };
 }, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
-  console.log("totoal debit: " , totals.totalDebit)
-  console.log("total kredit: ", totals.totalKredit)
-  console.log("Status Filter:", statusFilter);
-  console.log("filteredData:", filteredDataNonAgregasi);
 
-  console.log('panjang agregasi: ', journalDataAgregasi.length)
-  console.log('panjang non agregasi: ',filteredDataNonAgregasi.length)
-  console.log('event status: ', eventFilter)
+
   // Get unique events for filter
   const uniqueEvents = ["Agregasi", 'Non Agregasi']
 
@@ -571,40 +568,44 @@ const totalsAlternative = useMemo(() => {
 
 
   // handle Draf To void general journal 
-  const [journalVoid, setjournalVoid] = useState(null)
   const [modelConfirmVoid, setModelConfirmVoid] = useState(false)
   const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
   const {successVoidGeneralJournal, errorVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
 
+  const {resetDataDrafToVoid} = dataDrafToVoidInternalSlice.actions
+  const {dataDrafToVoid} = useSelector((state) => state.persisted.dataDrafToVoidInternal)
+  
+  const handeSubmitVoid = () => { 
+    dispatch(voidGeneralJournalInternal(dataDrafToVoid))
+  }
+
+  console.log("data voidddd: ", dataDrafToVoid)
+
+ 
   useEffect(() => {
     if (errorVoidGeneralJournal) {
       setModelConfirmVoid(false)
+      dispatch(resetDataDrafToVoid())
     }
   }, [errorVoidGeneralJournal])
 
-  const handeSubmitVoid = () => {
-    console.log("Structure data void: ", journalDataVoid)
-    dispatch(voidGeneralJournalInternal(journalDataVoid))
-  }
 
-  const handleConfirmModelVoid = ({data}) => {
-    setjournalVoid(data)
+  const handleConfirmModelVoid = () => {
     setModelConfirmVoid(true)
   }
 
   const handleCloseConfirmModelVoid = () => {
-    setjournalVoid(null)
     setModelConfirmVoid(false)
   }
 
   useEffect(() => {
     if (successVoidGeneralJournal) {
+      setModelConfirmVoid(false)
       dispatch(resetVoidGeneralJournal())
+      dispatch(resetDataDrafToVoid())
     }
   }, [successVoidGeneralJournal])
   
-
-
 
   const handleDivDateClick = () => {
     if (statusFilter !== "DRAF" && dateInputRef.current) {
@@ -613,7 +614,7 @@ const totalsAlternative = useMemo(() => {
     }
   };
   
-  console.log("data draf :", journalDataDraf)
+  console.log("data journal to void :", journalDataVoid)
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
