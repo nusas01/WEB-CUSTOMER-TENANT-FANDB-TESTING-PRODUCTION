@@ -147,6 +147,7 @@ export default function KasirOrders() {
     return (
         <div className="flex">
             {errorAlert && (
+              <div className="fixed">
                 <ErrorAlert
                     message={
                         errorOrdersFinishedInternal
@@ -159,18 +160,22 @@ export default function KasirOrders() {
                           }
                         onClose={() => setErrorAlert(false)}
                 />
+              </div>
             )}
 
             {successAlert && (
-              <SuccessAlert
-                message={
-                  successToProgressOrder
-                    ? "Status pesanan berhasil diperbarui menjadi sedang diproses."
-                    : successToFinishedOrder
-                    ? "Pesanan berhasil diselesaikan."
-                    : ""
-                }
-              />
+              <div className="fixed">
+                <SuccessAlert
+                  message={
+                    successToProgressOrder
+                      ? "Status pesanan berhasil diperbarui menjadi sedang diproses."
+                      : successToFinishedOrder
+                      ? "Pesanan berhasil diselesaikan."
+                      : ""
+                  }
+                  onClose={() => setSuccessAlert(false)}
+                />
+              </div>
             )}
 
             {/* Sidebar - Fixed width */}
@@ -210,7 +215,7 @@ const OrderDashboard = () => {
   // integrasi dengan data state dan api 
   // Order process and progress
   const { dataOrdersInternal, loadingOrdersInternal } = useSelector((state) => state.persisted.dataOrdersInternal)
-
+  console.log("data orders: ", dataOrdersInternal)
   useEffect(() => {
     if (!dataOrdersInternal || dataOrdersInternal.length === 0) {
       dispatch(fetchOrdersInternal(startDate, endDate))
@@ -387,6 +392,7 @@ const OrderDashboard = () => {
   const {loadingToFinishedOrder} = useSelector((state) => state.toFinishedOrderInternalState)
   
   const handleFinishOrder = (data) => {
+    console.log("data finsihed order: ", data)
     dispatch(toFinishedOrderInternal(data))
   };
 
@@ -396,8 +402,8 @@ const OrderDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'PROGRESS': return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white';
-      case 'RECEIVED': return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white';
+      case 'PROCESS': return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white';
+      case 'PROGRESS': return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white';
       case 'FINISHED': return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white';
       default: return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white';
     }
@@ -405,8 +411,8 @@ const OrderDashboard = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'PROGRESS': return <Clock className="w-4 h-4" />;
-      case 'RECEIVED': return <RefreshCw className="w-4 h-4" />;
+      case 'PROCESS': return <Clock className="w-4 h-4" />;
+      case 'PROGRESS': return <RefreshCw className="w-4 h-4" />;
       case 'FINISHED': return <CheckCircle className="w-4 h-4" />;
       default: return <AlertCircle className="w-4 h-4" />;
     }
@@ -492,7 +498,7 @@ const OrderDashboard = () => {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">In Progress</p>
+                <p className="text-sm text-gray-600 mb-1">Process</p>
                 <p className="text-3xl font-bold text-gray-800">{stats.progress}</p>
                 <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
                   <Clock className="w-3 h-3" />
@@ -508,7 +514,7 @@ const OrderDashboard = () => {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Received</p>
+                <p className="text-sm text-gray-600 mb-1">Progress/Received</p>
                 <p className="text-3xl font-bold text-gray-800">{stats.received}</p>
                 <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
                   <RefreshCw className="w-3 h-3" />
@@ -596,8 +602,8 @@ const OrderDashboard = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="ALL">All Status</option>
-                <option value="PROGRESS">In Progress</option>
-                <option value="RECEIVED">Received</option>
+                <option value="PROCESS">Process</option>
+                <option value="PROGRESS">Progress/Received</option>
                 <option value="FINISHED">Finished</option>
               </select>
             </div>
@@ -624,7 +630,7 @@ const OrderDashboard = () => {
           ): (
             <>
               {filteredOrders.map((order) => (
-                <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div key={order.id} className="bg-white mb-2 rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
                   <div className="p-4">
                     {/* Order Header */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
@@ -635,7 +641,7 @@ const OrderDashboard = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-600">Order</span>
-                          <span className="text-sm font-bold text-gray-800">#{order.id.split('-')[1]}</span>
+                          <span className="text-sm font-bold text-gray-800">#{order.id}</span>
                         </div>
                       </div>
                       
@@ -647,7 +653,7 @@ const OrderDashboard = () => {
                           <MoreHorizontal className="w-4 h-4 text-gray-600" />
                         </button>
                         
-                        {order.order_status === 'PROGRESS' && (
+                        {order.order_status === 'PROCESS' && (
                           <button
                             onClick={() => handleReceiveOrder(order.id)}
                             className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 flex items-center gap-2 font-semibold"
@@ -657,9 +663,9 @@ const OrderDashboard = () => {
                           </button>
                         )}
                         
-                        {order.order_status === 'RECEIVED' && (
+                        {order.order_status === 'PROGRESS' && (
                           <button
-                            onClick={() => handleFinishOrder(order.id)}
+                            onClick={() => handleFinishOrder(order)}
                             className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 flex items-center gap-2 font-semibold"
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -672,7 +678,7 @@ const OrderDashboard = () => {
                     {/* Customer Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -682,7 +688,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
                           <Mail className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -692,7 +698,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
                           <MapPin className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -702,7 +708,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
                           <Clock className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -720,10 +726,15 @@ const OrderDashboard = () => {
                       </h4>
                       
                       <div className="space-y-3">
-                        {order.order.map((item) => (
+                        {order.order.map((item, index) => (
                           <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                index % 4 === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
+                                index % 4 === 1 ? 'bg-gradient-to-r from-rose-500 to-pink-500' :
+                                index % 4 === 2 ? 'bg-gradient-to-r from-cyan-500 to-blue-500' :
+                                'bg-gradient-to-r from-violet-500 to-purple-500'
+                              }`}>
                                 <Coffee className="w-6 h-6 text-white" />
                               </div>
                               <div>
@@ -746,14 +757,10 @@ const OrderDashboard = () => {
                     <div className="border-t border-gray-200 pt-6 mt-6">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-xl text-sm font-semibold ${
-                            order.order_type === 'DINE_IN' 
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' 
-                              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                          }`}>
+                          <span className={`px-3 py-1 rounded-xl bg-gray-800 text-white text-sm font-semibold`}>
                             {order.order_type}
                           </span>
-                          <span className="px-3 py-1 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+                          <span className="px-3 py-1 rounded-xl text-sm font-semibold bg-gray-800 text-white">
                             {order.status_transaction}
                           </span>
                         </div>

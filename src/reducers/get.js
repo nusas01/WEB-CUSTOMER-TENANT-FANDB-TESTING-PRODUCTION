@@ -601,18 +601,24 @@ export const getCategoryAndProductInternalSlice = createSlice({
             }
         },
         toggleProductAvailability: (state, action) => {
-            console.log("Reducer toggleProductAvailability dijalankan dengan id:", action.payload)
             const productId = action.payload;
 
-            for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
-                const products = state.dataCategoryAndProduct[i].product;
-                const productIndex = products.findIndex((prod) => prod.id === productId);
-
-                if (productIndex !== -1) {
-                    products[productIndex].available = !products[productIndex].available;
-                    break
+            state.dataCategoryAndProduct = state.dataCategoryAndProduct.map((category) => {
+                const updatedProducts = category.product.map((prod) => {
+                if (prod.id === productId) {
+                    return {
+                    ...prod,
+                    available: !prod.available,
+                    };
                 }
-            }
+                return prod;
+                });
+
+                return {
+                ...category,
+                product: updatedProducts,
+                };
+            });
         },
         deleteProductById: (state, action) => {
             const productId = action.payload;
@@ -872,10 +878,9 @@ export const getOrdersInternalSlice = createSlice({
             state.dataOrdersInternal = state.dataOrdersInternal.filter(item => item.id !== idToDelete)
         },
         updateOrderStatusById: (state, action) => {
-            const { id, newStatus } = action.payload
-            const transaction = state.dataOrdersInternal.find(item => item.id === id)
+            const transaction = state.dataOrdersInternal.find(item => item.id === action.payload.id)
             if (transaction) {
-                transaction.order_status = newStatus
+                transaction.order_status = action.payload.order_status
             }
         },
     }

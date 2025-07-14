@@ -236,7 +236,6 @@ function ProductsTable() {
       setSpinnerProduct(loadingCategoryAndProductInternal)
     }, [loadingCategoryAndProductInternal])
 
-  
 
 
     // create product

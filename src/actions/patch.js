@@ -166,7 +166,7 @@ const {setSuccessToProgressOrder, setErrorToProgressOrder, setLoadingToProgressO
 export const toProgressOrderInternal = (data) => async (dispatch) => {
     const config = {
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
@@ -174,14 +174,8 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     dispatch(setLoadingToProgressOrder(true))
     try {
         const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessToProgressOrder(response.data?.success))
-        if (response.data?.success) {
-            const data = {
-                id: data.transaction_id, 
-                newStatus: "PROGRESS",
-            }
-            dispatch(updateOrderStatusById(data))
-        }
+        dispatch(setSuccessToProgressOrder(response.data?.data))
+        dispatch(updateOrderStatusById(response.data?.data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -199,7 +193,7 @@ const {setSuccessToFinishedOrder, setErrorToFinishedOrder, setLoadingToFinishedO
 export const toFinishedOrderInternal = (data) => async (dispatch) => {
     const config = {
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
@@ -210,11 +204,9 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
             transaction_id: data.id,
         }
         const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
-        dispatch(setSuccessToFinishedOrder(response.data?.success))
-        if (response.data?.success) {
-            dispatch(addOrderFinishedInternal(data))
-            dispatch(deleteOrderById(data.id))
-        }
+        dispatch(setSuccessToFinishedOrder(response.data?.data))
+        dispatch(addOrderFinishedInternal(data))
+        dispatch(deleteOrderById(data.id))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
