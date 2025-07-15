@@ -70,6 +70,7 @@ import {
   toProgressOrderInternalSlice,
   toFinishedOrderInternalSlice,
   updateDataEmployeeSlice,
+  changePasswordInternalSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice
@@ -159,6 +160,7 @@ const nonPersistedReducers = {
   createTableInternalState: createTableInternalSlice.reducer,
   deleteTableInternalState: deleteTableInternalSlice.reducer,
   updateDataEmployeeState: updateDataEmployeeSlice.reducer,
+  changePasswordInternalState: changePasswordInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

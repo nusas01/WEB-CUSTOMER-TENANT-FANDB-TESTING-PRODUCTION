@@ -571,10 +571,15 @@ export function GeneralJournalForm() {
               Jumlah
             </label>
             <input
-              type="number"
-              value={formData.amount}
+              type="text"
+              value={formData?.amount != null ? formData.amount.toLocaleString("id-ID") : ''}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredAmount ? 'border-red-500' : 'border-gray-300'}`}
-              onChange={(e) => handleInputChange('amount', Number(e.target.value))}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/\./g, '');
+                const number = parseInt(raw) || 0;
+
+                handleInputChange('amount', number);
+              }}
             />
             {requiredAmount && <p className="text-red-500 text-xs mt-1">Jumlah wajib diisi dan harus lebih dari nol.</p>}
           </div>
@@ -906,10 +911,15 @@ export function GeneralJournalForm() {
                   Jumlah
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredAmount ? 'border-red-500' : 'border-gray-300'}`}
-                  onChange={(e) => handleInputChange('amount', Number(e.target.value))}
-                  value={formData.amount}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\./g, '');
+                    const number = parseInt(raw) || 0;
+
+                    handleInputChange('amount', number);
+                  }}
+                  value={formData?.amount != null ? formData.amount.toLocaleString("id-ID") : ''}
                 />
                 {requiredAmount && <p className="text-red-500 text-xs mt-1">Jumlah wajib diisi dan harus lebih dari nol.</p>}
               </div>

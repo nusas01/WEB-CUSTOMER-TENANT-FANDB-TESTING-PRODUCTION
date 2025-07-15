@@ -441,7 +441,6 @@ const ComponentCartCashier = ({cartRef}) => {
                     <SpinnerFixed colors={'fill-gray-900'}/>
                 )}
 
-
                 {/* alertError */}
                 { error && (
                     <ErrorAlert
@@ -477,7 +476,9 @@ const ComponentCartCashier = ({cartRef}) => {
                             <div className="py-1">
                                 {!spinnerRelative && (
                                     <>
-                                        {dataPaymentMethodInternal.map((method) => {
+                                        {dataPaymentMethodInternal
+                                        .filter(method => method.type !== "EWALLET") 
+                                        .map((method) => {
                                             const isSelected = method.name === dataCart.channel_code;
                                             return (
                                                 <button

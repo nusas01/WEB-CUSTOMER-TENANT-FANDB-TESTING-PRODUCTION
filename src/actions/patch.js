@@ -8,6 +8,7 @@ import axios from "axios"
     toProgressOrderInternalSlice,
     toFinishedOrderInternalSlice,
     updateDataEmployeeSlice,
+    changePasswordInternalSlice,
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice
@@ -243,6 +244,36 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
         dispatch(setErrorUpdateDataEmployee(error.response?.data?.error));
     } finally {
         dispatch(setLoadingUpdateDataEmployee(false))
+    }
+}
+
+const {setSuccessChangePasswordInternal, setErrorChangePasswordInteral, setLoadingChangePasswordInternal} = changePasswordInternalSlice.actions
+export const updateChangePasswordInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingChangePasswordInternal(true))
+    try {
+        console.log("data update employee hehehe: ", data);
+        const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_INTERNAL_URL}`, data, config)
+        dispatch(setSuccessChangePasswordInternal(response.data?.success))
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorChangePasswordInteral({
+            error: error.response.data.error,
+            password: error.response.data.ErrorFields.Password,
+            newPassword: error.response.data.ErrorFields.NewPassword
+        }));
+    } finally {
+        dispatch(setLoadingChangePasswordInternal(false))
     }
 }
 

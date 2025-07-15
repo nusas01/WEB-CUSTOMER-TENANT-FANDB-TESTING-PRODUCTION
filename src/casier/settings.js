@@ -17,7 +17,8 @@ import {
   DollarSign,
   ToggleLeft,
   ToggleRight,
-  AlertCircle
+  AlertCircle,
+  QrCode
 } from 'lucide-react';
 import Sidebar  from '../component/sidebar';
 import { fetchDataEmployeeInternal } from '../actions/get'
@@ -25,106 +26,178 @@ import { getDataEmployeeInternalSlice } from '../reducers/get'
 import { ErrorAlert, SuccessAlert } from '../component/alert';
 import { SpinnerFixed } from '../helper/spinner';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateDataEmployeeInternal } from '../actions/patch'
-import { updateDataEmployeeSlice } from '../reducers/patch'
+import { 
+  updateDataEmployeeInternal, 
+  updateChangePasswordInternal,
+} from '../actions/patch'
+import {
+  fetchPaymentMethodsInternal
+} from '../actions/get'
+import { 
+  updateDataEmployeeSlice,
+  changePasswordInternalSlice, 
+} from '../reducers/patch'
 import { format } from 'date-fns';
-
+import { validatePassword } from '../helper/validate'
+import { formatCurrency, EmptyState } from '../helper/helper'
+import { current } from '@reduxjs/toolkit';
+ 
 export default function KasirSettings() {
   const dispatch = useDispatch()
   const [alertError, setAlertError] = useState(false)
   const [successAlert, setSuccessAlert] = useState(false)
+  const [spinnerFixed, setSpinnerFixed] = useState(false)
 
   const { resetErrorDataEmployeeInternal } = getDataEmployeeInternalSlice.actions
   const { errorDataEmployeeInternal } = useSelector((state) => state.persisted.getDataEmployeeInternal)
 
   const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
-  const { successUpdateDataEmployee, errorUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+  const { successUpdateDataEmployee, errorUpdateDataEmployee, loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
 
   useEffect(() => {
-    if (successUpdateDataEmployee) {
+    setSpinnerFixed(loadingUpdateDataEmployee)
+  }, [loadingUpdateDataEmployee])
+
+  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
+  const { successChangePassword, errorChangePassword, loadingChangePassword } = useSelector((state) => state.changePasswordInternalState)
+
+  useEffect(() => {
+    setSpinnerFixed(loadingChangePassword)
+  }, [loadingChangePassword])
+
+  useEffect(() => {
+    if (successUpdateDataEmployee || successChangePassword) {
       setSuccessAlert(true)
 
       const timer = setTimeout(() => {
         setSuccessAlert(false)
         dispatch(resetUpdateDataEmployee())
+        dispatch(resetChangePasswordInternal())
       }, 3000)
 
       return () => clearTimeout(timer)
     }
-  }, [successUpdateDataEmployee])
+  }, [successUpdateDataEmployee, successChangePassword])
   
 
   useEffect(() => {
-    if (errorDataEmployeeInternal || errorUpdateDataEmployee) {
+    if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword) {
       setAlertError(true)
 
       const timer = setTimeout(() => {
         setAlertError(false)
         dispatch(resetErrorDataEmployeeInternal())
         dispatch(resetUpdateDataEmployee())
+        dispatch(resetChangePasswordInternal())
       }, 3000)
 
       return () => clearTimeout(timer)
     }
-  }, [errorDataEmployeeInternal, errorUpdateDataEmployee])
+  }, [errorDataEmployeeInternal, errorUpdateDataEmployee, errorChangePassword])
 
-    return (
-        <div className='flex'>
-            <div className='w-1/10 min-w-[250px]'>
-                <Sidebar activeMenu="settings"/>
+  const messageSuccess = successUpdateDataEmployee
+  ? 'Data berhasil diperbarui'
+  : successChangePassword
+  ? 'Password berhasil diperbarui'
+  : '';
+
+  const messageError = errorDataEmployeeInternal
+  ? 'Terjadi kesalahan pada sistem saat memuat data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi.'
+  : errorUpdateDataEmployee 
+  ? 'Terjadi kesalahan pada sistem saat memperbaruhi data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+  : errorChangePassword 
+  ? 'Terjadi kesalahan pada sistem saat memperbaruhi password. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+  : ''
+
+  return (
+      <div className='flex'>
+          <div className='w-1/10 min-w-[250px]'>
+              <Sidebar activeMenu="settings"/>
+          </div>
+
+          { spinnerFixed && (
+            <SpinnerFixed/>
+          )}
+
+          {alertError && (
+            <div className='fixed'>
+              <ErrorAlert
+                message={messageError}
+                onClose={() => setAlertError(false)}
+              />
             </div>
+            )}
 
-            {alertError && (
+            {successAlert && (
               <div className='fixed'>
-                <ErrorAlert
-                  message="Terjadi kesalahan pada sistem saat memuat data customer. Kami sedang mengatasinya. Silakan coba beberapa saat lagi."
-                  onClose={() => setAlertError(false)}
+                <SuccessAlert 
+                message={messageSuccess} 
+                onClose={() => setSuccessAlert(false)}
                 />
               </div>
-              )}
+            )}
 
-              {successAlert && (
-                <div className='fixed'>
-                  <SuccessAlert message={"Data berhasil diperbaruhi"} onClose={() => setSuccessAlert(false)}/>
-                </div>
-              )}
-
-            <div className='flex-1'>
-                <SettingsDashboard />
-            </div>
-        </div>
-    )
+          <div className='flex-1'>
+              <SettingsDashboard />
+          </div>
+      </div>
+  )
 } 
 
 const SettingsDashboard = () => {
   const dispatch = useDispatch()
 
-  // Password State
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  // call data payment method
+  const [paymentSettings, setPaymentSettings] = useState(null);
+  const {dataPaymentMethodInternal, taxRateInternal, paymentMethodCash} = useSelector((state) => state.persisted.paymentMethodsInternal)
+
+  useEffect(() => {
+    if (
+      dataPaymentMethodInternal.length === 0 &&
+      taxRateInternal === 0 &&
+      paymentMethodCash === null
+    ) {
+      dispatch(fetchPaymentMethodsInternal());
+    } else {
+      const virtualAccountFees = {};
+      const ewalletFees = {};
+      let qrisFee = 0;
+
+      dataPaymentMethodInternal.forEach((method) => {
+        const name = method.name.toLowerCase();
+        const fee = method.fee;
+
+        switch (method.type) {
+          case "VA":
+            virtualAccountFees[name] = fee;
+            break;
+          case "EWALLET":
+            ewalletFees[name] = fee * 100; 
+            break;
+          case "QR":
+            if (name.toLowerCase() === "qris") {
+              qrisFee = parseFloat((fee * 100).toFixed(2)); 
+            }
+            break;
+          default:
+            break;
+        }
+      });
+
+      setPaymentSettings({
+        taxRate: taxRateInternal ?? 0,
+        cashPaymentActive: paymentMethodCash?.status_payment ?? true,
+        virtualAccountFees,
+        ewalletFees,
+        qrisFee
+      });
+    }
+  }, [dataPaymentMethodInternal, taxRateInternal, paymentMethodCash, dispatch]);
+
 
   // Payment Settings State
-  const [paymentSettings, setPaymentSettings] = useState({
-    taxRate: 10,
-    cashPaymentActive: true,
-    virtualAccountFees: {
-      bca: 4000,
-      bni: 4000,
-      bri: 4000,
-      mandiri: 4000,
-      permata: 4000
-    },
-    ewalletFees: {
-      gopay: 2.5,
-      ovo: 2.5,
-      dana: 2.5,
-      linkaja: 2.5,
-      shopeepay: 2.5
-    }
-  });
+  const isEmptyVA = !paymentSettings?.virtualAccountFees || Object.keys(paymentSettings.virtualAccountFees).length === 0;
+  const isEmptyEwallet = !paymentSettings?.ewalletFees || Object.keys(paymentSettings.ewalletFees).length === 0;
 
   // UI State
   const [showPassword, setShowPassword] = useState({
@@ -156,10 +229,6 @@ const SettingsDashboard = () => {
     dispatch(updateEmployeeInternalFields({ [field]: value }));
   };
 
-  const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -189,13 +258,56 @@ const SettingsDashboard = () => {
     dispatch(updateDataEmployeeInternal(formData))
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(value);
+  // handle change password
+  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
+  const { errorValidatePassword, errorValidateNewPassword } = useSelector((state) => state.changePasswordInternalState)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  console.log("data change password: ", passwordData)
+  console.log("error change password: ", passwordErrors)
+
+   const handlePasswordChange = (field, value) => {
+    setPasswordData(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleSubmitChangePassword = () => {
+    dispatch(resetChangePasswordInternal())
+
+    const errors = validatePassword(passwordData.newPassword, passwordData.confirmPassword);
+    setPasswordErrors(errors);
+
+    console.log("error change password: ", errors); 
+
+    let currentPasswordValid = true; 
+    if (passwordData.currentPassword === '') {
+      setPasswordErrors(prev => ({
+        ...prev, 
+        currentPassword: 'Password saat ini tidak boleh kosong'
+      }));
+      currentPasswordValid = false;
+    }
+
+    const isValid = !errors.newPassword && !errors.confirmPassword;
+
+    if (!isValid || !currentPasswordValid) return;
+
+    dispatch(updateChangePasswordInternal({
+      new_password: passwordData.newPassword,
+      last_password: passwordData.currentPassword
+    }));
+
+    console.log("dispatch executed");
+  };
+
 
   const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     <button
@@ -209,50 +321,6 @@ const SettingsDashboard = () => {
       <Icon size={20} />
       <span className="font-medium">{label}</span>
     </button>
-  );
-
-  const InputField = ({ label, type = 'text', value, onChange, disabled = false, icon: Icon, placeholder }) => (
-    <div className="space-y-2">
-      <label className="block text-sm font-semibold text-gray-800">{label}</label>
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-        )}
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          placeholder={placeholder}
-          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200 ${
-            Icon ? 'pl-11' : ''
-          } ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
-        />
-      </div>
-    </div>
-  );
-
-  const PasswordField = ({ label, value, onChange, showPassword, toggleShow, placeholder }) => (
-    <div className="space-y-2">
-      <label className="block text-sm font-semibold text-gray-800">{label}</label>
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-        <input
-          type={showPassword ? 'text' : 'password'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-4 py-3 pl-11 pr-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200"
-        />
-        <button
-          type="button"
-          onClick={toggleShow}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-        >
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      </div>
-    </div>
   );
 
   return (
@@ -386,7 +454,7 @@ const SettingsDashboard = () => {
                   <InputField
                     label="Nomor Telepon"
                     value={dataEmployeeInternal?.phone_number || ''}
-                    onChange={(value) => handleProfileUpdate('phoneNumber', value)}
+                    onChange={(value) => handleProfileUpdate('phone_number', value)}
                     icon={Phone}
                     placeholder="+62 812 3456 7890"
                   />
@@ -395,7 +463,7 @@ const SettingsDashboard = () => {
                     label="Tanggal Lahir"
                     type="date"
                     value={dataEmployeeInternal?.date_of_birth || ''}
-                    onChange={(value) => handleProfileUpdate('dateOfBirth', value)}
+                    onChange={(value) => handleProfileUpdate('date_of_birth', value)}
                     icon={Calendar}
                   />
                   
@@ -440,32 +508,47 @@ const SettingsDashboard = () => {
                 </div>
 
                 <div className="max-w-md space-y-6">
-                  <PasswordField
-                    label="Password Saat Ini"
-                    value={passwordData.currentPassword}
-                    onChange={(value) => handlePasswordChange('currentPassword', value)}
-                    showPassword={showPassword.current}
-                    toggleShow={() => setShowPassword(prev => ({ ...prev, current: !prev.current }))}
-                    placeholder="Masukkan password saat ini"
-                  />
+                  <div>
+                    <PasswordField
+                      label="Password Saat Ini"
+                      value={passwordData.currentPassword}
+                      onChange={(value) => handlePasswordChange('currentPassword', value)}
+                      showPassword={showPassword.current}
+                      toggleShow={() => setShowPassword(prev => ({ ...prev, current: !prev.current }))}
+                      placeholder="Masukkan password saat ini"
+                    />
+                    {(errorValidatePassword || passwordErrors.currentPassword) && (
+                      <p className="text-red-500 text-sm">{errorValidatePassword || passwordErrors.currentPassword}</p>
+                    )}
+                  </div>
                   
-                  <PasswordField
-                    label="Password Baru"
-                    value={passwordData.newPassword}
-                    onChange={(value) => handlePasswordChange('newPassword', value)}
-                    showPassword={showPassword.new}
-                    toggleShow={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
-                    placeholder="Masukkan password baru"
-                  />
+                  <div>
+                    <PasswordField
+                      label="Password Baru"
+                      value={passwordData.newPassword}
+                      onChange={(value) => handlePasswordChange('newPassword', value)}
+                      showPassword={showPassword.new}
+                      toggleShow={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
+                      placeholder="Masukkan password baru"
+                    />
+                    {(passwordErrors.newPassword || errorValidateNewPassword) && (
+                      <p className="text-red-500 text-sm">{passwordErrors.newPassword || errorValidateNewPassword}</p>
+                    )}
+                  </div>
                   
-                  <PasswordField
-                    label="Konfirmasi Password Baru"
-                    value={passwordData.confirmPassword}
-                    onChange={(value) => handlePasswordChange('confirmPassword', value)}
-                    showPassword={showPassword.confirm}
-                    toggleShow={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
-                    placeholder="Konfirmasi password baru"
-                  />
+                  <div>
+                    <PasswordField
+                      label="Konfirmasi Password Baru"
+                      value={passwordData.confirmPassword}
+                      onChange={(value) => handlePasswordChange('confirmPassword', value)}
+                      showPassword={showPassword.confirm}
+                      toggleShow={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      placeholder="Konfirmasi password baru"
+                    />
+                    {passwordErrors.confirmPassword && (
+                        <p className="text-red-500 text-sm">{passwordErrors.confirmPassword}</p>
+                    )}
+                  </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-start gap-3">
@@ -473,9 +556,11 @@ const SettingsDashboard = () => {
                       <div className="text-sm text-blue-800">
                         <p className="font-medium mb-1">Ketentuan Password:</p>
                         <ul className="space-y-1 text-blue-700">
-                          <li>• Minimal 8 karakter</li>
-                          <li>• Mengandung huruf besar dan kecil</li>
-                          <li>• Mengandung angka dan simbol</li>
+                          <li>• Wajib diisi</li>
+                          <li>• Minimal 6 karakter dan maksimal 50 karakter</li>
+                          <li>• Mengandung minimal 1 huruf kapital</li>
+                          <li>• Mengandung minimal 1 angka</li>
+                          <li>• Mengandung minimal 1 simbol/karakter spesial</li>
                         </ul>
                       </div>
                     </div>
@@ -484,7 +569,7 @@ const SettingsDashboard = () => {
 
                 <div className="flex justify-end mt-6">
                   <button
-                    // onClick={() => handleSave('Password')}
+                    onClick={() => handleSubmitChangePassword()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Save size={18} />
@@ -505,30 +590,43 @@ const SettingsDashboard = () => {
 
                   <div className="max-w-md">
                     <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-800">Tarif Pajak (%)</label>
-                      <div className="relative">
-                        <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                      <label className="block text-sm font-medium text-gray-700">Tarif Pajak (%)</label>
+
+                      <div className="relative flex items-center rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-800 transition">
+                        <div className="pl-4 flex items-center text-gray-400">
+                          <Percent size={18} />
+                        </div>
                         <input
                           type="number"
-                          value={paymentSettings.taxRate}
-                          onChange={(e) => setPaymentSettings(prev => ({ ...prev, taxRate: parseFloat(e.target.value) }))}
-                          className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                          value={paymentSettings?.taxRate || 0}
+                          onChange={(e) =>
+                            setPaymentSettings((prev) => ({
+                              ...prev,
+                              taxRate: parseFloat(e.target.value),
+                            }))
+                          }
                           placeholder="0"
                           min="0"
                           max="100"
                           step="0.1"
+                          className="w-full px-4 py-3 bg-transparent focus:outline-none rounded-r-xl text-sm"
                         />
                       </div>
-                      <p className="text-sm text-gray-500">Pajak akan diterapkan pada setiap transaksi</p>
+
+                      <p className="text-sm text-gray-600">Pajak akan diterapkan pada setiap transaksi</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Cash Payment Toggle */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">                  
                   <div className="flex items-center gap-3 mb-6">
-                    <Wallet className="text-gray-800" size={24} />
-                    <h2 className="text-xl font-bold text-gray-800">Metode Pembayaran Cash</h2>
+                    <div className="flex items-center justify-center text-gray-800">
+                      <Wallet size={24} />
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-800 leading-tight">
+                      Metode Pembayaran Cash
+                    </h2>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -537,12 +635,17 @@ const SettingsDashboard = () => {
                       <p className="text-sm text-gray-600">Mengizinkan pelanggan membayar dengan uang tunai</p>
                     </div>
                     <button
-                      onClick={() => setPaymentSettings(prev => ({ ...prev, cashPaymentActive: !prev.cashPaymentActive }))}
+                      onClick={() =>
+                        setPaymentSettings(prev => ({
+                          ...(prev ?? {}), 
+                          cashPaymentActive: !(prev?.cashPaymentActive ?? false)
+                        }))
+                      }
                       className={`p-1 rounded-full transition-colors ${
-                        paymentSettings.cashPaymentActive ? 'text-gray-800' : 'text-gray-400'
+                        paymentSettings?.cashPaymentActive ? 'text-gray-800' : 'text-gray-400'
                       }`}
                     >
-                      {paymentSettings.cashPaymentActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                      {paymentSettings?.cashPaymentActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
                     </button>
                   </div>
                 </div>
@@ -554,31 +657,49 @@ const SettingsDashboard = () => {
                     <h2 className="text-xl font-bold text-gray-800">Biaya Virtual Account</h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(paymentSettings.virtualAccountFees).map(([bank, fee]) => (
-                      <div key={bank} className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-800 capitalize">{bank.toUpperCase()}</label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="number"
-                            value={fee}
-                            onChange={(e) => setPaymentSettings(prev => ({
-                              ...prev,
-                              virtualAccountFees: {
-                                ...prev.virtualAccountFees,
-                                [bank]: parseInt(e.target.value)
-                              }
-                            }))}
-                            className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                            placeholder="0"
-                            min="0"
-                          />
+                  { isEmptyVA ? (
+                    <EmptyState
+                      title="Gagal Memuat Data E-wallet"
+                      description="Data biaya e-wallet gagal dimuat dari server. Periksa jaringan Anda dan coba lagi."
+                    />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {Object.entries(paymentSettings.virtualAccountFees).map(([bank, fee]) => (
+                        <div key={bank} className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700 capitalize">
+                            {bank.toUpperCase()}
+                          </label>
+
+                          <div className="relative flex items-center rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-800 transition">
+                            <div className="pl-4 flex items-center text-gray-400">
+                              <DollarSign size={18} />
+                            </div>
+                            <input
+                              type="text"
+                              value={fee != null ? fee.toLocaleString("id-ID") : '0'}
+                              onChange={(e) => {
+                                const rawValue = e.target.value.replace(/\./g, ''); // hilangkan titik ribuan
+                                const parsed = parseInt(rawValue) || 0;
+
+                                setPaymentSettings((prev) => ({
+                                  ...prev,
+                                  virtualAccountFees: {
+                                    ...prev.virtualAccountFees,
+                                    [bank]: parsed,
+                                  },
+                                }));
+                              }}
+                              placeholder="0"
+                              min="0"
+                              className="w-full px-4 py-3 bg-transparent focus:outline-none rounded-r-xl text-sm"
+                            />
+                          </div>
+
+                          <p className="text-xs text-gray-500">{formatCurrency(fee)}</p>
                         </div>
-                        <p className="text-xs text-gray-500">{formatCurrency(fee)}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* E-wallet Fees */}
@@ -588,35 +709,90 @@ const SettingsDashboard = () => {
                     <h2 className="text-xl font-bold text-gray-800">Biaya E-wallet (%)</h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(paymentSettings.ewalletFees).map(([wallet, fee]) => (
-                      <div key={wallet} className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-800 capitalize">
-                          {wallet === 'shopeepay' ? 'ShopeePay' : wallet.toUpperCase()}
-                        </label>
-                        <div className="relative">
-                          <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                          <input
-                            type="number"
-                            value={fee}
-                            onChange={(e) => setPaymentSettings(prev => ({
-                              ...prev,
-                              ewalletFees: {
-                                ...prev.ewalletFees,
-                                [wallet]: parseFloat(e.target.value)
+                  { isEmptyEwallet ? (
+                    <EmptyState
+                      title="Gagal Memuat Data E-wallet"
+                      description="Data biaya e-wallet gagal dimuat dari server. Periksa jaringan Anda dan coba lagi."
+                    />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {Object.entries(paymentSettings.ewalletFees).map(([wallet, fee]) => (
+                        <div key={wallet} className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700 capitalize">
+                            {wallet === "shopeepay" ? "ShopeePay" : wallet.toUpperCase()}
+                          </label>
+
+                          <div className="relative flex items-center rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-800 transition">
+                            <div className="pl-4 flex items-center text-gray-400">
+                              <Percent size={18} />
+                            </div>
+                            <input
+                              type="number"
+                              value={fee}
+                              onChange={(e) =>
+                                setPaymentSettings((prev) => ({
+                                  ...prev,
+                                  ewalletFees: {
+                                    ...prev.ewalletFees,
+                                    [wallet]: parseFloat(e.target.value),
+                                  },
+                                }))
                               }
-                            }))}
-                            className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                            placeholder="0"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                          />
+                              placeholder="0"
+                              min="0"
+                              max="100"
+                              step="0.1"
+                              className="w-full px-4 py-3 bg-transparent focus:outline-none rounded-r-xl text-sm"
+                            />
+                          </div>
+
+                          <p className="text-xs text-gray-500">{fee}% dari total transaksi</p>
                         </div>
-                        <p className="text-xs text-gray-500">{fee}% dari total transaksi</p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* QRIS Fee */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <QrCode className="text-gray-800" size={24} />
+                    <h2 className="text-xl font-bold text-gray-800">Biaya QRIS (%)</h2>
                   </div>
+
+                  {paymentSettings?.qrisFee == null ? (
+                    <EmptyState
+                      title="Gagal Memuat Data QRIS"
+                      description="Data biaya QRIS gagal dimuat dari server. Periksa koneksi jaringan Anda dan coba lagi."
+                    />
+                  ) : (
+                    <div className="space-y-2 max-w-md">
+                      <label className="block text-sm font-medium text-gray-700">QRIS</label>
+
+                      <div className="relative flex items-center rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-800 transition">
+                        <div className="pl-4 flex items-center text-gray-400">
+                          <Percent size={18} />
+                        </div>
+                        <input
+                          type="number"
+                          value={paymentSettings?.qrisFee}
+                          onChange={(e) =>
+                            setPaymentSettings((prev) => ({
+                              ...prev,
+                              qrisFee: parseFloat(e.target.value),
+                            }))
+                          }
+                          placeholder='0'
+                          min='0'
+                          max="100"
+                          step="0.1"
+                          className="w-full px-4 py-3 bg-transparent focus:outline-none rounded-r-xl text-sm"
+                        />
+                      </div>
+
+                      <p className="text-xs text-gray-500">{paymentSettings.qrisFee}% dari total transaksi melalui QRIS</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end">
@@ -636,3 +812,52 @@ const SettingsDashboard = () => {
     </div>
   );
 };
+
+const InputField = ({ label, type = 'text', value, onChange, disabled = false, icon: Icon, placeholder }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-semibold text-gray-800">{label}</label>
+    <div className="relative flex items-center">
+      {Icon && (
+        <div className="absolute left-3 top-0 h-full flex items-center">
+          <Icon className="text-gray-400" size={18} />
+        </div>
+      )}
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200 ${
+          Icon ? 'pl-11' : ''
+        } ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'} leading-none text-sm`}
+      />
+    </div>
+  </div>
+);
+
+const PasswordField = ({ label, value, onChange, showPassword, toggleShow, placeholder }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-semibold text-gray-800">{label}</label>
+    
+    <div className="relative flex items-center">
+      <Lock className="absolute left-3 text-gray-400" size={18} />
+      
+      <input
+        type={showPassword ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 pl-11 pr-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200"
+      />
+      
+      <button
+        type="button"
+        onClick={toggleShow}
+        className="absolute right-3 text-gray-400 hover:text-gray-600"
+      >
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  </div>
+);

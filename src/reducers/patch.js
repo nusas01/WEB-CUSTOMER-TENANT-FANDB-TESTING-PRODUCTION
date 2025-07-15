@@ -241,3 +241,38 @@ export const updateDataEmployeeSlice = createSlice({
         }
     }
 })
+
+const initialChangePasswordInternalState = {
+    successChangePassword: null,
+    errorChangePassword: null,
+    loadingChangePassword: false,
+    errorValidatePassword: null,
+    errorValidateNewPassword: null,
+}
+export const changePasswordInternalSlice = createSlice({
+    name: 'changePasswordInteral',
+    initialState: initialChangePasswordInternalState,
+    reducers: {
+        setSuccessChangePasswordInternal: (state, action) => {
+            state.successChangePassword = action.payload
+            state.errorChangePassword = null
+            state.errorValidatePassword = null
+            state.errorValidateNewPassword = null
+        },
+        setErrorChangePasswordInteral: (state, action) => {
+            state.errorChangePassword = action.payload.error
+            state.errorValidatePassword = action.payload.password
+            state.errorValidateNewPassword = action.payload.newPassword
+            state.successChangePassword = null
+        },
+        setLoadingChangePasswordInternal: (state, action) => {
+            state.loadingChangePassword = action.payload
+        },
+        resetChangePasswordInternal: (state) => {
+            state.successChangePassword = null
+            state.errorChangePassword = null
+            state.errorValidatePassword = null
+            state.errorValidateNewPassword = null
+        }
+    }
+})

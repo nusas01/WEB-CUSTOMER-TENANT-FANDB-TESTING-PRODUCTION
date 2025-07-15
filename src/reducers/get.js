@@ -472,6 +472,7 @@ export const getAllCreateTransactionInternalSlice = createSlice({
 const initialGetPaymentMethodsInternalState = {
     dataPaymentMethodInternal: [],
     taxRateInternal: 0,
+    paymentMethodCash: null,
     errorPaymentMethodsInternal: null,
     loadingPaymentMethodsInternal: false,
 }
@@ -483,8 +484,9 @@ export const getPaymentMethodsInternalSlice = createSlice({
             state.loadingPaymentMethodsInternal = action.payload
         },
         fetchSuccessGetPaymentMethodsInternal: (state, action) => {
-            state.dataPaymentMethodInternal = action.payload?.payment_methods
-            state.taxRateInternal = action.payload?.tax_rate
+            state.dataPaymentMethodInternal = action.payload?.payment_methods || []
+            state.taxRateInternal = action.payload?.tax_rate || 0
+            state.paymentMethodCash = action.payload?.payment_method_cash || null
             state.errorPaymentMethodsInternal = null
         },
         fetchErrorGetPaymentMethodsInternal: (state, action) => {
@@ -999,6 +1001,7 @@ export const getDataEmployeeInternalSlice = createSlice({
         }
     }
 })
+
 
 
 

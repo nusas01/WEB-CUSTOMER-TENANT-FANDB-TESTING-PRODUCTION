@@ -480,7 +480,7 @@ export const fetchPaymentMethodsInternal = () => {
 
       dispatch(setLoadingGetPaymentMethodsInternal(true))
       try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_PAYMENT_METHODS_INTERNAL_URL}`, {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_PATCH_PAYMENT_METHODS_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
