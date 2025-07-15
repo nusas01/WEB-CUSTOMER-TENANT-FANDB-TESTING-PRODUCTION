@@ -27,22 +27,18 @@ import { SpinnerFixed } from '../helper/spinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateDataEmployeeInternal } from '../actions/patch'
 import { updateDataEmployeeSlice } from '../reducers/patch'
+import { format } from 'date-fns';
 
 export default function KasirSettings() {
-  const dispatch = useDispatch
+  const dispatch = useDispatch()
   const [alertError, setAlertError] = useState(false)
   const [successAlert, setSuccessAlert] = useState(false)
-  const [spinnerFixed, setSpinnerFixed] = useState(false)
 
   const { resetErrorDataEmployeeInternal } = getDataEmployeeInternalSlice.actions
   const { errorDataEmployeeInternal } = useSelector((state) => state.persisted.getDataEmployeeInternal)
 
   const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
-  const { successUpdateDataEmployee, errorUpdateDataEmployee, loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
-
-  useEffect(() => {
-    setSpinnerFixed(loadingUpdateDataEmployee)
-  }, [loadingUpdateDataEmployee])
+  const { successUpdateDataEmployee, errorUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
 
   useEffect(() => {
     if (successUpdateDataEmployee) {
@@ -72,7 +68,6 @@ export default function KasirSettings() {
     }
   }, [errorDataEmployeeInternal, errorUpdateDataEmployee])
 
-
     return (
         <div className='flex'>
             <div className='w-1/10 min-w-[250px]'>
@@ -80,18 +75,18 @@ export default function KasirSettings() {
             </div>
 
             {alertError && (
+              <div className='fixed'>
                 <ErrorAlert
                   message="Terjadi kesalahan pada sistem saat memuat data customer. Kami sedang mengatasinya. Silakan coba beberapa saat lagi."
                   onClose={() => setAlertError(false)}
                 />
+              </div>
               )}
 
               {successAlert && (
-                <SuccessAlert message={"Data berhasil diperbaruhi"} onClose={() => setSuccessAlert(false)}/>
-              )}
-
-              { spinnerFixed && (
-                <SpinnerFixed/>
+                <div className='fixed'>
+                  <SuccessAlert message={"Data berhasil diperbaruhi"} onClose={() => setSuccessAlert(false)}/>
+                </div>
               )}
 
             <div className='flex-1'>
@@ -103,18 +98,6 @@ export default function KasirSettings() {
 
 const SettingsDashboard = () => {
   const dispatch = useDispatch()
-  const [spinnerFixed, setSpinnerFixed] = useState(false)
-
-  // User Profile State
-  const [userProfile, setUserProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phoneNumber: '+62 812 3456 7890',
-    dateOfBirth: '1990-01-15',
-    gender: 'Male',
-    position: 'Manager',
-    image: null
-  });
 
   // Password State
   const [passwordData, setPasswordData] = useState({
@@ -155,14 +138,16 @@ const SettingsDashboard = () => {
 
   // get data customer from state and call api
   const {setUpdateStatusImage, updateEmployeeImage, updateEmployeeInternalFields} = getDataEmployeeInternalSlice.actions
-  const {dataEmployeeInternal, updateStatusImage} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  const {dataEmployeeInternal, updateStatus, imageUpdateEmployee} = useSelector((state) => state.persisted.getDataEmployeeInternal)
 
   useEffect(() => {
-    if (dataEmployeeInternal) {
+    if (!dataEmployeeInternal) {
       dispatch(fetchDataEmployeeInternal())
     }
   }, [])
 
+  console.log("data employee: ", dataEmployeeInternal)
+  console.log("update status image: ", updateStatus)
 
   // Handlers
  const handleProfileUpdate = (field, value) => {
@@ -176,30 +161,32 @@ const SettingsDashboard = () => {
   };
 
   const handleImageUpload = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
 
-    reader.onload = (event) => {
-      const imageData = event.target.result; 
+      reader.onload = (event) => {
+        const imageData = event.target.result; 
 
-      dispatch(updateEmployeeImage(imageData));
-      dispatch(setUpdateStatusImage(true))
-    };
+        dispatch(updateEmployeeImage({baseStr: imageData, file: file}));
+        dispatch(setUpdateStatusImage(true))
+      };
 
-    reader.readAsDataURL(file);
-  }
-};
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmitUpdateEmployee = () => {
-    const data = {
-      id: dataEmployeeInternal.id,
-      image: dataEmployeeInternal.image,
-      name: dataEmployeeInternal.name,
-      phone_number: dataEmployeeInternal.phone_number,
-      date_of_birth: dataEmployeeInternal.date_of_birth,
+    const formData = new FormData();
+    formData.append("id", dataEmployeeInternal.id);
+    formData.append("name", dataEmployeeInternal.name);
+    formData.append("phone_number", dataEmployeeInternal.phone_number);
+    formData.append("date_of_birth", dataEmployeeInternal.date_of_birth);
+
+    if (imageUpdateEmployee instanceof File) {
+      formData.append("image", imageUpdateEmployee);
     }
-    dispatch(dispatch(data))
+    dispatch(updateDataEmployeeInternal(formData))
   };
 
   const formatCurrency = (value) => {
@@ -342,13 +329,15 @@ const SettingsDashboard = () => {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        {dataEmployeeInternal && dataEmployeeInternal.image && !updateStatusImage ? (
+                        {dataEmployeeInternal?.image &&
+                        dataEmployeeInternal.image !== "00000000-0000-0000-0000-000000000000" &&
+                        !updateStatus ? (
                           <img
-                            src={require(`../image/${dataEmployeeInternal.image}`)}
+                            src={`/image/${dataEmployeeInternal.image}`}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
-                        ) : dataEmployeeInternal && updateStatusImage && dataEmployeeInternal.image ? (
+                        ) : dataEmployeeInternal?.image && updateStatus ? (
                           <img
                             src={dataEmployeeInternal.image}
                             alt="Profile"

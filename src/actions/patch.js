@@ -231,10 +231,8 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingUpdateDataEmployee(true))
     try {
-        const formData = {
-            transaction_id: data.id,
-        }
-        const response = await axios.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, formData, config)
+        console.log("data update employee hehehe: ", data);
+        const response = await axios.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, data, config)
         dispatch(setSuccessUpdateDataEmployee(response.data?.success))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {

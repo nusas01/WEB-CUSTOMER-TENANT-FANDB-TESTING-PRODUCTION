@@ -27,6 +27,7 @@ import {
     getOrdersFinishedInternalSlice,
     getTablesInternalSlice,
     getNeracaInternalSlice,
+    getDataEmployeeInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -877,7 +878,7 @@ export const fetchTablesInternal = () => {
 }
 
 
-const {fetchSuccessDataEmployeeInternal, fetchErrorDataEmployeeInternal, setLoadingDataEmployeeInternal} = getGeneralJournalDrafInternalSlice.actions
+const {fetchSuccessDataEmployeeInternal, fetchErrorDataEmployeeInternal, setLoadingDataEmployeeInternal} = getDataEmployeeInternalSlice.actions
 export const fetchDataEmployeeInternal = () => {
     return async (dispatch, getState) => {
       const { statusExpiredToken } = getState().statusExpiredTokenState;

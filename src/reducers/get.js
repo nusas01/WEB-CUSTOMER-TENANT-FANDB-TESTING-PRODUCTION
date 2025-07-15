@@ -960,6 +960,7 @@ const initialDataEmployeeInternalState = {
     errorDataEmployeeInternal: null,
     loadingDataEmployeeInternal: false,
     updateStatus: false,
+    imageUpdateEmployee: null,
 } 
 export const getDataEmployeeInternalSlice = createSlice({
     name: "dataEmployeeInternal",
@@ -990,8 +991,8 @@ export const getDataEmployeeInternalSlice = createSlice({
             });
         },
        updateEmployeeImage: (state, action) => {
-            state.dataEmployeeInternal.image = action.payload;
-            state.dataEmployeeImage = action.payload; 
+            state.dataEmployeeInternal.image = action.payload.baseStr;
+            state.imageUpdateEmployee = action.payload.file; 
         },
         setUpdateStatusImage: (state, action) => {
             state.updateStatus = action.payload
