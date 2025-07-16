@@ -60,6 +60,7 @@ import {
   updateInternalSlice,
   updateGeneralJournalInternalSlice,
   voidGeneralJournalInternalSlice,
+  updatePaymentMethodsInternalSlice,
 } from './put'
 import {
   changePasswordCustomerSlice,
@@ -161,6 +162,7 @@ const nonPersistedReducers = {
   deleteTableInternalState: deleteTableInternalSlice.reducer,
   updateDataEmployeeState: updateDataEmployeeSlice.reducer,
   changePasswordInternalState: changePasswordInternalSlice.reducer,
+  updatePaymentMethodsInternalState: updatePaymentMethodsInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

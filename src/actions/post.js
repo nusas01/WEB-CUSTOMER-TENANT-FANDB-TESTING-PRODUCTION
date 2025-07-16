@@ -257,6 +257,7 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         const message = {
             error: error.response?.data?.error,
             errorProductUnavailable: error.response?.data?.errorProductUnavailable,
+            errorAmountPrice: error.response?.data?.errorAmountPrice
         }
         dispatch(errorCreateTransactionInternal(message))
         console.log("response data create transacrion internal: ", error)

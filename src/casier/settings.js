@@ -33,10 +33,19 @@ import {
 import {
   fetchPaymentMethodsInternal
 } from '../actions/get'
+import {
+    updatePaymentMethodsInternal
+} from '../actions/put'
 import { 
   updateDataEmployeeSlice,
   changePasswordInternalSlice, 
 } from '../reducers/patch'
+import {
+  updatePaymentMethodsInternalSlice,
+} from '../reducers/put'
+import {
+  getPaymentMethodsInternalSlice
+} from '../reducers/get'
 import { format } from 'date-fns';
 import { validatePassword } from '../helper/validate'
 import { formatCurrency, EmptyState } from '../helper/helper'
@@ -48,40 +57,56 @@ export default function KasirSettings() {
   const [successAlert, setSuccessAlert] = useState(false)
   const [spinnerFixed, setSpinnerFixed] = useState(false)
 
+  // response get data employee
   const { resetErrorDataEmployeeInternal } = getDataEmployeeInternalSlice.actions
   const { errorDataEmployeeInternal } = useSelector((state) => state.persisted.getDataEmployeeInternal)
 
+  // response update data employee
   const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
   const { successUpdateDataEmployee, errorUpdateDataEmployee, loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+
+  // response change password
+  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
+  const { successChangePassword, errorChangePassword, loadingChangePassword } = useSelector((state) => state.changePasswordInternalState)
+
+  // response update payment methods
+  const { resetUpdatePaymentMethodsInternal } = updatePaymentMethodsInternalSlice.actions
+  const {successUpdatePaymentMethods, errorUpdatePaymentMethods, loadingUpdatePaymentMethods } = useSelector((state) => state.updatePaymentMethodsInternalState)
+
+  useEffect(() => {
+    setSpinnerFixed(loadingUpdatePaymentMethods)
+  }, [loadingUpdatePaymentMethods])
 
   useEffect(() => {
     setSpinnerFixed(loadingUpdateDataEmployee)
   }, [loadingUpdateDataEmployee])
 
-  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
-  const { successChangePassword, errorChangePassword, loadingChangePassword } = useSelector((state) => state.changePasswordInternalState)
 
   useEffect(() => {
     setSpinnerFixed(loadingChangePassword)
   }, [loadingChangePassword])
 
   useEffect(() => {
-    if (successUpdateDataEmployee || successChangePassword) {
+    if (successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods) {
       setSuccessAlert(true)
 
       const timer = setTimeout(() => {
         setSuccessAlert(false)
         dispatch(resetUpdateDataEmployee())
         dispatch(resetChangePasswordInternal())
+        dispatch(resetUpdatePaymentMethodsInternal())
       }, 3000)
 
       return () => clearTimeout(timer)
     }
-  }, [successUpdateDataEmployee, successChangePassword])
+    if (successUpdatePaymentMethods) {
+      dispatch(fetchPaymentMethodsInternal())
+    }
+  }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
   
 
   useEffect(() => {
-    if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword) {
+    if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods) {
       setAlertError(true)
 
       const timer = setTimeout(() => {
@@ -89,11 +114,12 @@ export default function KasirSettings() {
         dispatch(resetErrorDataEmployeeInternal())
         dispatch(resetUpdateDataEmployee())
         dispatch(resetChangePasswordInternal())
+        dispatch(resetUpdatePaymentMethodsInternal())
       }, 3000)
 
       return () => clearTimeout(timer)
     }
-  }, [errorDataEmployeeInternal, errorUpdateDataEmployee, errorChangePassword])
+  }, [errorDataEmployeeInternal, errorUpdateDataEmployee, errorChangePassword, errorUpdatePaymentMethods])
 
   const messageSuccess = successUpdateDataEmployee
   ? 'Data berhasil diperbarui'
@@ -107,6 +133,8 @@ export default function KasirSettings() {
   ? 'Terjadi kesalahan pada sistem saat memperbaruhi data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
   : errorChangePassword 
   ? 'Terjadi kesalahan pada sistem saat memperbaruhi password. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+  : errorUpdatePaymentMethods 
+  ? 'Terjadi kesalahan pada sistem saat memperbarui metode pembayaran. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
   : ''
 
   return (
@@ -185,7 +213,7 @@ const SettingsDashboard = () => {
       });
 
       setPaymentSettings({
-        taxRate: taxRateInternal ?? 0,
+        taxRate: parseFloat((taxRateInternal * 100).toFixed(2)) ?? 0,
         cashPaymentActive: paymentMethodCash?.status_payment ?? true,
         virtualAccountFees,
         ewalletFees,
@@ -194,10 +222,53 @@ const SettingsDashboard = () => {
     }
   }, [dataPaymentMethodInternal, taxRateInternal, paymentMethodCash, dispatch]);
 
+  console.log("data payment settings: ", dataPaymentMethodInternal)
+  console.log("data tax rate: ", taxRateInternal)
 
   // Payment Settings State
   const isEmptyVA = !paymentSettings?.virtualAccountFees || Object.keys(paymentSettings.virtualAccountFees).length === 0;
   const isEmptyEwallet = !paymentSettings?.ewalletFees || Object.keys(paymentSettings.ewalletFees).length === 0;
+
+
+  // update payment methods
+  const handleSubmitUpdatePaymentMethods = () => {
+    const updatedPaymentMethods = dataPaymentMethodInternal.map((method) => {
+      const name = method.name.toLowerCase();
+      let updatedFee = method.fee;
+
+      switch (method.type) {
+        case "VA":
+          updatedFee = paymentSettings.virtualAccountFees?.[name] ?? method.fee;
+          break;
+        case "EWALLET":
+          // dari persen (1.5%) ke nilai asli (0.015)
+          updatedFee = paymentSettings.ewalletFees?.[name] ?? method.fee;
+          break;
+        case "QR":
+          if (name === "qris") {
+            updatedFee = paymentSettings.qrisFee ?? method.fee;
+          }
+          break;
+        default:
+          break;
+      }
+
+      return {
+        ...method,
+        fee: updatedFee,
+      };
+    });
+
+    dispatch(updatePaymentMethodsInternal({
+      payment_method_cash: {
+        fee: paymentMethodCash.fee,
+        status_payment: paymentSettings.cashPaymentActive,
+      },
+      payment_methods: updatedPaymentMethods,
+      tax_rate: paymentSettings.taxRate
+    }));
+  };
+
 
   // UI State
   const [showPassword, setShowPassword] = useState({
@@ -255,6 +326,7 @@ const SettingsDashboard = () => {
     if (imageUpdateEmployee instanceof File) {
       formData.append("image", imageUpdateEmployee);
     }
+
     dispatch(updateDataEmployeeInternal(formData))
   };
 
@@ -598,7 +670,7 @@ const SettingsDashboard = () => {
                         </div>
                         <input
                           type="number"
-                          value={paymentSettings?.taxRate || 0}
+                          value={paymentSettings?.taxRate}
                           onChange={(e) =>
                             setPaymentSettings((prev) => ({
                               ...prev,
@@ -729,7 +801,7 @@ const SettingsDashboard = () => {
                             <input
                               type="number"
                               value={fee}
-                              onChange={(e) =>
+                              onChange={(e) => 
                                 setPaymentSettings((prev) => ({
                                   ...prev,
                                   ewalletFees: {
@@ -776,7 +848,7 @@ const SettingsDashboard = () => {
                         <input
                           type="number"
                           value={paymentSettings?.qrisFee}
-                          onChange={(e) =>
+                          onChange={(e) => 
                             setPaymentSettings((prev) => ({
                               ...prev,
                               qrisFee: parseFloat(e.target.value),
@@ -797,7 +869,7 @@ const SettingsDashboard = () => {
 
                 <div className="flex justify-end">
                   <button
-                    // onClick={() => handleSave('Pengaturan Payment')}
+                    onClick={() => handleSubmitUpdatePaymentMethods()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Save size={18} />

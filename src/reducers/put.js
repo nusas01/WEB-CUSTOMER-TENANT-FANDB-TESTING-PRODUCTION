@@ -77,3 +77,30 @@ export const voidGeneralJournalInternalSlice = createSlice({
         }
     }
 })
+
+const initialUpdatePaymentMethodsInternalState = {
+    successUpdatePaymentMethods: null,
+    errorUpdatePaymentMethods: null,
+    loadingUpdatePaymentMethods: false,
+}
+export const updatePaymentMethodsInternalSlice = createSlice({
+    name: 'updatePaymentMethodsInternal',
+    initialState: initialUpdatePaymentMethodsInternalState,
+    reducers: {
+        setSuccessUpdatePaymentMethodsInternal: (state, action) => {
+            state.successUpdatePaymentMethods = action.payload
+            state.errorUpdatePaymentMethods = null
+        },
+        setErrorUpdatePaymentMethodsInteral: (state, action) => {
+            state.errorUpdatePaymentMethods = action.payload
+            state.successChangePassword = null
+        },
+        setLoadingUpdatePaymentMethodsInternal: (state, action) => {
+            state.loadingUpdatePaymentMethods = action.payload
+        },
+        resetUpdatePaymentMethodsInternal: (state) => {
+            state.successUpdatePaymentMethods = null
+            state.errorUpdatePaymentMethods = null
+        }
+    }
+})

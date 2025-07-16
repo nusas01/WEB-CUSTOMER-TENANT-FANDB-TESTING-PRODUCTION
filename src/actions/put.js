@@ -3,6 +3,7 @@ import {
     updateInternalSlice,
     updateGeneralJournalInternalSlice,
     voidGeneralJournalInternalSlice,
+    updatePaymentMethodsInternalSlice,
  } from '../reducers/put'
  import {
     getGeneralJournalDrafInternalSlice
@@ -125,4 +126,30 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorVoidGeneralJournal(error.response?.data?.error));
     } 
+}
+
+const {setSuccessUpdatePaymentMethodsInternal, setErrorUpdatePaymentMethodsInteral, setLoadingUpdatePaymentMethodsInternal} = updatePaymentMethodsInternalSlice.actions
+export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingUpdatePaymentMethodsInternal(true))
+    try {
+        console.log("data update employee hehehe: ", data);
+        const response = await axios.put(`${process.env.REACT_APP_GET_PUT_PAYMENT_METHODS_INTERNAL_URL}`, data, config)
+        dispatch(setSuccessUpdatePaymentMethodsInternal(response.data?.success))
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+        dispatch(setErrorUpdatePaymentMethodsInteral(error.response.data.error));
+    } finally {
+        dispatch(setLoadingUpdatePaymentMethodsInternal(false))
+    }
 }

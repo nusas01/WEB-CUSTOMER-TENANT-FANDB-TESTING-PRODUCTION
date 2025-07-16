@@ -211,6 +211,7 @@ const initialCreateTransactionInternalState = {
     dataSuccessCreateTransactionInternal: null,
     errorCreateTransactionInternal: null,
     errorProductUnavailable: null,
+    errorInvalidAmountPrice: null,
     loadingCreateTransactionInternal: false,
 }
 export const createTransactionInternalSlice = createSlice({
@@ -222,10 +223,12 @@ export const createTransactionInternalSlice = createSlice({
             state.successCreateTransactionInternal = action.payload.success
             state.errorCreateTransactionInternal = null
             state.errorProductUnavailable = null
+            state.errorInvalidAmountPrice = null
         },
         errorCreateTransactionInternal: (state, action) => {
             state.errorCreateTransactionInternal = action.payload.error 
             state.errorProductUnavailable = action.payload.errorProductUnavailable
+            state.errorInvalidAmountPrice = action.payload.errorAmountPrice
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
         }, 
@@ -237,6 +240,7 @@ export const createTransactionInternalSlice = createSlice({
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
             state.errorCreateTransactionInternal = null
+            state.errorInvalidAmountPrice = null
         }
     }
 })
@@ -356,7 +360,6 @@ export const inputGeneralJournalInternalSlice = createSlice({
         },
     }
 })
-
 
 const initialCreateTableInternalState = {
     successCreateTable: null,

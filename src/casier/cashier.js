@@ -33,7 +33,8 @@ import {
     ConfirmationModal, 
     ProductUnavailableModal, 
     PaymentSuccessNonCashCashier, 
-    SuccessAlertPaymentCash
+    SuccessAlertPaymentCash,
+    InvalidAmountModal
 } from "../component/alert"
 import {QRCodeCanvas} from 'qrcode.react'
 import { format } from 'date-fns'
@@ -108,6 +109,7 @@ const ComponentCartCashier = ({cartRef}) => {
     const [customerEmail, setCustomerEmail] = useState('')
     const [emailError, setEmailError] = useState()
     const [productUnavailable, setProductUnavailable] = useState(false)
+    const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
     const [modelMoneyReceved, setModelMoneyReceved] = useState(false)
     const [error, setError] = useState(false)
     const [ dataCart, setDataCart ] = useState({
@@ -291,9 +293,8 @@ const ComponentCartCashier = ({cartRef}) => {
     }
     
     const { clearCartCashier } = cartCashierSlice.actions
-    const {successCreateTransactionInternal, errorProductUnavailable, dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
+    const {successCreateTransactionInternal, errorProductUnavailable, errorInvalidAmountPrice, dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
     const { resetCreateTransactionInternal } = createTransactionInternalSlice.actions
-
     useEffect(() => {
         setSpinnerFixed(loadingCreateTransactionInternal)
     }, [loadingCreateTransactionInternal])
@@ -310,6 +311,17 @@ const ComponentCartCashier = ({cartRef}) => {
     }
 
     useEffect(() => {
+        if (errorInvalidAmountPrice) {
+            setInvalidAmountPrice(true)
+        }
+    }, [errorInvalidAmountPrice])
+
+    const handleCloseInvalidAmountPrice = () => {
+        setInvalidAmountPrice(false)
+        dispatch(resetCreateTransactionInternal())
+    }
+
+    useEffect(() => {
         if (errorCreateTransactionInternal) {
             setError(true)
 
@@ -322,23 +334,27 @@ const ComponentCartCashier = ({cartRef}) => {
         }
     }, [errorCreateTransactionInternal])
 
+    const handleClearCashier = () => {
+        dispatch(clearCartCashier())
+        setCustomerEmail('')
+        setDataCart({
+            payment_method: '',
+            fee: 0,
+            tax: 0,
+            channel_code: '',
+            payment_method_id: null,
+            amount_price: 0,
+            money_received: 0,
+        })
+        dispatch(resetCreateTransactionInternal())
+    }
+
     useEffect(() => {
         if (successCreateTransactionInternal) {
             setSelectedTransaction(dataSuccessCreateTransactionInternal)
             setIsModalOpenDetailResponse(true)
-            dispatch(clearCartCashier())
-            setCustomerEmail('')
-            setDataCart({
-                payment_method: '',
-                fee: 0,
-                tax: 0,
-                channel_code: '',
-                payment_method_id: null,
-                amount_price: 0,
-                money_received: 0,
-            })
+            handleClearCashier()
         }
-        dispatch(resetCreateTransactionInternal())
     }, [successCreateTransactionInternal])
 
     const handleCreateTransaction = () => {
@@ -417,6 +433,15 @@ const ComponentCartCashier = ({cartRef}) => {
                     <ProductUnavailableModal onClose={handleCloseProuctUnavailable} colorsType={"internal"}/>
                 )}
 
+                {/* invalid amount price */}
+                { invalidAmountPrice && (
+                    <InvalidAmountModal 
+                    onClose={() => setInvalidAmountPrice(false)} 
+                    colorsType={"internal"}
+                    fetchData={fetchPaymentMethodsInternal}
+                    resetChart={handleClearCashier} 
+                    />
+                )}
 
                 {modelNotifPaymentNonCashSuccess && (
                     <PaymentSuccessNonCashCashier 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle, Ban } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle, Ban, X, RefreshCw, ShoppingCart } from "lucide-react"
 import { useRef } from "react"
-import { X } from 'lucide-react'
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
+import { useDispatch } from "react-redux"
 
 export const OrderTypeInvalidAlert = ({ onClose }) => {
     return (
@@ -491,6 +491,140 @@ export const DeleteConfirmationModalTable = ({ submit, onClose }) => {
           >
             Hapus
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const InvalidAmountModal = ({ onClose, colorsType = "internal", fetchData, resetChart }) => {
+  const modalRef = useRef(null);
+  const dispatch = useDispatch();
+
+  // Handle click outside to close modal
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
+
+  const handleRefreshBrowser = () => {
+    dispatch(fetchData());
+    resetChart();
+    onClose()
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-in fade-in-0 zoom-in-95"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Ketidaksesuaian Data
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <ShoppingCart className="w-4 h-4 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Total Belanja Tidak Sesuai
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Terjadi ketidaksesuaian antara total belanja yang ditampilkan dengan data yang tersimpan di server. Hal ini mungkin disebabkan oleh:
+              </p>
+              <ul className="mt-3 space-y-1 text-sm text-gray-600">
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <span>Sinkronisasi data yang tertunda</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <span>Perubahan harga produk</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <span>Cache browser yang usang</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Solution */}
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <RefreshCw className="w-3 h-3 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">Solusi Recommended</h4>
+                <p className="text-sm text-blue-800">
+                  Tutup browser sepenuhnya, kemudian buka kembali untuk memastikan data tersinkronisasi dengan benar.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
+          >
+            Tutup
+          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={handleRefreshBrowser}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh Browser</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

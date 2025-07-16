@@ -491,7 +491,7 @@ export const getPaymentMethodsInternalSlice = createSlice({
         },
         fetchErrorGetPaymentMethodsInternal: (state, action) => {
             state.errorPaymentMethodsInternal = action.payload.error
-        }
+        },
     }
 })
 
