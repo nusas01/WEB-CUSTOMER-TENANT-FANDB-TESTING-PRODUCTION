@@ -1,58 +1,59 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle, Ban, X, RefreshCw, ShoppingCart } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Ban, X, RefreshCw, ShoppingCart } from "lucide-react"
 import { useRef } from "react"
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
 import { useDispatch } from "react-redux"
 
 export const OrderTypeInvalidAlert = ({ onClose }) => {
-    return (
-      <div className="fixed inset-0 z-90 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-        <div
-          className="bg-white flex flex-col items-center rounded-2xl p-6 w-11/12 max-w-md shadow-lg"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Header */}
-          <div className="flex flex-col items-center gap-1 mb-6">
-            <span className="text-[70px]">
-            ⚠️
-            </span>
-            <h2 className="text-red-600 text-lg font-bold">
-               Jenis Pesanan Tidak Sesuai
-            </h2>
-          </div>
-  
-          {/* Body */}
-          <div className="mb-6 text-sm flex flex-col items-center text-gray-700">
-            <p className="mb-2">Pastikan Anda scan:</p>
-            <ul className="space-y-1 list-disc list-inside">
-              <li>
-                <strong>Barcode meja</strong> untuk Dine-In
-              </li>
-              <li>
-                <strong>Barcode kasir</strong> untuk Take Away
-              </li>
-            </ul>
-            <p className="mt-5 italic text-gray-500">
-              Silakan ulangi proses pemindaian
-            </p>
-          </div>
-  
-          {/* Footer */}
-          {/* <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md text-sm font-semibold transition duration-200"
-            >
-              Baiklah
-            </button>
-          </div> */}
+  return (
+    <div className="fixed inset-0 z-90 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+      <div
+        className="bg-white flex flex-col items-center rounded-2xl p-6 w-11/12 max-w-md shadow-lg"
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center gap-1 mb-6">
+          <span className="text-[70px]">
+          ⚠️
+          </span>
+          <h2 className="text-red-600 text-lg font-bold">
+              Jenis Pesanan Tidak Sesuai
+          </h2>
         </div>
-      </div>
-    )
-  }
 
-export const ProductUnavailableModal = ({ open, onClose, colorsType }) => {
+        {/* Body */}
+        <div className="mb-6 text-sm flex flex-col items-center text-gray-700">
+          <p className="mb-2">Pastikan Anda scan:</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>
+              <strong>Barcode meja</strong> untuk Dine-In
+            </li>
+            <li>
+              <strong>Barcode kasir</strong> untuk Take Away
+            </li>
+          </ul>
+          <p className="mt-5 italic text-gray-500">
+            Silakan ulangi proses pemindaian
+          </p>
+        </div>
+
+        {/* Footer */}
+        {/* <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md text-sm font-semibold transition duration-200"
+          >
+            Baiklah
+          </button>
+        </div> */}
+      </div>
+    </div>
+  )
+}
+
+export const ProductUnavailableModal = ({ onClose, colorsType, fetchData, resetData }) => {
+  const dispatch = useDispatch()
   const modalRef = useRef(null)
 
   // Detect click outside modal
@@ -63,41 +64,90 @@ export const ProductUnavailableModal = ({ open, onClose, colorsType }) => {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    
+    document.addEventListener("mousedown", handleClickOutside)
+    document.body.style.overflow = 'hidden' // Prevent background scroll
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.body.style.overflow = 'unset'
+    }
   }, [onClose])
 
+  // Handle escape key
+  useEffect(() => {
+    function handleEscapeKey(event) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener("keydown", handleEscapeKey)
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey)
+    }
+  }, [onClose])
+
+  const handleRefresh = () => {
+    dispatch(fetchData())
+    resetData()
+    onClose()
+  }
+
+  const primaryColor = colorsType === 'internal' 
+    ? 'bg-gray-800 hover:bg-gray-700 focus:ring-gray-500' 
+    : 'bg-green-500 hover:bg-green-600 focus:ring-green-400'
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         ref={modalRef}
-        className="bg-white w-full max-w-sm my-20 sm:max-w-lg md:max-w-xl p-4 rounded-xl shadow-lg relative transition-all"
+        className="bg-white w-full max-w-sm mx-4 sm:max-w-lg md:max-w-xl p-6 sm:p-8 rounded-2xl shadow-2xl relative transition-all animate-in zoom-in-95 duration-300"
       >
+        {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          aria-label="Tutup modal"
         >
           <X size={20} />
         </button>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+            <AlertCircle size={32} className="text-orange-500" />
+          </div>
+        </div>
+
+        {/* Title */}
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 text-center">
           Produk Tidak Tersedia
         </h2>
-        <p className="text-sm sm:text-base text-gray-700">
-          Maaf, produk yang Anda pilih saat ini sedang tidak tersedia.
-        </p>
-        <div className="mt-5 sm:mt-6 text-right">
-          <button
-            onClick={onClose}
-            className={`${colorsType === 'internal' ? 'bg-gray-800 hover:bg-gray-600': 'bg-green-500 hover:bg-green-600'} text-white px-6 py-2 rounded text-sm sm:text-base`}
-          >
-            Tutup
-          </button>
+
+        {/* Message */}
+        <div className="text-center mb-6">
+          <p className="text-gray-700 mb-3 leading-relaxed">
+            Maaf, produk yang Anda pilih saat ini sedang tidak tersedia.
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Hal ini mungkin disebabkan karena data cache yang belum terupdate atau 
+            ada perubahan stok di server. Silakan click tombol refersh di bawah ini.
+          </p>
         </div>
+
+        {/* Action buttons */}
+       <div className="flex justify-center">
+        <button
+          onClick={() => handleRefresh()}
+          className={`flex items-center justify-center space-x-2 px-5 py-2.5 rounded-md hover:transition-colors text-md text-white
+            ${colorsType === 'internal' ? 'bg-gray-800 hover:bg-gray-800' : 'bg-green-600 hover:bg-green-700'}
+          `}
+        >
+          <RefreshCw className="animate-spin-slow" size={20} />
+          <span>Refresh</span>
+        </button>
+      </div>
       </div>
     </div>
   )
@@ -601,30 +651,32 @@ export const InvalidAmountModal = ({ onClose, colorsType = "internal", fetchData
               <div>
                 <h4 className="font-medium text-blue-900 mb-1">Solusi Recommended</h4>
                 <p className="text-sm text-blue-800">
-                  Tutup browser sepenuhnya, kemudian buka kembali untuk memastikan data tersinkronisasi dengan benar.
+                  Klik button refresh dibawah ini atau Tutup browser sepenuhnya kemudian buka kembali untuk memastikan data tersinkronisasi dengan benar.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between">
+        <div className="px-4 py-4 bg-gray-50 rounded-b-2xl flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 sm:gap-0 sm:justify-between w-full">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
+            className="w-full sm:w-auto px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors font-medium text-center"
           >
             Tutup
           </button>
-          <div className="flex space-x-3">
-            <button
-              onClick={handleRefreshBrowser}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Refresh Browser</span>
-            </button>
-          </div>
+
+          <button
+            onClick={handleRefreshBrowser}
+            className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 ${
+              colorsType === 'customer'
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-gray-800 hover:bg-gray-900'
+            } text-white rounded-lg transition-colors font-medium`}
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh Data</span>
+          </button>
         </div>
       </div>
     </div>

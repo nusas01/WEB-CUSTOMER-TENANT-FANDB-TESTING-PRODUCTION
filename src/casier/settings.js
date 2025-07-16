@@ -677,6 +677,7 @@ const SettingsDashboard = () => {
                               taxRate: parseFloat(e.target.value),
                             }))
                           }
+                          onWheel={(e) => e.target.blur()}
                           placeholder="0"
                           min="0"
                           max="100"
@@ -810,6 +811,7 @@ const SettingsDashboard = () => {
                                   },
                                 }))
                               }
+                              onWheel={(e) => e.target.blur()}
                               placeholder="0"
                               min="0"
                               max="100"
@@ -854,6 +856,7 @@ const SettingsDashboard = () => {
                               qrisFee: parseFloat(e.target.value),
                             }))
                           }
+                          onWheel={(e) => e.target.blur()}
                           placeholder='0'
                           min='0'
                           max="100"

@@ -605,22 +605,13 @@ export const getCategoryAndProductInternalSlice = createSlice({
         toggleProductAvailability: (state, action) => {
             const productId = action.payload;
 
-            state.dataCategoryAndProduct = state.dataCategoryAndProduct.map((category) => {
-                const updatedProducts = category.product.map((prod) => {
-                if (prod.id === productId) {
-                    return {
-                    ...prod,
-                    available: !prod.available,
-                    };
+            for (const category of state.filteredProduct) {
+                const product = category.product.find((p) => p.id === productId);
+                if (product) {
+                product.available = !product.available;
+                break;
                 }
-                return prod;
-                });
-
-                return {
-                ...category,
-                product: updatedProducts,
-                };
-            });
+            }
         },
         deleteProductById: (state, action) => {
             const productId = action.payload;

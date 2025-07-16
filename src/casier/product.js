@@ -227,7 +227,7 @@ function ProductsTable() {
     const {amountCategory, amountProduct, dataCategoryAndProduct, filteredProduct, loadingCategoryAndProductInternal} = useSelector((state) => state.persisted.getCategoryAndProductInternal)
 
     useEffect(() => {
-     if ((amountCategory === 0 && amountProduct === 0) && dataCategoryAndProduct.length === 0) {
+     if (amountCategory === 0 && amountProduct === 0 && dataCategoryAndProduct.length === 0) {
         dispatch(fetchCategoryAndProductInternal())
       }
     }, [dispatch])
@@ -235,8 +235,6 @@ function ProductsTable() {
     useEffect(() =>  {
       setSpinnerProduct(loadingCategoryAndProductInternal)
     }, [loadingCategoryAndProductInternal])
-
-
 
     // create product
     const { loadingCreateProductInternal } = useSelector((state) => state.createProductInternalState)

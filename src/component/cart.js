@@ -8,11 +8,15 @@ import BottomNavbar from "./bottomNavbar"
 import { ModelInputNumberEwallet } from "./modelInputNumber"
 import {EmptyComponent} from "./empty"
 import cartImage from "../image/cart.png"
-import {fetchPaymentMethodsCustomer, fetchTransactionOnGoingCustomer} from "../actions/get"
+import {
+    fetchProductsCustomer, 
+    fetchPaymentMethodsCustomer, 
+    fetchTransactionOnGoingCustomer, 
+} from "../actions/get"
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { UndoIcon } from "lucide-react"
 import { orderTypeSlice } from "../reducers/reducers"
-import { OrderTypeInvalidAlert, ErrorAlert, ProductUnavailableModal } from "./alert"
+import { OrderTypeInvalidAlert, ErrorAlert, ProductUnavailableModal, InvalidAmountModal } from "./alert"
 import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import {createTransactionCustomerSlice} from "../reducers/post"
@@ -39,8 +43,9 @@ function Cart({ closeCart }) {
     const [eventNotes, setEventNotes] = useState(0)
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [alertError, setAlertError] = useState(false)
+    const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
     const {dataPaymentMethodCustomer, taxRate, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer} = useSelector((state) => state.persisted.paymentMethodsCustomer)
-    
+
     console.log(taxTransaction, " dan ", taxRate)
 
     const [dataTransaction, setDataTransaction] = useState({
@@ -244,7 +249,7 @@ function Cart({ closeCart }) {
     // handle create transaction
     const [productUnavailable, setProductUnavailable] = useState(false)
     const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
-    const {message, statusCode, error, loading, errorProductUnavailable} = useSelector((state) => state.createTransactionCustomerState)
+    const {message, errorAmountPrice, error, loading, errorProductUnavailable} = useSelector((state) => state.createTransactionCustomerState)
     const {loading: loadingOnGoingTransaction} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
 
     useEffect(() => {
@@ -253,9 +258,19 @@ function Cart({ closeCart }) {
         }
     }, [errorProductUnavailable])
 
-    const handleCloseProductUnavailable = () => {
+    useEffect(() => {
+        if (errorAmountPrice) {
+            setInvalidAmountPrice(true)
+        }
+    }, [errorAmountPrice])
+
+    const handleResetDataProductUnavailable = () => {
         setProductUnavailable(false)
         dispatch(resetCreateTransactionCustomer())
+        dispatch(clearCart())
+        dispatch(resetCreateTransactionCustomer())
+        handleCloseModel()
+        setIsPaymentMethod(false)
     }
 
     useEffect(() => {
@@ -272,8 +287,6 @@ function Cart({ closeCart }) {
             const redirectUrl = isMobile 
               ? message.data?.redirect_url_mobile 
               : message.data?.redirect_url_mobile;
-
-            console.log(message)
       
             if (redirectUrl) {
                 localStorage.setItem("pendingTransaction", message.data.id);
@@ -293,11 +306,12 @@ function Cart({ closeCart }) {
 
             setAlertError(true)
 
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 setAlertError(false)
                 dispatch(resetCreateTransactionCustomer())
-            }, 2500)
-    
+            }, 3000)
+            
+            return () => clearTimeout(timeout)
         }
     }, [error])
 
@@ -370,7 +384,27 @@ function Cart({ closeCart }) {
 
         {/* product unavailable */}
         { productUnavailable && (
-            <ProductUnavailableModal onClose={handleCloseProductUnavailable} colorsType={"customer"}/>
+            <ProductUnavailableModal 
+            onClose={() => {
+                setProductUnavailable(false)
+                dispatch(resetCreateTransactionCustomer())
+            }} 
+            colorsType={"customer"} 
+            fetchData={fetchProductsCustomer}
+            resetData={handleResetDataProductUnavailable}
+            />
+        )}
+
+        { invalidAmountPrice && (
+            <InvalidAmountModal
+            onClose={() => { 
+                setInvalidAmountPrice(false)
+                dispatch(resetCreateTransactionCustomer())
+            }}
+            colorsType="customer"
+            fetchData={fetchPaymentMethodsCustomer}
+            resetChart={handleResetDataProductUnavailable}
+            />
         )}
 
         {/* section alert invalid order type */}
@@ -396,7 +430,9 @@ function Cart({ closeCart }) {
 
         {/* alert error create transaction */}
         { alertError && (
-            <ErrorAlert message={error}/>
+            <div className="fixed">
+                <ErrorAlert onClose={() => setAlertError(false)} message={error}/>
+            </div>
         )}
        
 

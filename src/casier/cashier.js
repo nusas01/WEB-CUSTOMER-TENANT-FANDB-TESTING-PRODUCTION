@@ -211,23 +211,30 @@ const ComponentCartCashier = ({cartRef}) => {
     }
 
     useEffect(() => {
-        const tax = taxRateInternal * subTotal
+        const tax = taxRateInternal * subTotal;
+
         if (dataCart.payment_method === "QR") {
-            const fee = feeTransaction * (subTotal + tax)
-            setDataCart((prev) => ({
-                ...prev,
-                amount_price: subTotal + tax + fee,
-                fee: fee,
-                tax: tax
-            })) 
-        } else {
+            const rawFee = feeTransaction * (subTotal + tax);
+            const fee = Math.floor(rawFee); 
+            const total = subTotal + tax + fee;
+
             setDataCart((prev) => ({
             ...prev,
-            amount_price: subTotal + tax + dataCart.fee,
+            amount_price: total,
+            fee: fee,
             tax: tax,
-        }))
+            }));
+        } else {
+            const total = subTotal + tax + dataCart.fee;
+
+            setDataCart((prev) => ({
+            ...prev,
+            amount_price: total,
+            tax: tax,
+            }));
         }
-    }, [subTotal])
+    }, [subTotal, taxRateInternal, dataCart.payment_method, dataCart.fee]);
+
 
 
     const handleDeleteItem = (id) => {
@@ -304,11 +311,6 @@ const ComponentCartCashier = ({cartRef}) => {
             setProductUnavailable(true)
         }
     }, [errorProductUnavailable])
-
-    const handleCloseProuctUnavailable = () => {
-        setProductUnavailable(false)
-        dispatch(resetCreateTransactionInternal())
-    }
 
     useEffect(() => {
         if (errorInvalidAmountPrice) {
@@ -430,7 +432,12 @@ const ComponentCartCashier = ({cartRef}) => {
 
                 {/* product unavailable */}
                 { productUnavailable && (
-                    <ProductUnavailableModal onClose={handleCloseProuctUnavailable} colorsType={"internal"}/>
+                    <ProductUnavailableModal 
+                    onClose={() => setProductUnavailable(false)} 
+                    colorsType={"internal"}
+                    fetchData={fetchProductsCustomer}
+                    resetData={handleClearCashier}
+                    />
                 )}
 
                 {/* invalid amount price */}
@@ -792,22 +799,44 @@ const ProductCashier = ({onClose}) => {
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                                         {item.products.map((prd, idx) => {
                                             const cartItem = items.find((cart) => cart.id === prd.product_id);
+                                            const isAvailable = prd.available;
 
                                             return (
                                                 <div 
                                                     key={idx} 
-                                                    className="relative border border-gray-300 rounded-lg p-4 shadow-sm bg-white"
-                                                    onClick={() =>
-                                                        handleShowModalAddProduct(true, {
-                                                            id: prd.product_id,
-                                                            name: prd.name,
-                                                            harga: prd.price,
-                                                            image: prd.image,
-                                                        })
-                                                    }
+                                                    className={`relative border rounded-lg p-4 shadow-sm bg-white transition-all duration-200 ${
+                                                        isAvailable 
+                                                            ? 'border-gray-300 hover:border-gray-400 hover:shadow-md cursor-pointer' 
+                                                            : 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                                                    }`}
+                                                    onClick={() => {
+                                                        if (isAvailable) {
+                                                            handleShowModalAddProduct(true, {
+                                                                id: prd.product_id,
+                                                                name: prd.name,
+                                                                harga: prd.price,
+                                                                image: prd.image,
+                                                            });
+                                                        }
+                                                    }}
                                                 >
+                                                    {/* UNAVAILABLE OVERLAY */}
+                                                    {!isAvailable && (
+                                                        <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] rounded-lg z-20 flex items-center justify-center">
+                                                            <div className="text-center">
+                                                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                                                    <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </div>
+                                                                <p className="text-sm font-medium text-gray-700">Tidak Tersedia</p>
+                                                                <p className="text-xs text-gray-500 mt-1">Sementara habis</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {/* BADGE */}
-                                                    {cartItem && (
+                                                    {cartItem && isAvailable && (
                                                         <span className="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full z-10">
                                                             {cartItem.quantity}x
                                                         </span>
@@ -815,15 +844,25 @@ const ProductCashier = ({onClose}) => {
 
                                                     {/* GAMBAR */}
                                                     <img
-                                                        className="h-32 w-40 object-cover rounded-md mb-3"
+                                                        className={`h-32 w-40 object-cover rounded-md mb-3 transition-all duration-200 ${
+                                                            !isAvailable ? 'grayscale brightness-75' : ''
+                                                        }`}
                                                         src={`/image/${prd.image}`}
                                                         alt={prd.name}
                                                     />
 
                                                     {/* INFO PRODUK */}
                                                     <div className="text-center">
-                                                        <p className="text-md font-semibold text-gray-800 line-clamp-2">{prd.name}</p>
-                                                        <p className="text-sm text-gray-700">Rp {prd.price.toLocaleString("id-ID")}</p>
+                                                        <p className={`text-md font-semibold line-clamp-2 ${
+                                                            isAvailable ? 'text-gray-800' : 'text-gray-500'
+                                                        }`}>
+                                                            {prd.name}
+                                                        </p>
+                                                        <p className={`text-sm ${
+                                                            isAvailable ? 'text-gray-700' : 'text-gray-400'
+                                                        }`}>
+                                                            Rp {prd.price.toLocaleString("id-ID")}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             );
@@ -832,7 +871,6 @@ const ProductCashier = ({onClose}) => {
                                 </div>
                             ))}
                         </div>
-
                     </div>
                 </div>
             ) : (

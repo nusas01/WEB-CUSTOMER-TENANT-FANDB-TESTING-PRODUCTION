@@ -194,61 +194,132 @@ function Home() {
       <div className="container-bg">
         <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`} style={isFixed ? {marginTop: '50px'} : {}}>
           {datas.map((item, index) => (
-            <div 
+            <div
               id={item.category}
-              className="container-category min-h-[72vh]"
+              className="mb-12"
               key={item.category}
               ref={(el) => (categoryRefs.current[item.category_name] = el)}
-            >  
-              <h2 className="title-category">{item.category}</h2>
-              <div className="flex grid grid-cols-1 pb-10 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
-                  {item.products.map((item, index) => (
-                    <div 
-                      className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+            >
+              {/* Category Title */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-800 text-center md:text-left">
+                  {item.category_name}
+                </h2>
+                <div className="w-16 h-1 bg-emerald-500 mt-2 mx-auto md:mx-0 rounded-full"></div>
+              </div>
+
+              {/* Product Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 pb-10">
+                {item.products.map((product, index) => {
+                  const isAvailable = product.available;
+
+                  return (
+                    <div
+                      className={`group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 relative ${
+                        isAvailable
+                          ? 'hover:shadow-xl cursor-pointer transform hover:-translate-y-1'
+                          : 'cursor-not-allowed opacity-75'
+                      }`}
                       key={index}
-                      onClick={() => handleShowModal(true, { id: item.product_id, name: item.name, harga: item.price, image: item.image, description: item.description })}
+                      onClick={() => {
+                        if (isAvailable) {
+                          handleShowModal(true, {
+                            id: product.product_id,
+                            name: product.name,
+                            harga: product.price,
+                            image: product.image,
+                            description: product.description
+                          });
+                        }
+                      }}
                     >
-                      <div className="relative h-36 w-full overflow-hidden">
-                        <img 
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                          src={`/image/${item.image}`} 
-                          alt={item.name}
+                      {/* UNAVAILABLE OVERLAY */}
+                      {!isAvailable && (
+                        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm z-20 flex items-center justify-center">
+                          <div className="text-center p-2">
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <svg className="w-4 h-4 md:w-5 md:h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                            <p className="text-xs md:text-sm font-medium text-gray-700">Tidak Tersedia</p>
+                            <p className="text-xs text-gray-500 mt-1">Sementara habis</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* IMAGE SECTION */}
+                      <div className="relative h-32 md:h-40 lg:h-48 w-full overflow-hidden">
+                        <img
+                          className={`w-full h-full object-cover transition-transform duration-300 ${
+                            isAvailable
+                              ? 'group-hover:scale-105'
+                              : 'grayscale brightness-75'
+                          }`}
+                          src={`/image/${product.image}`}
+                          alt={product.name}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                       </div>
-                      
-                      <div className="p-4 space-y-3">
-                        <h3 className="text-md font-semibold text-gray-800 line-clamp-2">
-                          {item.name}
+
+                      {/* CONTENT SECTION */}
+                      <div className="p-3 md:p-4 space-y-2 md:space-y-3">
+                        <h3 className={`text-sm md:text-base lg:text-lg font-semibold line-clamp-2 leading-tight ${
+                          isAvailable ? 'text-gray-800' : 'text-gray-500'
+                        }`}>
+                          {product.name}
                         </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {item.description}
+                        <p className={`text-xs md:text-sm line-clamp-2 leading-relaxed ${
+                          isAvailable ? 'text-gray-600' : 'text-gray-400'
+                        }`}>
+                          {product.description}
                         </p>
-                        
-                        <div className="flex justify-between items-center">
-                          <p className="text-md font-bold text-gray-900">
-                            Rp {item.price.toLocaleString("id-ID")}
+
+                        {/* PRICE AND ACTION SECTION */}
+                        <div className="flex justify-between items-center pt-2">
+                          <p className={`text-sm md:text-base lg:text-lg font-bold ${
+                            isAvailable ? 'text-gray-900' : 'text-gray-400'
+                          }`}>
+                            Rp {product.price.toLocaleString("id-ID")}
                           </p>
-                          <button className="p-1 bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
-                            <svg 
-                              xmlns="http://www.w3.org/2000/svg" 
-                              className="h-6 w-6 text-white" 
-                              viewBox="0 0 16 16"
+
+                          {isAvailable ? (
+                            <button
+                              className="p-2 bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0 ml-2"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShowModal(true, {
+                                  id: product.product_id,
+                                  name: product.name,
+                                  harga: product.price,
+                                  image: product.image,
+                                  description: product.description
+                                });
+                              }}
                             >
-                              <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
-                            </svg>
-                          </button>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-white" viewBox="0 0 16 16">
+                                <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
+                              </svg>
+                            </button>
+                          ) : (
+                            <div className="p-2 bg-gray-300 rounded-lg flex-shrink-0 ml-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-gray-500" viewBox="0 0 16 16">
+                                <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
+                              </svg>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
 
-
         </div>
-      </div>    
+      </div>   
+      
       {showModelAddProduct && (
           <AddProductToCart 
             onClose={() => setShowModelAddProduct(false)} 

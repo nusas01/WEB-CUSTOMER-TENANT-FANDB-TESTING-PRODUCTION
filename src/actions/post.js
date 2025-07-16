@@ -159,6 +159,7 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
         const message = {
             error: error.response?.data?.error,
             errorProductUnavailable: error?.response?.data?.errorProductUnavailable,
+            errorAmountPrice: error.response?.data?.errorAmountPrice,
             statusCode: error?.response?.status,
         }
         dispatch(errorCreateTransactionCustomer(message))
