@@ -856,7 +856,7 @@ export const getOrdersInternalSlice = createSlice({
             state.loadingOrdersInternal = action.payload
         },
         fetchSuccessOrdersInternal: (state, action) => {
-            state.dataOrdersInternal = action.payload
+            state.dataOrdersInternal = action.payload || []
             state.errorOrdersInternal = null
         },
         fetchErrorOrdersInternal: (state, action) => {
@@ -876,6 +876,31 @@ export const getOrdersInternalSlice = createSlice({
                 transaction.order_status = action.payload.order_status
             }
         },
+        appendOrdersInternal: (state, action) => {
+            const newOrders = action.payload;
+
+            const safeCopy = [...state.dataOrdersInternal]; // Hindari Proxy revoked
+            console.log("Sebelum append (safe):", safeCopy);
+            console.log("Apakah action ini dijalankan:", newOrders);
+
+            newOrders.forEach((order) => {
+                const exists = state.dataOrdersInternal.some(existing => existing.id === order.id);
+                if (!exists) {
+                state.dataOrdersInternal.push(order);
+                }
+            });
+        },
+        deleteOrdersExceptToday: (state) => {
+            const now = new Date();
+
+            const todayString = now.toISOString().split("T")[0]; // Contoh: "2025-07-16"
+
+            state.dataOrdersInternal = state.dataOrdersInternal.filter(order => {
+                const orderDate = new Date(order.created_at).toISOString().split("T")[0];
+                return orderDate === todayString;
+            });
+        }
+
     }
 })
 

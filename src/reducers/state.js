@@ -10,6 +10,7 @@ import {
   filterDateLabaRugiInternalSlice,
   filterDateNeracaInternalSlice,
   dataDrafToVoidInternalSlice,
+  filterOrderInternalSlice,
 } from './reducers'
 import { 
   getProductsCustomerSlice, 
@@ -120,6 +121,7 @@ const persistedReducers = combineReducers({
   filterDateNeracaInternal: filterDateNeracaInternalSlice.reducer,
   getDataEmployeeInternal: getDataEmployeeInternalSlice.reducer, 
   dataDrafToVoidInternal: dataDrafToVoidInternalSlice.reducer,
+  filterOrderInternal: filterOrderInternalSlice.reducer, 
 })
 
 // 2. Konfigurasi persist

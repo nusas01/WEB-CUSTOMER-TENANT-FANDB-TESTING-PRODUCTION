@@ -20,6 +20,7 @@ import {
   Settings,
   Ticket,
   Plus,
+  RotateCcw
 } from 'lucide-react';
 import { 
   fetchOrdersInternal,
@@ -43,6 +44,9 @@ import {
   toProgressOrderInternal, 
   toFinishedOrderInternal,
  } from "../actions/patch.js";
+ import {
+  filterOrderInternalSlice
+ } from "../reducers/reducers.js"
 
 export default function KasirOrders() {
   const dispatch = useDispatch();
@@ -196,9 +200,6 @@ const OrderDashboard = () => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState({
     total: 0,
@@ -211,14 +212,18 @@ const OrderDashboard = () => {
   const [spinnerRelative, setSpinnerRelative] = useState(false);
   const [spinnerFixed, setSpinnerFixed] = useState(false);
 
+  // data filter from state
+  const { setStartDate, setEndDate, setStatusFilter, resetFilterGeneralJournal } = filterOrderInternalSlice.actions
+  const { startDate, endDate, statusFilter } = useSelector((state) => state.persisted.filterOrderInternal)
 
   // integrasi dengan data state dan api 
   // Order process and progress
+  const { deleteOrdersExceptToday } = getOrdersInternalSlice.actions
   const { dataOrdersInternal, loadingOrdersInternal } = useSelector((state) => state.persisted.dataOrdersInternal)
   console.log("data orders: ", dataOrdersInternal)
   useEffect(() => {
     if (!dataOrdersInternal || dataOrdersInternal.length === 0) {
-      dispatch(fetchOrdersInternal(startDate, endDate))
+      dispatch(fetchOrdersInternal())
     }
   }, [])
 
@@ -244,7 +249,7 @@ const OrderDashboard = () => {
   // handle get data dengan start dan end date 
   useEffect(() => {
     if (startDate !== '' && endDate !== '') {
-      if (statusFilter === 'RECEIVED' || statusFilter === 'PROGRESS') {
+      if (statusFilter === 'PROCESS' || statusFilter === 'PROGRESS') {
         dispatch(fetchOrdersInternal(startDate, endDate))
       }
 
@@ -254,123 +259,59 @@ const OrderDashboard = () => {
     }
   }, [startDate, endDate, statusFilter])
 
-
-  // Generate dummy data based on your structure
-  // const generateDummyData = () => {
-  //   const products = [
-  //     { name: "Iced Coffee", price: 15000, image: "coffee.jpg" },
-  //     { name: "Green Tea", price: 20000, image: "tea.png" },
-  //     { name: "Cappuccino", price: 25000, image: "cappuccino.jpg" },
-  //     { name: "Latte", price: 22000, image: "latte.jpg" },
-  //     { name: "Espresso", price: 18000, image: "espresso.jpg" },
-  //     { name: "Americano", price: 16000, image: "americano.jpg" },
-  //     { name: "Matcha Latte", price: 28000, image: "matcha.jpg" },
-  //     { name: "Hot Chocolate", price: 24000, image: "chocolate.jpg" }
-  //   ];
-
-  //   const tables = ["A01", "A02", "B12", "B15", "C03", "C07", "D11", "D14"];
-  //   const customers = [
-  //     { username: "john_doe", email: "john@example.com" },
-  //     { username: "jane_smith", email: "jane@example.com" },
-  //     { username: "mike_wilson", email: "mike@example.com" },
-  //     { username: "sarah_brown", email: "sarah@example.com" },
-  //     { username: "david_jones", email: "david@example.com" },
-  //     { username: "lisa_taylor", email: "lisa@example.com" }
-  //   ];
-
-  //   const orderStatuses = ["PROGRESS", "RECEIVED", "FINISHED"];
-  //   const notes = ["No sugar", "Less ice", "Extra hot", "Oat milk", "Decaf", "Double shot"];
-
-  //   return Array.from({ length: 15 }, (_, i) => {
-  //     const customer = customers[Math.floor(Math.random() * customers.length)];
-  //     const numItems = Math.floor(Math.random() * 3) + 1;
-  //     const orderItems = [];
-  //     let totalAmount = 0;
-
-  //     for (let j = 0; j < numItems; j++) {
-  //       const product = products[Math.floor(Math.random() * products.length)];
-  //       const quantity = Math.floor(Math.random() * 3) + 1;
-  //       const itemTotal = product.price * quantity;
-  //       totalAmount += itemTotal;
-
-  //       orderItems.push({
-  //         id: `item-${i}-${j}`,
-  //         notes: Math.random() > 0.5 ? notes[Math.floor(Math.random() * notes.length)] : "",
-  //         price: product.price,
-  //         quantity: quantity,
-  //         amount_price: itemTotal,
-  //         product: {
-  //           name: product.name,
-  //           image: product.image
-  //         }
-  //       });
-  //     }
-
-  //     // Generate dates within the last 7 days
-  //     const date = new Date();
-  //     date.setDate(date.getDate() - Math.floor(Math.random() * 7));
-
-  //     return {
-  //       id: `order-${i + 1}`,
-  //       created_at: date.toISOString(),
-  //       channel_code: "CASHIER",
-  //       status_transaction: "PAID",
-  //       order_type: Math.random() > 0.3 ? "DINE_IN" : "TAKEAWAY",
-  //       order_status: orderStatuses[Math.floor(Math.random() * orderStatuses.length)],
-  //       order: orderItems,
-  //       email: customer.email,
-  //       username: customer.username,
-  //       amount_price: totalAmount,
-  //       table: tables[Math.floor(Math.random() * tables.length)]
-  //     };
-  //   });
-  // };
-
   useEffect(() => {
-    const dummyOrders = (dataOrdersInternal || []).concat(dataOrdersFinishedInternal || []);
-    setOrders(dummyOrders);
-    setFilteredOrders(dummyOrders);
+    const allOrders = dataOrdersInternal || [];
 
-    const updatedStats = {
-        total: dummyOrders.length,
-        progress: dummyOrders.filter(order => order.order_status === 'PROCESS').length,
-        received: dummyOrders.filter(order => order.order_status === 'PROGRESS').length,
-        finished: dummyOrders.filter(order => order.order_status === 'FINISHED').length,
-        totalRevenue: dummyOrders.reduce((sum, order) => sum + order.amount_price, 0)
-    };
+    let filtered = [];
+    let totalRevenue = 0;
+    let progress = 0;
+    let received = 0;
+    let finished = 0;
 
-    setStats(updatedStats); 
-  }, [dataOrdersInternal]);
+    const query = searchQuery?.toLowerCase() || '';
 
-  useEffect(() => {
-    let filtered = orders;
+    allOrders.forEach(order => {
+      const status = order.order_status?.toUpperCase() || '';
+      const username = order.username?.toLowerCase() || '';
+      const email = order.email?.toLowerCase() || '';
+      const table = order.table?.toString().toLowerCase() || '';
+      const id = order.id?.toLowerCase() || '';
 
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(order => 
-        order.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.table.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.id.toLowerCase().includes(searchQuery.toLowerCase())
+      // Statistik tetap dihitung semua order
+      if (status === 'PROCESS') progress++;
+      if (status === 'PROGRESS') received++;
+      if (status === 'FINISHED') finished++;
+      totalRevenue += order.amount_price || 0;
+
+      // Filter berdasarkan status dan search query
+      const matchStatus = statusFilter === 'ALL' || status === statusFilter.toUpperCase();
+      const matchSearch = !searchQuery || (
+        username.includes(query) ||
+        email.includes(query) ||
+        table.includes(query) ||
+        id.includes(query)
       );
-    }
 
-    // Filter by date range
-    if (startDate && endDate) {
-      filtered = filtered.filter(order => {
-        const orderDate = new Date(order.created_at);
-        return orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
-      });
-    }
-
-    // Filter by status
-    if (statusFilter !== 'ALL') {
-      filtered = filtered.filter(order => order.order_status === statusFilter);
-    }
+      if (matchStatus && matchSearch) {
+        filtered.push(order);
+      }
+    });
 
     setFilteredOrders(filtered);
-  }, [orders, statusFilter, searchQuery]);
+    setStats({
+      total: allOrders.length,
+      progress,
+      received,
+      finished,
+      totalRevenue
+    });
+  }, [dataOrdersInternal, statusFilter, searchQuery]);
 
+  // handle reset filter
+  const handleResetFilter = () => {
+    dispatch(deleteOrdersExceptToday())
+    dispatch(resetFilterGeneralJournal())
+  }
 
   // handle status to progress order
   const {loadingToProgressOrder} = useSelector((state) => state.toProgressOrderInternalState)
@@ -546,11 +487,22 @@ const OrderDashboard = () => {
 
         {/* Search and Filters */}
         <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-              <Filter className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                <Filter className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Search & Filter Orders</h2>
             </div>
-            <h2 className="text-lg font-bold text-gray-800">Search & Filter Orders</h2>
+            
+            {/* Reset Filter Button */}
+            <button
+              onClick={() => handleResetFilter()}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset Filters
+            </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -575,7 +527,7 @@ const OrderDashboard = () => {
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => dispatch(setStartDate(e.target.value))}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
@@ -588,7 +540,7 @@ const OrderDashboard = () => {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => dispatch(setEndDate(e.target.value))}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
@@ -598,7 +550,7 @@ const OrderDashboard = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Status Filter</label>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => dispatch(setStatusFilter(e.target.value))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="ALL">All Status</option>
@@ -617,17 +569,14 @@ const OrderDashboard = () => {
             </div>
         )}
 
-        { !spinnerRelative && filteredOrders.length === 0 && (
+        {!spinnerRelative && filteredOrders.length === 0 && (
           <div>
-              <NoOrdersContainer />
-            </div>
+            <NoOrdersContainer />
+          </div>
         )}
-        { !spinnerRelative && filteredOrders.length > 0 && (
-          spinnerRelative ? (
-            <div className="flex justify-center bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden min-h-[50vh]">
-              <SpinnerRelative />
-            </div>
-          ): (
+
+        {!spinnerRelative && filteredOrders.length > 0 && (
+
             <>
               {filteredOrders.map((order) => (
                 <div key={order.id} className="bg-white mb-2 rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -678,7 +627,7 @@ const OrderDashboard = () => {
                     {/* Customer Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -688,7 +637,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                           <Mail className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -698,7 +647,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                           <MapPin className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -708,7 +657,7 @@ const OrderDashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
                           <Clock className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -729,12 +678,7 @@ const OrderDashboard = () => {
                         {order.order.map((item, index) => (
                           <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                             <div className="flex items-center gap-4">
-                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                index % 4 === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
-                                index % 4 === 1 ? 'bg-gradient-to-r from-rose-500 to-pink-500' :
-                                index % 4 === 2 ? 'bg-gradient-to-r from-cyan-500 to-blue-500' :
-                                'bg-gradient-to-r from-violet-500 to-purple-500'
-                              }`}>
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gray-800`}>
                                 <Coffee className="w-6 h-6 text-white" />
                               </div>
                               <div>
@@ -757,10 +701,10 @@ const OrderDashboard = () => {
                     <div className="border-t border-gray-200 pt-6 mt-6">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-xl bg-gray-800 text-white text-sm font-semibold`}>
+                          <span className={`px-3 py-1 rounded-xl bg-gray-800 text-white text-sm`}>
                             {order.order_type}
                           </span>
-                          <span className="px-3 py-1 rounded-xl text-sm font-semibold bg-gray-800 text-white">
+                          <span className="px-3 py-1 rounded-xl text-sm bg-gray-800 text-white">
                             {order.status_transaction}
                           </span>
                         </div>
@@ -774,9 +718,7 @@ const OrderDashboard = () => {
                 </div>
               ))}
             </>
-          ))}
-  
-
+        )}
       </div>
     </div>
   );

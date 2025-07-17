@@ -128,6 +128,33 @@ export const dataDrafToVoidInternalSlice = createSlice({
 })
 
 
+const initialFilterOrderInternalState = {
+    startDate: null,
+    endDate: null,
+    statusFilter: 'ALL',
+}
+export const filterOrderInternalSlice = createSlice({
+    name: "filterOrderInternal",
+    initialState: initialFilterOrderInternalState,
+    reducers: {
+        setStartDate: (state, action) => {
+            state.startDate = action.payload
+        },
+        setEndDate: (state, action) => {
+            state.endDate = action.payload
+        },
+        setStatusFilter: (state, action) => {
+            state.statusFilter = action.payload
+        },
+        resetFilterGeneralJournal: (state) => {
+            state.startDate = null
+            state.endDate = null
+            state.statusFilter = 'ALL'       
+        }
+    }
+})
+
+
 
 
 

@@ -783,26 +783,31 @@ export const fetchAssetsStoreInternal = (data) => {
 }
 
 
-const {fetchSuccessOrdersInternal, fetchErrorOrdersInternal, setLoadingOrdersInternal} = getOrdersInternalSlice.actions
-export const fetchOrdersInternal = (startDate, endDate) => {
+const {fetchSuccessOrdersInternal, fetchErrorOrdersInternal, appendOrdersInternal, setLoadingOrdersInternal} = getOrdersInternalSlice.actions
+export const fetchOrdersInternal = (startDate = null, endDate = null) => {
   return async (dispatch, getState) => {
     const { statusExpiredToken } = getState().statusExpiredTokenState;
     if (statusExpiredToken) return; 
 
     dispatch(setLoadingOrdersInternal(true))
       try {
+        const params = {};
+        if (startDate) params.start_date = startDate;
+        if (endDate) params.end_date = endDate;
+
         const response = await axiosInstance.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
-          params: {
-            startDate: startDate,
-            endDate: endDate
-          }
+          params,
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
-        dispatch(fetchSuccessOrdersInternal(response?.data))
+        if (startDate || endDate) {
+          dispatch(appendOrdersInternal(response?.data))
+        } else {
+          dispatch(fetchSuccessOrdersInternal(response?.data))
+        }
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -829,13 +834,14 @@ export const fetchOrdersFinishedInternal = (startDate, endDate) => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
           params: {
-            startDate: startDate,
-            endDate: endDate,
+            start_date: startDate,
+            end_date: endDate,
             status_fineshed: 'FINISHED',
           }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
-        dispatch(fetchSuccessOrdersFinishedInternal(response?.data))
+        // dispatch(fetchSuccessOrdersFinishedInternal(response?.data))
+        dispatch(appendOrdersInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
