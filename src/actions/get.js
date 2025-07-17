@@ -28,6 +28,7 @@ import {
     getTablesInternalSlice,
     getNeracaInternalSlice,
     getDataEmployeeInternalSlice,
+    searchOrderInternalSlice
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -854,6 +855,37 @@ export const fetchOrdersFinishedInternal = (startDate, endDate) => {
   }
 }
 
+const {fetchSuccessSearchOrder, fetchErrorSearchOrder, setLoadingSearchOrder, addSearchOrder} = searchOrderInternalSlice.actions
+export const fetchSearchOrderInternal = (searchQuery, currentPage) => async (dispatch) => {
+  try {
+    dispatch(setLoadingSearchOrder(true));
+
+    const response = await axiosInstance.get(`${process.env.REACT_APP_GET_SEARCH_ORDER_INTERNAL_URL}`, {
+      withCredentials: true,
+      headers: {
+        'API_KEY': process.env.REACT_APP_API_KEY
+      },
+      params: {
+        key: searchQuery,
+        page: currentPage,
+      },
+    });
+
+    const result = response.data;
+
+    dispatch(
+      fetchSuccessSearchOrder({
+        data: result.data || [],
+        page: currentPage,
+        hasMore: result.hasMore ?? false, // Ambil langsung dari backend
+      })
+    );
+  } catch (err) {
+    dispatch(fetchErrorSearchOrder(err.message || "Error fetching search data"));
+  } finally {
+    dispatch(setLoadingSearchOrder(false));
+  }
+};
 
 const {fetchSuccessTablesInternal, fetchErrorTablesInternal, setLoadingTablesInternal} = getTablesInternalSlice.actions
 export const fetchTablesInternal = () => {

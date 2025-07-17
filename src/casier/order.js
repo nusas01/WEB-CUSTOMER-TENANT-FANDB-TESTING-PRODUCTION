@@ -1,5 +1,5 @@
 import Sidebar from "../component/sidebar"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { 
   Clock, 
   CheckCircle, 
@@ -25,6 +25,7 @@ import {
 import { 
   fetchOrdersInternal,
   fetchOrdersFinishedInternal, 
+  fetchSearchOrderInternal,
  } from "../actions/get.js"
 import { useDispatch, useSelector } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner.js";
@@ -32,12 +33,13 @@ import { ErrorAlert, SuccessAlert } from "../component/alert";
 import { 
   getOrdersInternalSlice,
   getOrdersFinishedInternalSlice, 
+  searchOrderInternalSlice,
  } from "../reducers/get.js";
  import {
   toProgressOrderInternalSlice,
   toFinishedOrderInternalSlice,
 } from "../reducers/patch.js";
-import { da } from "date-fns/locale";
+import { da, se } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import {formatCurrency} from "../helper/helper.js";
 import { 
@@ -47,6 +49,7 @@ import {
  import {
   filterOrderInternalSlice
  } from "../reducers/reducers.js"
+import {DateFilterComponent} from '../helper/formatdate.js'
 
 export default function KasirOrders() {
   const dispatch = useDispatch();
@@ -308,9 +311,11 @@ const OrderDashboard = () => {
   }, [dataOrdersInternal, statusFilter, searchQuery]);
 
   // handle reset filter
+  const {resetSearchOrder} = searchOrderInternalSlice.actions
   const handleResetFilter = () => {
     dispatch(deleteOrdersExceptToday())
     dispatch(resetFilterGeneralJournal())
+    dispatch(resetSearchOrder())
   }
 
   // handle status to progress order
@@ -368,6 +373,65 @@ const OrderDashboard = () => {
       minute: '2-digit'
     });
   };
+
+
+  // handle search to api 
+  const {dataSearchOrder, page, loadingSearchOrder, hasMore} = useSelector((state) => state.searchOrderInternalState)
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
+
+  // Handle search dengan reset page
+  const handleSearch = () => {
+    console.log("key nya apa kawan: ", searchQuery)
+    dispatch(fetchSearchOrderInternal(searchQuery, page));
+  };
+
+  // Handle load more data
+  const handleLoadMore = useCallback(() => {
+    if (!loadingSearchOrder && !isLoadingMore && dataSearchOrder.length > 0) {
+      setIsLoadingMore(true);
+      dispatch(fetchSearchOrderInternal({keyword: searchQuery, page: page}))
+        .finally(() => setIsLoadingMore(false));
+    }
+  }, [dispatch, loadingSearchOrder, isLoadingMore, dataSearchOrder.length]);
+
+  // Intersection Observer untuk infinite scroll
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    );
+
+    observer.observe(loadMoreRef.current);
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [handleLoadMore]);
+
+  useEffect(() => {
+    if (dataSearchOrder.length > 0) {
+      setFilteredOrders(dataSearchOrder)
+    }
+  }, [dataSearchOrder])
+
+  useEffect(() => {
+    setSpinnerRelative(loadingSearchOrder && dataSearchOrder.length === 0)
+  }, [loadingSearchOrder, dataSearchOrder.length])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -485,29 +549,29 @@ const OrderDashboard = () => {
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-200">
+        {/* Filter */}
+        <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
                 <Filter className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-lg font-bold text-gray-800">Search & Filter Orders</h2>
             </div>
-            
-            {/* Reset Filter Button */}
             <button
-              onClick={() => handleResetFilter()}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+              onClick={handleResetFilter}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow transition-all"
             >
               <RotateCcw className="w-4 h-4" />
               Reset Filters
             </button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Search Orders</label>
+
+          {/* Filter Row */}
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Search Input */}
+            <div className="flex-1 min-w-[220px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -515,50 +579,47 @@ const OrderDashboard = () => {
                   placeholder="Search by customer, email, table..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-            
+
+            {/* Search Button */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => dispatch(setStartDate(e.target.value))}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              <label className="invisible block mb-1">Search Button</label>
+              <button
+                onClick={handleSearch}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow transition-all"
+              >
+                <Search className="w-4 h-4" />
+                Search Orders
+              </button>
             </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => dispatch(setEndDate(e.target.value))}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Status Filter</label>
+
+            {/* Status Filter */}
+            <div className="min-w-[150px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status Filter</label>
               <select
                 value={statusFilter}
                 onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="ALL">All Status</option>
                 <option value="PROCESS">Process</option>
-                <option value="PROGRESS">Progress/Received</option>
+                <option value="PROGRESS">Progress / Received</option>
                 <option value="FINISHED">Finished</option>
               </select>
             </div>
+
+            {/* Start Date and endate */}
+            <DateFilterComponent 
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            maxRangeDays={7}
+            />
           </div>
         </div>
 

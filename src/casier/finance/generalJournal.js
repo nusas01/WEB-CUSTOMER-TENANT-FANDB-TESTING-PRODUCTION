@@ -16,7 +16,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
-import {FormatIndoDate} from '../../helper/formatdate'
+import {FormatISODate} from '../../helper/formatdate.js'
 import {DrafVoidDataComponent} from './drafVoidGeneralJournal'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -761,7 +761,7 @@ const totalsAlternative = useMemo(() => {
         { ((statusFilter === 'DRAF' && journalDataDraf.length > 0) || (eventFilter === 'Agregasi' && journalDataAgregasi.length > 0) || 
           (eventFilter === 'Non Agregasi' &&journalDataNonAgregasi.length > 0)) && startDate === today && endDate === today && (
           <div className="text-sm text-red-800 rounded mb-3">
-              Menampilkan data untuk <strong>hari ini</strong> {FormatIndoDate(today)}
+              Menampilkan data untuk <strong>hari ini</strong> {FormatISODate(today)}
           </div>
         )}
 

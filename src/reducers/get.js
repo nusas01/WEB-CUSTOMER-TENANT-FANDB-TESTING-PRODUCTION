@@ -904,6 +904,38 @@ export const getOrdersInternalSlice = createSlice({
     }
 })
 
+const initialSearchOrderInternalState = {
+  dataSearchOrder: [],
+  page: 1,
+  loadingSearchOrder: false,
+  errorSearchOrder: null,
+  hasMore: true,
+};
+export const searchOrderInternalSlice = createSlice({
+  name: "searchOrder",
+  initialState: initialSearchOrderInternalState,
+  reducers: {
+    setLoadingSearchOrder: (state, action) => {
+      state.loadingSearchOrder = action.payload;
+    },
+    fetchSuccessSearchOrder: (state, action) => {
+      const { data, page, hasMore } = action.payload;
+      state.dataSearchOrder = [...state.dataSearchOrder, ...data];
+      state.page = page;
+      state.hasMore = hasMore;
+    },
+    fetchErrorSearchOrder: (state, action) => {
+      state.errorSearchOrder = action.payload;
+      state.loadingSearchOrder = false;
+    },
+    resetSearchOrder: (state) => {
+      state.dataSearchOrder = [];
+      state.page = 1;
+      state.errorSearchOrder = null;
+      state.hasMore = true;
+    },
+  },
+});
 
 const initialOrdersFinishedInternalState = {
     dataOrdersFinishedInternal: [],
