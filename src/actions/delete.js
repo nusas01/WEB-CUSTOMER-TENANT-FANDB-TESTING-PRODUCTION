@@ -21,7 +21,7 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
         const response = await axios.delete(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, config);
         if (response.status === 200) {
             dispatch(setSuccessDeleteTableInternal(response?.data.success));
-            dispatch(deleteTableInternalByNumber(numberTable))
+            dispatch(deleteTableInternalByNumber())
         }
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {

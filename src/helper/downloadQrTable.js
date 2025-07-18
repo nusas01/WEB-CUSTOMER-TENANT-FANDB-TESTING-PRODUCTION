@@ -4,7 +4,7 @@ const handleDownloadQR = async (tableNumber = null, imageUrl = '') => {
 
   const image = new Image();
   image.crossOrigin = 'anonymous'; // penting jika gambar dari server luar
-  image.src = `../image/${imageUrl}`; // Ganti sesuai path image kamu
+  image.src = `/image/${imageUrl}`; // Ganti sesuai path image kamu
 
   image.onload = () => {
     const width = 300;

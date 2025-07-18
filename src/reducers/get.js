@@ -996,9 +996,13 @@ export const getTablesInternalSlice = createSlice({
         addTableInternal: (state, action) => {
             state.dataTablesInternal.push(action.payload);
         },
-        deleteTableInternalByNumber: (state, action) => {
+        deleteTableInternalByNumber: (state) => {
+            if (state.dataTablesInternal.length === 0) return;
+
+            const maxNumber = Math.max(...state.dataTablesInternal.map(table => table.number_table));
+
             state.dataTablesInternal = state.dataTablesInternal.filter(
-                table => table.number_table !== action.payload
+                table => table.number_table !== maxNumber
             );
         },
     }
