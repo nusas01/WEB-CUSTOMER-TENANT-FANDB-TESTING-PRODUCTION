@@ -60,7 +60,7 @@ export const DateFilterComponent = ({
       return false;
     }
 
-    if (diff > maxRangeDays) {
+    if (diff >= maxRangeDays) {
       toast.warning(`Rentang tanggal tidak boleh lebih dari ${maxRangeDays} hari!`);
       setIsDateRangeInvalid(true);
       return false;

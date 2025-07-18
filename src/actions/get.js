@@ -382,7 +382,7 @@ export const fetchTransactionHistory = (data) => {
                 },
               params: data,
           })
-          dispatch(fetchSuccessTransactionHistoryInternal(response.data))
+          dispatch(fetchSuccessTransactionHistoryInternal(response.data?.data))
           console.log("apa yang terjadi ini di history vhoufvhouf: ", response.data)
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {

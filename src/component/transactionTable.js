@@ -1,5 +1,5 @@
 import { useState, useRef } from "react"
-import { ArrowDown, ArrowUp, Search, Currency, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
+import { ArrowDown, TrendingUp, Clock, Banknote, CreditCard, RefreshCw, Filter, Search, Currency, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
 import { CalendarIcon } from "@heroicons/react/24/outline"
 import { data, useNavigate } from "react-router-dom"
 import FilterPanel from "./dateFilter"
@@ -406,10 +406,9 @@ const TransactionTable = () => {
     // Filter data berdasarkan kata kunci
     const lowercasedSearch = searchTerm.toLowerCase()
     return data.filter(item => 
-        (item.status_transaction?.toLowerCase().includes(lowercasedSearch)) ||
         (item.channel_code?.toLowerCase().includes(lowercasedSearch)) ||
         (item.username?.toLowerCase().includes(lowercasedSearch)) ||
-        (item.table?.toString().includes(searchTerm)) 
+        (item.id?.toString().includes(searchTerm)) 
     )
     }
 
@@ -473,313 +472,373 @@ const TransactionTable = () => {
     console.log("data transaction cash: ", dataTransactionCashInternal)
 
   return (
-    <div>
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                    <ScanBarcode className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                    <h1 className="text-xl font-bold text-gray-800">Transactions Management</h1>
-                    <p className="text-gray-600 text-xs">Kelola transaksi masuk dan pantau status pembayaran</p>
-                </div>
-                </div>
-                <div className="flex items-center gap-3">
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <Bell className="w-5 h-5 text-gray-600" />
-                </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
-                    <Settings className="w-5 h-5 text-gray-600" />
-                </button>
-                </div>
+     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Modern Header */}
+      <div className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
+                <ScanBarcode className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Transactions Management</h1>
+                <p className="text-gray-500 text-sm font-medium">Kelola transaksi masuk dan pantau status pembayaran</p>
+              </div>
             </div>
+            <div className="flex items-center gap-2">
+              <button className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105">
+                <Bell className="w-5 h-5 text-gray-600" />
+              </button>
+              <button 
+                className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105" 
+                onClick={() => navigate('/internal/admin/settings')}
+              >
+                <Settings className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Enhanced Summary Cards */}
+        <div className="mb-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded-md shadow-xl border border-gray-200/50 p-4 hover:shadow-lg transition-all duration-300">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-green-100 rounded-xl">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Incoming Amount</h2>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">IDR 40.000</h3>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Clock className="w-4 h-4" />
+                  <span>Transactions Count: 3</span>
+                </div>
+              </div>
+              <div className="p-4 bg-green-50 rounded-2xl">
+                <ArrowDown className="w-8 h-8 text-green-500" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="p-4 min-h-screen text-white">
-            {/* Summary Cards */}
-            <div className="mb-6">
-                <div className="p-4 bg-white rounded-lg shadow-md">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-sm text-black">Total Incoming Amount</h2>
-                    <ArrowDown className="text-green-400" />
-                </div>
-                <h3 className="text-2xl text-black font-bold">IDR 40.000</h3>
-                <p className="text-sm text-black">Transactions Count: 3</p>
-                </div>
-            </div>
+        {/* Filter & Search */}
+        <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
+          {/* Method Filter Buttons */}
+          <div className="flex items-center gap-3">
+            <button 
+              className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                filterTransaction === "methodCash" 
+                  ? "bg-gray-900 text-white shadow-lg scale-105" 
+                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+              }`} 
+              onClick={handleMethodCashTransaction}
+            >
+              <Banknote className="w-4 h-4" />
+              Method Cash
+            </button>
 
+            <button 
+              className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                filterTransaction === "methodNonCash" 
+                  ? "bg-gray-900 text-white shadow-lg scale-105" 
+                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+              }`} 
+              onClick={handleMethodNonCashTransaction}
+            >
+              <CreditCard className="w-4 h-4" />
+              Method Non Cash
+            </button>
+          </div>
+
+          {/* Date Filter */}
+          <div className="relative">
+            <div
+              onClick={() => setDateFilter(true)}
+              className={`w-64 h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
+                filterTransaction === "methodFilterTransaction" 
+                  ? 'bg-gray-900 text-white shadow-lg' 
+                  : 'bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex justify-between w-full">
+                <div className="flex flex-col items-start">
+                  <span className={`text-sm font-medium ${
+                    filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                  }`}>27/05/2025</span>
+                  <span className={`text-xs ${
+                    filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                  }`}>12:00 AM</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`text-sm font-medium ${
+                    filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                  }`}>27/05/2025</span>
+                  <span className={`text-xs ${
+                    filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                  }`}>12:00 AM</span>
+                </div>
+              </div>
+              <CalendarRange className={`ml-2 ${
+                filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'
+              }`} size={18} />
+            </div>
             
-            {/* Filter & Search */}
-            <div className="flex justify-between items-center mb-4">
-                
-                <div className="flex items-center space-x-3">
-                    <button className={`flex items-center h-10 text-gray-700 border  border-black  px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => handleMethodCashTransaction()}>
-                        Method Cash
-                    </button>
-
-                    <button className={`flex items-center h-10 text-gray-700 border  border-black px-4 py-1 rounded-md rounded-md ${filterTransaction === "methodNonCash" ? "bg-gray-900 text-white" : "bg-white"}`} onClick={() => handleMethodNonCashTransaction()}>
-                        Method Non Cash
-                    </button>
-                </div>
-
-                <div>
-                    {/* button show card select history */}
-                   <div
-                        onClick={() => setDateFilter(true)}
-                        className={`w-[220px] h-10 flex items-center ${ filterTransaction === "methodFilterTransaction" ? 'bg-gray-900' : 'bg-white'} justify-between border border-gray-300 rounded-md px-1 relative cursor-pointer hover:shadow-sm transition-all`}
-                        >
-                        <div className="flex w-[80%] justify-between text-gray-800">
-                            <div className="flex flex-col items-center">
-                                <span className={`text-sm ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'} `}>27/05/2025</span>
-                                <span className={`text-xs ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`}>12:00 AM</span>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <span className={`text-sm ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'}`}>27/05/2025</span>
-                                <span className={`text-xs ${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`}>12:00 AM</span>
-                            </div>
-                        </div>
-                        <CalendarRange className={`${ filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'}`} size={20} />
-                    </div>
-                    
-                    {/* Input option and date to select history */}
-                    { dateFilter && (
-                        <div className="absolute z-10" ref={panelRef}>
-                             <FilterPanel
-                                filterMethod={filters.method}
-                                filterStatus={filters.status}
-                                startDate={filters.startDate}
-                                endDate={filters.endDate}
-                                startTime={filters.startTime}
-                                endTime={filters.endTime}
-                                dateError={filters.dateError}
-                                
-                                // State handlers
-                                onMethodChange={handleMethodChange}
-                                onStatusChange={handleStatusChange}
-                                onStartDateChange={(value) => handleDateChange('startDate', value)}
-                                onEndDateChange={(value) => handleDateChange('endDate', value)}
-                                onStartTimeChange={(value) => handleTimeChange('startTime', value)}
-                                onEndTimeChange={(value) => handleTimeChange('endTime', value)}
-                                onClear={handleClear}
-                                onApply={handleApply}
-                                
-                                // UI configuration
-                                showMethodFilter={true}
-                                showStatusFilter={true}
-                                showDateFilter={true}
-                                showTimeFilter={true}
-
-
-                                validationErrors={validationErrors}
-                            />
-                        </div>
-                    )}
-                </div>
-
-
-                <div className="relative w-full flex items-center max-w-md">
-                    {/* Input Search */}
-                    <Search className="absolute left-3  transform -translate-y-1/2 text-black" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        className="w-full pl-10 pr-4 py-1 h-10 border placeholder-black text-black border-black rounded-md focus:outline-none focus:ring-2  focus:border-black-100 transition-all"
-                    />
-                    {/* Icon Search */}
-                </div>
-
-                <div className="flex space-x-2">
-                    <button 
-                    className={`flex items-center gap-2 h-10 px-4 py-1 rounded-md text-gray-700 border border-black ${filterTransaction !== "methodFilterTransaction" ? "bg-gray-900 text-white" : "bg-white"}`}
-                    >
-                        <History/>
-                        On Going
-                    </button>
-                </div>
-            </div>
-
-            {/* Transaction Table */}
-            <div className="rounded-lg shadow-md bg-white overflow-hidden min-h-[70vh] p-4 relative w-full">
-                 {spinnerRelatif ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
-                    <SpinnerRelative />
-                    </div>
-                ) : null}
-                { (dataTransactionCashInternal.length > 0 || dataTransactionNonCashInternal.length > 0) && (
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Daftar Transaksi</h2>
-                )}
-                <table className="w-full text-left">
-                    {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") ? (
-                        <>
-                        <thead className="bg-gray-100 z-10">
-                        <tr>
-                            {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date"]
-                            .concat(filterTransaction === 'methodFilterTransaction' ? [] : ["Buy"])
-                            .map((header) => (
-                                <th 
-                                key={header} 
-                                className="py-3 px-4 text-white font-medium text-sm border-b border-gray-200py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap"
-                                >
-                                {header}
-                                </th>
-                            ))
-                            }
-                        </tr>
-                        </thead>
-                        <tbody>
-                       {( filteredData?.length > 0 ? filteredData : 
-                        (filterTransaction === "methodCash"
-                            ? dataTransactionCashInternal
-                            : filterTransaction === "methodNonCash"
-                            ? dataTransactionNonCashInternal
-                            : dataTransactionHistoryInternal
-                        ))?.map((t, index) => (
-                            <tr 
-                            key={index} 
-                            className="hover:bg-gray-50 transition-colors duration-150"
-                            >
-                            <td className="hidden">
-                                <CountDownRemoveData 
-                                    expiry={t?.expires_at} 
-                                    transactionId={t.id} 
-                                    remove={
-                                        filterTransaction === "methodCash" 
-                                            ? removeTransactionCashOnGoingInternalById 
-                                            : removeTransactionNonCashOnGoingInternalById
-                                    }
-                                />
-                            </td>
-                            <td className="py-3 px-4">
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800`}>
-                                    {t.status_transaction}
-                                </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">{t.channel_code}</td>
-                            <td className="py-3 px-4 text-sm text-gray-700">{t.username}</td>
-                            <td className="py-3 px-4 text-sm text-gray-800">
-                                {t.amount_price?.toLocaleString("id-ID")}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-800">
-                                {t.table === 0 ? t.order_type : t.table}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">{FormatDate(t.created_at)}</td>
-                            { filterTransaction !== "methodFilterTransaction" && (
-                                <td className="py-3 px-4 text-start">
-                                    <button 
-                                    onClick={() => filterTransaction === "methodCash" 
-                                        ? handleOpenModelPaymentCash(t.id, t.amount_price)
-                                        : handleCheckTransactionNonCash(t.id)}
-                                        className="inline-flex items-center px-3 py-1 bg-red-800 text-white text-sm font-medium rounded-md hover:bg-red-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                    >
-                                    { filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
-                                    </button>
-                                </td>
-                            )}
-                            </tr>
-                        ))}
-                        </tbody>
-                    </>
-                    ) : (
-                    <tbody>
-                        <tr>
-                        <td colSpan="7">
-                            <div className="flex flex-col items-center justify-center min-h-[70vh] bg-white p-8 text-center">
-                            <div className="mb-6 relative">
-                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
-                                <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                </svg>
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                Tidak Ada Transaksi Ditemukan
-                            </h3>
-                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                                Coba sesuaikan filter pencarian Anda atau mulai buat transaksi pertama Anda.
-                            </p>
-                            <button 
-                                className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center"
-                                onClick={() => setDateFilter(true)}
-                            >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                                </svg>
-                                Ubah Filter
-                            </button>
-                            </div>
-                        </td>
-                        </tr>
-                    </tbody>
-                    )}
-                </table>
-            </div>
-
-            { spinner && (
-                <SpinnerFixed colors={'fill-gray-900'}/>
-            )}
-
-            {/* alert success confirmation modal  */}
-            {  (allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
-                <div ref={panelRef}>
-                    <ConfirmationModal 
-                    onClose={handleCloseConfirmationModalSuccess} 
-                    title={"Success!"}  
-                    message={
-                        allertSuccessBuyTransactionCash
-                            ? "Pembayaran tunai telah berhasil diproses"
-                            : "Verifikasi pembayaran non-tunai berhasil"
-                    }
-                    type={"success"}
-                    />
-                </div>
-            )}
-
-
-            {/* alert error confirmation modal  */}
-            { allertPendingCheckTransactionNonCash && (
-                <div ref={panelRef}>
-                    <ConfirmationModal
-                    onClose={handleCloseConfirmationModalError}
-                    title={"Pending"}
-                        message={"Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."}
-                    type={"pending"}
-                    />
-                </div>
-            )}
-
-            {/* allert error  */}
-            { allertErrorBuyTransactionCash && (
-                <div ref={panelRef}>
-                    <ConfirmationModal
-                    onClose={handleCloseConfirmationModalError}
-                    title={"Gagal!"}
-                        message={"Pembayaran tunai telah gagal diproses"}
-                    type={"error"}
-                    />
-                </div>
-            )}
-            
-            {/* Model payment cash*/}
-            { dataPaymentCash.open && ( 
-                 <CashPaymentModal 
-                    ref={panelRef} 
-                    data={{
-                        transaction_id: dataPaymentCash.transaction_id,
-                        amount_price: dataPaymentCash.amount_price,
-                    }} 
-                    setData={setDataPaymentCash}
-                    onClose={() => setDataPaymentCash({ open: false, transactionId: null, amountPrice: 0 })}
-                    onBayar={handleBuyTransaction}
+            {dateFilter && (
+              <div className="absolute z-10" ref={panelRef}>
+                <FilterPanel
+                  filterMethod={filters.method}
+                  filterStatus={filters.status}
+                  startDate={filters.startDate}
+                  endDate={filters.endDate}
+                  startTime={filters.startTime}
+                  endTime={filters.endTime}
+                  dateError={filters.dateError}
+                  onMethodChange={handleMethodChange}
+                  onStatusChange={handleStatusChange}
+                  onStartDateChange={(value) => handleDateChange('startDate', value)}
+                  onEndDateChange={(value) => handleDateChange('endDate', value)}
+                  onStartTimeChange={(value) => handleTimeChange('startTime', value)}
+                  onEndTimeChange={(value) => handleTimeChange('endTime', value)}
+                  onClear={handleClear}
+                  onApply={handleApply}
+                  showMethodFilter={true}
+                  showStatusFilter={true}
+                  showDateFilter={true}
+                  showTimeFilter={true}
+                  validationErrors={validationErrors}
                 />
+              </div>
+            )}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative flex-1 max-w-md">
+            <Search
+                className="absolute inset-y-0 left-4 my-auto text-gray-400"
+                size={20}
+            />
+            <input
+                type="text"
+                placeholder="Search by id, email, username...."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-12 pr-4 py-3 h-12 border-2 border-green-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+            />
+            </div>
+
+
+          {/* Status Filter */}
+          <div>
+            <button className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              filterTransaction !== "methodFilterTransaction" 
+                ? "bg-gray-900 text-white shadow-lg scale-105" 
+                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+            }`}>
+              <History className="w-4 h-4" />
+              On Going
+            </button>
+          </div>
+        </div>
+
+        {/* Modern Transaction Table */}
+        <div className="bg-white/80 rounded-md shadow-xl border border-gray-200/50 overflow-hidden min-h-[70vh] relative">
+          {spinnerRelatif && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
+              <SpinnerRelative />
+            </div>
+          )}
+          
+          <div className="p-8">
+            {(dataTransactionCashInternal.length > 0 || dataTransactionNonCashInternal.length > 0) && (
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gray-100 rounded-xl">
+                  <RefreshCw className="w-5 h-5 text-gray-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Daftar Transaksi</h2>
+              </div>
             )}
 
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || 
+                 (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || 
+                 (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") ? (
+                  <>
+                    <thead className="bg-gray-50/50 backdrop-blur-sm">
+                      <tr>
+                        {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date"]
+                          .concat(filterTransaction === 'methodFilterTransaction' ? [] : ["Buy"])
+                          .map((header) => (
+                            <th 
+                              key={header} 
+                              className="py-4 px-6 text-left font-semibold text-sm text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                            >
+                              {header}
+                            </th>
+                          ))
+                        }
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(filteredData?.length > 0 ? filteredData : 
+                        (filterTransaction === "methodCash"
+                          ? dataTransactionCashInternal
+                          : filterTransaction === "methodNonCash"
+                          ? dataTransactionNonCashInternal
+                          : dataTransactionHistoryInternal
+                        ))?.map((t, index) => (
+                        <tr 
+                          key={index} 
+                          className="hover:bg-gray-50/50 transition-all duration-200 group"
+                        >
+                          <td className="hidden">
+                            <CountDownRemoveData 
+                              expiry={t?.expires_at} 
+                              transactionId={t.id} 
+                              remove={filterTransaction === "methodCash" 
+                                ? removeTransactionCashOnGoingInternalById 
+                                : removeTransactionNonCashOnGoingInternalById}
+                            />
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
+                              {t.status_transaction}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="font-medium text-gray-900">{t.channel_code}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-gray-700">{t.username || t.email_order_from_cashier}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="font-bold text-gray-900">
+                              IDR {t.amount_price?.toLocaleString("id-ID")}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-gray-700">
+                              {t.table === 0 ? t.order_type : `Table ${t.table}`}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-gray-600">{FormatDate(t.created_at)}</span>
+                          </td>
+                          {filterTransaction !== "methodFilterTransaction" && (
+                            <td className="py-4 px-6">
+                              <button 
+                                onClick={() => filterTransaction === "methodCash" 
+                                  ? handleOpenModelPaymentCash(t.id, t.amount_price)
+                                  : handleCheckTransactionNonCash(t.id)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all duration-200 hover:scale-105 shadow-md"
+                              >
+                                {filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                ) : (
+                  <tbody>
+                    <tr>
+                      <td colSpan="7">
+                        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
+                          <div className="mb-8 relative">
+                            <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center shadow-lg">
+                              <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                              </svg>
+                            </div>
+                          </div>
+                          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                            Tidak Ada Transaksi Ditemukan
+                          </h3>
+                          <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+                            Coba sesuaikan filter pencarian Anda atau mulai buat transaksi pertama Anda.
+                          </p>
+                          <button 
+                            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 hover:scale-105 shadow-md"
+                            onClick={() => setDateFilter(true)}
+                          >
+                            <Filter className="w-4 h-4" />
+                            Ubah Filter
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                )}
+              </table>
+            </div>
+          </div>
         </div>
+
+        {/* Loading Spinner */}
+        {spinner && (
+          <SpinnerFixed colors={'border-gray-900'} />
+        )}
+
+        {/* Success Modals */}
+        {(allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
+          <div ref={panelRef}>
+            <ConfirmationModal 
+              onClose={handleCloseConfirmationModalSuccess} 
+              title={"Success!"}  
+              message={
+                allertSuccessBuyTransactionCash
+                  ? "Pembayaran tunai telah berhasil diproses"
+                  : "Verifikasi pembayaran non-tunai berhasil"
+              }
+              type={"success"}
+            />
+          </div>
+        )}
+
+        {/* Pending Modal */}
+        {allertPendingCheckTransactionNonCash && (
+          <div ref={panelRef}>
+            <ConfirmationModal
+              onClose={handleCloseConfirmationModalError}
+              title={"Pending"}
+              message={"Status pembayaran non-tunai masih pending. Silakan periksa kembali dalam beberapa saat."}
+              type={"pending"}
+            />
+          </div>
+        )}
+
+        {/* Error Modal */}
+        {allertErrorBuyTransactionCash && (
+          <div ref={panelRef}>
+            <ConfirmationModal
+              onClose={handleCloseConfirmationModalError}
+              title={"Gagal!"}
+              message={"Pembayaran tunai telah gagal diproses"}
+              type={"error"}
+            />
+          </div>
+        )}
+        
+        {/* Cash Payment Modal */}
+        {dataPaymentCash.open && ( 
+          <CashPaymentModal 
+            ref={panelRef} 
+            data={{
+              transaction_id: dataPaymentCash.transaction_id,
+              amount_price: dataPaymentCash.amount_price,
+            }} 
+            setData={setDataPaymentCash}
+            onClose={() => setDataPaymentCash({ open: false, transactionId: null, amountPrice: 0 })}
+            onBayar={handleBuyTransaction}
+          />
+        )}
+      </div>
     </div>
   );
 };

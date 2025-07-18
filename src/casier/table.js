@@ -19,7 +19,7 @@ import { deleteTableInternal } from '../actions/delete'
 import { createTabelInternal } from '../actions/post'
 import { createTableInternalSlice } from '../reducers/post'
 import { getTablesInternalSlice } from '../reducers/get'
-
+import handleDownloadQR from '../helper/downloadQrTable'
 
 // QR Code Component (placeholder - in real app you'd use a QR library)
 const QRCodePlaceholder = ({ size = 120, tableNumber = null }) => (
@@ -72,6 +72,7 @@ export default function ModernKasirDashboard() {
   const { resetErrorTablesInternal } = getTablesInternalSlice.actions
   const {dataTablesInternal, errorTablesInternal, loadingTablesInternal} = useSelector((state) => state.persisted.getTablesInternal)
   
+  console.log("data table: ", dataTablesInternal)
   useEffect(() => {
     if (dataTablesInternal.length === 0) {
         dispatch(fetchTablesInternal())
@@ -157,16 +158,6 @@ export default function ModernKasirDashboard() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
-
-  const handleDownloadQR = (tableNumber = null) => {
-    // In a real app, this would generate and download an actual QR code
-    const qrData = tableNumber 
-      ? `https://restaurant.com/table/${tableNumber}` 
-      : 'https://restaurant.com/takeaway';
-    
-    showToast(`QR Code ${tableNumber ? `Table ${tableNumber}` : 'Take Away'} downloaded!`);
-  };
-
 
   return (
     <div className='flex'>
@@ -319,21 +310,21 @@ export default function ModernKasirDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {!spinnerRelative && dataTablesInternal.map((table) => (
                     <div 
-                        key={table.nomor}
+                        key={table.number_table}
                         className="p-5 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all duration-200"
                     >
                         {/* Table Content */}
                         <div className="text-center">
                         <div className="text-lg font-bold text-gray-900 mb-4">
-                            Table {table.nomor}
+                            Table {table.number_table}
                         </div>
                         
                         <div className="flex justify-center mb-4">
-                            <QRCodePlaceholder size={120} tableNumber={table.nomor} />
+                            <QRCodePlaceholder size={120} tableNumber={table.number_table} />
                         </div>
 
                         <button 
-                            onClick={() => handleDownloadQR(table.nomor)}
+                            onClick={() => handleDownloadQR(table.number_table, table.image)}
                             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                         >
                             <Download className="w-4 h-4" />

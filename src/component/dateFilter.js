@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import dayjs from "dayjs";
 
 function FilterPanel({
   // State values
@@ -32,7 +33,8 @@ function FilterPanel({
 }) {
   const [isDropdownOpenMethod, setIsDropdownOpenMethod] = useState(false);
   const [isDropdownOpenStatus, setIsDropdownOpenStatus] = useState(false);
-  
+  const [isInvalidPeriode, setIsInvalidPeriode] = useState(null)
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -40,6 +42,42 @@ function FilterPanel({
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const validateDateRange = (start, end) => {
+    const startDay = dayjs(start);
+    const endDay = dayjs(end);
+    const diff = endDay.diff(startDay, "day");
+
+    if (diff < 0) {
+      setIsInvalidPeriode("Tanggal akhir tidak boleh sebelum tanggal awal!");
+      return false;
+    }
+
+    if (diff >= 7) {
+      setIsInvalidPeriode("Rentang tanggal tidak boleh lebih dari 7 hari!");
+      return false;
+    }
+
+    setIsInvalidPeriode(""); // Reset error jika valid
+    return true;
+  };
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    onStartDateChange(newStartDate); // Update dulu
+
+    if (endDate && !validateDateRange(newStartDate, endDate)) {
+      onEndDateChange(""); // Reset endDate jika tidak valid
+    }
+  };
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    if (startDate && !validateDateRange(startDate, newEndDate)) {
+      return onEndDateChange(""); // Reset endDate jika tidak valid
+    }
+    onEndDateChange(newEndDate); // Update jika valid
   };
 
   return (
@@ -157,30 +195,23 @@ function FilterPanel({
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => onStartDateChange(e.target.value)}
+                onChange={handleStartDateChange}
                 className="border rounded-md px-2 py-1.5 text-gray-700 text-sm min-w-0"
               />
               <span className="text-gray-500">-</span>
               <input
                 type="date"
                 value={endDate}
-                onChange={(e) => onEndDateChange(e.target.value)}
+                onChange={handleEndDateChange}
                 className="border rounded-md px-2 text-gray-700 py-1.5 text-sm min-w-0"
               />
             </div>
 
             {/* Tampilkan error jika ada */}
             <div className="flex flex-wrap gap-x-4">
-              {validationErrors.startDate && (
-                <p className="text-red-500 text-xs">{validationErrors.startDate}</p>
+              { isInvalidPeriode && (
+                <p className='text-red-500 text-xs'>{isInvalidPeriode}</p>
               )}
-              {validationErrors.endDate && (
-                <p className="text-red-500 text-xs">{validationErrors.endDate}</p>
-              )}
-            </div>
-
-            <div className={`text-xs ${dateError ? 'text-red-500' : 'text-gray-500'}`}>
-              {dateError || 'Maksimum rentang tanggal yang dapat diatur 92 hari'}
             </div>
           </div>
         )}

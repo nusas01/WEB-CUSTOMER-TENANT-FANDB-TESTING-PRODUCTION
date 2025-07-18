@@ -316,6 +316,7 @@ const OrderDashboard = () => {
     dispatch(deleteOrdersExceptToday())
     dispatch(resetFilterGeneralJournal())
     dispatch(resetSearchOrder())
+    setSearchQuery('')
   }
 
   // handle status to progress order
@@ -572,8 +573,8 @@ const OrderDashboard = () => {
             {/* Search Input */}
             <div className="flex-1 min-w-[220px]">
               <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute inset-y-0 left-4 my-auto text-gray-400" size={20}/>
                 <input
                   type="text"
                   placeholder="Search by customer, email, table..."
