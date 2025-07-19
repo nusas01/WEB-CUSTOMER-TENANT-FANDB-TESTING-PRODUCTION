@@ -16,7 +16,13 @@ import {
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { UndoIcon } from "lucide-react"
 import { orderTypeSlice } from "../reducers/reducers"
-import { OrderTypeInvalidAlert, ErrorAlert, ProductUnavailableModal, InvalidAmountModal } from "./alert"
+import { 
+    OrderTypeInvalidAlert, 
+    ErrorAlert, 
+    ProductUnavailableModal, 
+    InvalidAmountModal,
+    CashPaymentUnavailableModal,
+} from "./alert"
 import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import {createTransactionCustomerSlice} from "../reducers/post"
@@ -44,10 +50,9 @@ function Cart({ closeCart }) {
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [alertError, setAlertError] = useState(false)
     const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
-    const {dataPaymentMethodCustomer, taxRate, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer} = useSelector((state) => state.persisted.paymentMethodsCustomer)
+    const [paymentUnavailable, setPaymentUnavailable] = useState(false)
 
-    console.log(taxTransaction, " dan ", taxRate)
-
+    const {dataPaymentMethodCustomer, taxRate, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer, paymentMethodCash} = useSelector((state) => state.persisted.paymentMethodsCustomer)
     const [dataTransaction, setDataTransaction] = useState({
         payment_method_id: null,
         payment_method: null,
@@ -91,10 +96,10 @@ function Cart({ closeCart }) {
         }))
         setPaymentMethod(paymentMethod)
         setChannelCode(channelCode)
-        setFee(fee)
-        const feeRate = subTotal * fee
-        setFeeTransaction(feeRate)
-        setTotalTransaction(subTotal + taxTransaction + feeRate)
+        const feeRow = Math.floor(fee * (subTotal + taxTransaction))
+        setFee(feeRow)
+        setFeeTransaction(feeRow)
+        setTotalTransaction(subTotal + taxTransaction + feeRow)
     }
 
     const handleChoicePaymentMethodEwallet = ({paymentMethod, channelCode, fee, id}) => {
@@ -107,10 +112,10 @@ function Cart({ closeCart }) {
         setIsModelInputNumberEwallet(true)
         setPaymentMethod(paymentMethod)
         setChannelCode(channelCode)
-        setFee(fee)
-        const feeRate = subTotal * fee
-        setFeeTransaction(feeRate)
-        setTotalTransaction(subTotal + taxTransaction + feeRate)
+        const feeRow = Math.floor(fee * (subTotal + taxTransaction))
+        setFee(feeRow)
+        setFeeTransaction(feeRow)
+        setTotalTransaction(subTotal + taxTransaction + feeRow)
     }
 
     const handleChoicePaymentMethodVA = ({paymentMethod, channelCode, fee, id}) => {
@@ -128,13 +133,16 @@ function Cart({ closeCart }) {
     }
 
     useEffect(() => {
-        const tax = taxRate * subTotal
+        const tax = Math.floor(taxRate * subTotal)
         var feeRate 
         if (paymentMethod === "EWALLET" || paymentMethod === "QR") {
-            feeRate = fee * (subTotal + tax)
+            const rawFee = fee * (subTotal + tax)
+            feeRate = Math.floor(rawFee)
+            console.log("pencarian fee rate dari penjualan: ", fee * (subTotal +  tax))
         } else {
             feeRate = fee
         }
+        console.log("berapa ini tax rate:", tax)
         setFeeTransaction(feeRate)
         setTaxTransaction(tax)
         setTotalTransaction(subTotal + tax + feeRate)
@@ -249,8 +257,14 @@ function Cart({ closeCart }) {
     // handle create transaction
     const [productUnavailable, setProductUnavailable] = useState(false)
     const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
-    const {message, errorAmountPrice, error, loading, errorProductUnavailable} = useSelector((state) => state.createTransactionCustomerState)
+    const {message, errorAmountPrice, error, loading, errorProductUnavailable, errorCashNonActive} = useSelector((state) => state.createTransactionCustomerState)
     const {loading: loadingOnGoingTransaction} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+
+    useEffect(() => {
+        if (errorCashNonActive) {
+            setPaymentUnavailable(true)
+        }
+    }, [errorCashNonActive])
 
     useEffect(() => {
         if (errorProductUnavailable) {
@@ -264,37 +278,49 @@ function Cart({ closeCart }) {
         }
     }, [errorAmountPrice])
 
-    const handleResetDataProductUnavailable = () => {
-        setProductUnavailable(false)
+    const handleResetData = () => {
+        setIsPaymentMethod(false)
         dispatch(resetCreateTransactionCustomer())
         dispatch(clearCart())
-        dispatch(resetCreateTransactionCustomer())
         handleCloseModel()
-        setIsPaymentMethod(false)
+    }
+
+    const handleResetDataCashNonActive = () => {
+        dispatch(resetCreateTransactionCustomer())
+        setPaymentMethod(null)
+        setChannelCode()
+        setFee(0)
+        setFeeTransaction(0)
+         setDataTransaction((prev) => ({
+            ...prev,
+            payment_method_id: null,
+            payment_method: null,
+            channel_code: null,
+        }))
     }
 
     useEffect(() => {
         if (message) {
-          dispatch(clearCart());
-          dispatch(resetCreateTransactionCustomer());
-          dispatch(fetchTransactionOnGoingCustomer()).then(() => { // Gunakan promise
+            dispatch(clearCart());
+            dispatch(resetCreateTransactionCustomer());
+            dispatch(fetchTransactionOnGoingCustomer()).then(() => { // Gunakan promise
             if (paymentMethod !== "EWALLET") {
-              navigate("/activity/pembayaran", { state: { detailOrder: message?.data } });
-              return;
+                navigate("/activity/pembayaran", { state: { detailOrder: message?.data } });
+                return;
             }
-      
+        
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             const redirectUrl = isMobile 
-              ? message.data?.redirect_url_mobile 
-              : message.data?.redirect_url_mobile;
-      
+                ? message.data?.redirect_url_mobile 
+                : message.data?.redirect_url_mobile;
+        
             if (redirectUrl) {
                 localStorage.setItem("pendingTransaction", message.data.id);
                 window.location.href = redirectUrl; // Redirect setelah dispatch selesai
             }
-          });
+            });
         }
-      }, [message]);
+    }, [message]);
 
     useEffect(() => {
         if (error) {
@@ -378,32 +404,35 @@ function Cart({ closeCart }) {
     }, [loadingPaymentMethodsCustomer])
 
 
-
+    console.log("data payment method: ", dataPaymentMethodCustomer)
     return (
     <div class="container-main-cart" style={{position: 'relative'}}>
+        {/* payment cash non active */}
+        { paymentUnavailable && (
+            <CashPaymentUnavailableModal
+            onClose={() => setPaymentUnavailable(false)}
+            colorsType="customer"
+            fetchData={fetchPaymentMethodsCustomer}
+            resetChart={handleResetDataCashNonActive}
+            />
+        )}
 
         {/* product unavailable */}
         { productUnavailable && (
             <ProductUnavailableModal 
-            onClose={() => {
-                setProductUnavailable(false)
-                dispatch(resetCreateTransactionCustomer())
-            }} 
+            onClose={() => setProductUnavailable(false)} 
             colorsType={"customer"} 
             fetchData={fetchProductsCustomer}
-            resetData={handleResetDataProductUnavailable}
+            resetData={handleResetData}
             />
         )}
 
         { invalidAmountPrice && (
             <InvalidAmountModal
-            onClose={() => { 
-                setInvalidAmountPrice(false)
-                dispatch(resetCreateTransactionCustomer())
-            }}
+            onClose={() => setInvalidAmountPrice(false)}
             colorsType="customer"
             fetchData={fetchPaymentMethodsCustomer}
-            resetChart={handleResetDataProductUnavailable}
+            resetChart={handleResetData}
             />
         )}
 
@@ -583,31 +612,33 @@ function Cart({ closeCart }) {
                                 <span>Ewallet</span>
                                 {renderMethods({ methods: groupedMethods.EWALLET, channelCode, handleChoicePaymentMethod: handleChoicePaymentMethodEwallet})}
                             </div>
-                            <div className="mb-20">
-                                <span>Cash</span>
-                                <div className="container-method">
-                                        <div className="flex items-center bg-orange-500 text-white rounded px-2 py-1 font-semibold text-lg">
-                                            CASH
-                                        </div>
-                                        <label>
-                                        <input
-                                            onChange={(e) => {
-                                                handleChoicePaymentMethodVA({
-                                                    paymentMethod: 'CASH',
-                                                    channelCode: 'CASH',
-                                                    fee: 0,
-                                                })
-                                            }}
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="CASH"
-                                            checked={channelCode === "CASH"}
-                                            className="choice-payment-input"
-                                        />
-                                        <span className="choice-payment"></span>
-                                        </label>
+                            { paymentMethodCash.status_payment && (
+                                <div className="mb-20">
+                                    <span>Cash</span>
+                                    <div className="container-method">
+                                            <div className="flex items-center bg-orange-500 text-white rounded px-2 py-1 font-semibold text-lg">
+                                                CASH
+                                            </div>
+                                            <label>
+                                            <input
+                                                onChange={(e) => {
+                                                    handleChoicePaymentMethodVA({
+                                                        paymentMethod: 'CASH',
+                                                        channelCode: 'CASH',
+                                                        fee: 0,
+                                                    })
+                                                }}
+                                                type="radio"
+                                                name="paymentMethod"
+                                                value="CASH"
+                                                checked={channelCode === "CASH"}
+                                                className="choice-payment-input"
+                                            />
+                                            <span className="choice-payment"></span>
+                                            </label>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                             <div>
                                 <span>QRIS</span>
                                 {renderMethods({ methods: groupedMethods.QR, channelCode, handleChoicePaymentMethod: handleChoicePaymentMethodQR})}

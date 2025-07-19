@@ -44,6 +44,9 @@ const TransactionTable = () => {
   const [spinner, setSpinner] = useState(false)
   const [spinnerRelatif, setSpinnerRelatif] = useState(false)
   const [isFetchedOnce, setIsFetchedOnce] = useState(false)
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+
 
    const [initialFetchDone, setInitialFetchDone] = useState({
     cash: false,
@@ -68,7 +71,7 @@ const TransactionTable = () => {
       setInitialFetchDone(prev => ({...prev, cash: true}));
     }
   }, [dataTransactionCashInternal, loadingTransactionCashInternal, initialFetchDone.cash]);
-
+  console.log("data transaction cash: ", dataTransactionCashInternal)
 
 
 
@@ -90,9 +93,7 @@ const TransactionTable = () => {
         setInitialFetchDone(prev => ({...prev, nonCash: true}));
         }
     }, [filterTransaction, dataTransactionNonCashInternal, loadingTransactionNonCashInternal, initialFetchDone.nonCash]);
-
-
-
+    console.log("data transaction non cash:", dataTransactionNonCashInternal)
 
 
     // buy transaction cash on going
@@ -209,6 +210,7 @@ const TransactionTable = () => {
         endTime: '',
         dateError: null
     });
+    
 
 
     // handle untuk ketika data filter transaction masih ada maka set button ke button filter
@@ -242,10 +244,6 @@ const TransactionTable = () => {
         [type]: value,
         dateError: null // Reset error saat date diubah
         }))
-    }
-
-    const handleTimeChange = (type, value) => {
-        setFilters(prev => ({...prev, [type]: value}))
     }
 
     const handleClear = () => {
@@ -294,14 +292,6 @@ const TransactionTable = () => {
             newErrors.endDate = 'End date is required'
         }
         
-        if (!filters.startTime) {
-            newErrors.startTime = 'Start time is required'
-        }
-
-        if (!filters.endTime) { 
-            newErrors.endTime = 'End time is required'
-        }
-        
         // Jika ada error, tampilkan dan berhenti
         if (Object.keys(newErrors).length > 0) {
             setValidationErrors(newErrors)
@@ -326,8 +316,6 @@ const TransactionTable = () => {
             status: filters.status,
             startDate: filters.startDate,
             endDate: filters.endDate,
-            startTime: filters.startTime,
-            endTime: filters.endTime,
             page: 1
         }
 
@@ -433,57 +421,82 @@ const TransactionTable = () => {
 
     // Handle click outside modal bayar
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (panelRef.current && !panelRef.current.contains(event.target)) {
-                setOpenModelBuyPaymentCash(false)
-                handleCloseConfirmationModalError()
-                handleCloseConfirmationModalSuccess()
-                setValidationErrors({})
-                setDataPaymentCash({
-                    transaction_id: null,
-                    amount_price: 0,
-                    money_received: 0,
-                })
-            }
-        }
+      function handleClickOutside(event) {
+          if (panelRef.current && !panelRef.current.contains(event.target)) {
+              setOpenModelBuyPaymentCash(false)
+              handleCloseConfirmationModalError()
+              handleCloseConfirmationModalSuccess()
+              setValidationErrors({})
+              setDataPaymentCash({
+                  transaction_id: null,
+                  amount_price: 0,
+                  money_received: 0,
+              })
+          }
+      }
 
-        document.addEventListener("mousedown", handleClickOutside)
-       
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [])
+      document.addEventListener("mousedown", handleClickOutside)
+      
+      return () => {
+          document.removeEventListener("mousedown", handleClickOutside)
+      }
+  }, [])
 
 
-    const handleCloseConfirmationModalError = () => {
-        setAllertErrorBuyTransactionCash(false)
-        setAllertPendingCheckTransactionNonCash(false)
-        dispatch(resetBuyTransactionCashOnGoingInternal()) 
-        dispatch(resetCheckTransactionNonCash())
+  const handleCloseConfirmationModalError = () => {
+      setAllertErrorBuyTransactionCash(false)
+      setAllertPendingCheckTransactionNonCash(false)
+      dispatch(resetBuyTransactionCashOnGoingInternal()) 
+      dispatch(resetCheckTransactionNonCash())
+  }
+
+  const handleCloseConfirmationModalSuccess = () => {
+      setAllertSuccessBuyTransactionCash(false)
+      setAllertSuccessCheckTransactionNonCash(false)
+      dispatch(resetBuyTransactionCashOnGoingInternal()) 
+      dispatch(resetCheckTransactionNonCash())
+  }
+
+  
+  // handle amount dan count dari data by filter
+  useEffect(() => {
+    let data = [];
+
+    if (filteredData?.length > 0) {
+      data = filteredData;
+    } else if (filterTransaction === "methodCash") {
+      data = dataTransactionCashInternal || [];
+    } else if (filterTransaction === "methodNonCash") {
+      data = dataTransactionNonCashInternal || [];
+    } else if (filterTransaction === "methodFilterTransaction") {
+      data = dataTransactionHistoryInternal || [];
     }
 
-    const handleCloseConfirmationModalSuccess = () => {
-        setAllertSuccessBuyTransactionCash(false)
-        setAllertSuccessCheckTransactionNonCash(false)
-        dispatch(resetBuyTransactionCashOnGoingInternal()) 
-        dispatch(resetCheckTransactionNonCash())
-    }
+    const total = data.reduce((sum, t) => sum + (t.amount_price || 0), 0);
 
-    console.log("data transaction cash: ", dataTransactionCashInternal)
+    setTotalAmount(total);
+    setTotalCount(data.length);
+  }, [
+    filteredData,
+    dataTransactionCashInternal,
+    dataTransactionNonCashInternal,
+    dataTransactionHistoryInternal,
+    filterTransaction
+  ]);
 
   return (
      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Modern Header */}
       <div className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
-                <ScanBarcode className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
+                <ScanBarcode className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Transactions Management</h1>
-                <p className="text-gray-500 text-sm font-medium">Kelola transaksi masuk dan pantau status pembayaran</p>
+                <h1 className="text-xl font-bold text-gray-800">Transactions Management</h1>
+                <p className="text-gray-600 text-xs">Kelola transaksi masuk dan pantau status pembayaran</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -507,20 +520,17 @@ const TransactionTable = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-md shadow-xl border border-gray-200/50 p-4 hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-2 mb-3">
                   <div className="p-2 bg-green-100 rounded-xl">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
-                  <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Incoming Amount</h2>
+                  <h2 className="text-md font-semibold text-gray-800">Total Incoming Amount</h2>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">IDR 40.000</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">IDR {totalAmount.toLocaleString("id-ID")}</h3>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Clock className="w-4 h-4" />
-                  <span>Transactions Count: 3</span>
+                  <span>Transactions Count: {totalCount}</span>
                 </div>
-              </div>
-              <div className="p-4 bg-green-50 rounded-2xl">
-                <ArrowDown className="w-8 h-8 text-green-500" />
               </div>
             </div>
           </div>
@@ -531,7 +541,7 @@ const TransactionTable = () => {
           {/* Method Filter Buttons */}
           <div className="flex items-center gap-3">
             <button 
-              className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                 filterTransaction === "methodCash" 
                   ? "bg-gray-900 text-white shadow-lg scale-105" 
                   : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
@@ -543,7 +553,7 @@ const TransactionTable = () => {
             </button>
 
             <button 
-              className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                 filterTransaction === "methodNonCash" 
                   ? "bg-gray-900 text-white shadow-lg scale-105" 
                   : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
@@ -569,7 +579,7 @@ const TransactionTable = () => {
                 <div className="flex flex-col items-start">
                   <span className={`text-sm font-medium ${
                     filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
-                  }`}>27/05/2025</span>
+                  }`}>{filters.startDate ? filters.startDate : 'dd/mm/yyyy'}</span>
                   <span className={`text-xs ${
                     filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
                   }`}>12:00 AM</span>
@@ -577,10 +587,10 @@ const TransactionTable = () => {
                 <div className="flex flex-col items-end">
                   <span className={`text-sm font-medium ${
                     filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
-                  }`}>27/05/2025</span>
+                  }`}>{ filters.endDate ? filters.endDate : 'dd/mm/yyyy'}</span>
                   <span className={`text-xs ${
                     filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
-                  }`}>12:00 AM</span>
+                  }`}>12:00 PM</span>
                 </div>
               </div>
               <CalendarRange className={`ml-2 ${
@@ -595,15 +605,11 @@ const TransactionTable = () => {
                   filterStatus={filters.status}
                   startDate={filters.startDate}
                   endDate={filters.endDate}
-                  startTime={filters.startTime}
-                  endTime={filters.endTime}
                   dateError={filters.dateError}
                   onMethodChange={handleMethodChange}
                   onStatusChange={handleStatusChange}
                   onStartDateChange={(value) => handleDateChange('startDate', value)}
                   onEndDateChange={(value) => handleDateChange('endDate', value)}
-                  onStartTimeChange={(value) => handleTimeChange('startTime', value)}
-                  onEndTimeChange={(value) => handleTimeChange('endTime', value)}
                   onClear={handleClear}
                   onApply={handleApply}
                   showMethodFilter={true}
@@ -614,6 +620,18 @@ const TransactionTable = () => {
                 />
               </div>
             )}
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <button className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+              filterTransaction !== "methodFilterTransaction" 
+                ? "bg-gray-900 text-white shadow-lg scale-105" 
+                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+            }`}>
+              <History className="w-4 h-4" />
+              On Going
+            </button>
           </div>
 
           {/* Search Input */}
@@ -627,20 +645,17 @@ const TransactionTable = () => {
                 placeholder="Search by id, email, username...."
                 value={searchTerm}
                 onChange={handleSearch}
-                className="w-full pl-12 pr-4 py-3 h-12 border-2 border-green-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
             />
-            </div>
+          </div>
 
-
-          {/* Status Filter */}
+          {/* Search Button */}
           <div>
-            <button className={`flex items-center gap-2 h-12 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-              filterTransaction !== "methodFilterTransaction" 
-                ? "bg-gray-900 text-white shadow-lg scale-105" 
-                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
-            }`}>
-              <History className="w-4 h-4" />
-              On Going
+            <button
+              onClick={handleSearch}
+              className="flex items-center gap-2 px-2 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow transition-all"
+            >
+              Search Orders
             </button>
           </div>
         </div>
@@ -653,7 +668,7 @@ const TransactionTable = () => {
             </div>
           )}
           
-          <div className="p-8">
+          <div className="p-4">
             {(dataTransactionCashInternal.length > 0 || dataTransactionNonCashInternal.length > 0) && (
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-gray-100 rounded-xl">
@@ -671,12 +686,12 @@ const TransactionTable = () => {
                   <>
                     <thead className="bg-gray-50/50 backdrop-blur-sm">
                       <tr>
-                        {["Status", "Channel", "Account", "Amount", "Table/DineIn", "Date"]
+                        {["Status", "Channel", "Account", "Amount", "DineIn/TakeAway", "Date"]
                           .concat(filterTransaction === 'methodFilterTransaction' ? [] : ["Buy"])
                           .map((header) => (
                             <th 
                               key={header} 
-                              className="py-4 px-6 text-left font-semibold text-sm text-gray-700 uppercase tracking-wider border-b border-gray-200"
+                              className="py-4 px-6 text-left font-semibold text-sm text-gray-800 uppercase tracking-wider border-b border-gray-200"
                             >
                               {header}
                             </th>

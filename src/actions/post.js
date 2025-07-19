@@ -160,6 +160,7 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
             error: error.response?.data?.error,
             errorProductUnavailable: error?.response?.data?.errorProductUnavailable,
             errorAmountPrice: error.response?.data?.errorAmountPrice,
+            errorCashNonActive: error.response?.data?.errorCashNonActive,
             statusCode: error?.response?.status,
         }
         dispatch(errorCreateTransactionCustomer(message))
@@ -258,7 +259,8 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         const message = {
             error: error.response?.data?.error,
             errorProductUnavailable: error.response?.data?.errorProductUnavailable,
-            errorAmountPrice: error.response?.data?.errorAmountPrice
+            errorAmountPrice: error.response?.data?.errorAmountPrice,
+            errorCashNonActive: error.response?.data?.errorCashNonActive
         }
         dispatch(errorCreateTransactionInternal(message))
         console.log("response data create transacrion internal: ", error)

@@ -7,9 +7,6 @@ function FilterPanel({
   filterStatus,
   startDate,
   endDate,
-  startTime,
-  endTime,
-  filterCount,
   dateError,
   
   // State handlers
@@ -17,8 +14,6 @@ function FilterPanel({
   onStatusChange, // 1. Tambahkan prop ini
   onStartDateChange,
   onEndDateChange,
-  onStartTimeChange,
-  onEndTimeChange,
   onClear,
   onApply,
   
@@ -26,8 +21,6 @@ function FilterPanel({
   showMethodFilter = true,
   showStatusFilter = true,
   showDateFilter = true,
-  showTimeFilter = true,
-
 
   validationErrors,
 }) {
@@ -215,39 +208,6 @@ function FilterPanel({
             </div>
           </div>
         )}
-
-        {/* Time Range */}
-        {showTimeFilter && (
-          <div>
-            <label className="text-sm text-gray-700 mb-1 block">Time</label>
-            <div className="flex items-center gap-2 w-full">
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => onStartTimeChange(e.target.value)}
-                className="border rounded-md text-gray-700 px-2 py-1.5 text-sm flex-1"
-              />
-              <span className="text-gray-500">-</span>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => onEndTimeChange(e.target.value)}
-                className="border rounded-md text-gray-700 px-2 py-1.5 text-sm flex-1"
-              />
-            </div>
-
-            {/* Tampilkan error jika ada */}
-            <div className="flex flex-wrap gap-x-4">
-              {validationErrors.startTime && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.startTime}</p>
-              )}
-              {validationErrors.endTime && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.endTime}</p>
-              )}
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );

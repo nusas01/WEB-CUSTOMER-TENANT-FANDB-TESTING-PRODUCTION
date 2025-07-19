@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Ban, X, RefreshCw, ShoppingCart } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Ban, X, RefreshCw, ShoppingCart, Banknote, CreditCard } from "lucide-react"
 import { useRef } from "react"
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
 import { useDispatch } from "react-redux"
@@ -683,6 +683,144 @@ export const InvalidAmountModal = ({ onClose, colorsType = "internal", fetchData
   );
 };
   
+
+export const CashPaymentUnavailableModal = ({ onClose, colorsType = "internal", fetchData, resetChart }) => {
+  const modalRef = useRef(null);
+  const dispatch = useDispatch();
+
+  // Handle click outside to close modal
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
+
+  const handleRefreshData = () => {
+    dispatch(fetchData());
+    resetChart();
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-in fade-in-0 zoom-in-95"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <Ban className="w-5 h-5 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Pembayaran Cash Tidak Tersedia
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <Banknote className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Metode Pembayaran Cash Tidak Aktif
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Mohon maaf, saat ini metode pembayaran cash sedang tidak tersedia atau telah dinonaktifkan sementara. Hal ini dapat disebabkan oleh:
+              </p>
+            </div>
+          </div>
+
+          {/* Alternative Payment Methods */}
+          <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <CreditCard className="w-3 h-3 text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-green-900 mb-1">Metode Pembayaran Alternatif</h4>
+                <p className="text-sm text-green-800">
+                  Silakan gunakan metode pembayaran digital lainnya seperti kartu debit/kredit, e-wallet, atau transfer bank yang masih tersedia.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Solution */}
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <RefreshCw className="w-3 h-3 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">Periksa Status Terbaru</h4>
+                <p className="text-sm text-blue-800">
+                  Klik tombol refresh di bawah ini untuk memperbarui data dan memeriksa apakah pembayaran cash sudah kembali tersedia.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-4 bg-gray-50 rounded-b-2xl flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 sm:gap-0 sm:justify-between w-full">
+          <button
+            onClick={onClose}
+            className="w-full sm:w-auto px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors font-medium text-center"
+          >
+            Tutup
+          </button>
+
+          <button
+            onClick={handleRefreshData}
+            className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 ${
+              colorsType === 'customer'
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-gray-800 hover:bg-gray-900'
+            } text-white rounded-lg transition-colors font-medium`}
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Periksa Ulang</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 
   

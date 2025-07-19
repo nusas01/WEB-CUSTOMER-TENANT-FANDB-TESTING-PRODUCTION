@@ -141,6 +141,7 @@ export const getTransactionsHistoryCustomerSlice = createSlice({
 const initialGetPaymentMethodsCustomer = {
     dataPaymentMethodCustomer: [],
     taxRate: 0,
+    paymentMethodCash: null,
     errorPaymentMethodsCustomer: null,
     statusCodePaymentMethodsCustomer: null,
     loadingPaymentMethodsCustomer: false,
@@ -153,8 +154,9 @@ export const getPaymentMethodsCustomerSlice = createSlice({
             state.loadingPaymentMethodsCustomer = action.payload
         },
         fetchSuccessGetPaymentMethodsCustomer: (state, action) => {
-            state.dataPaymentMethodCustomer = action.payload?.payment_methods
-            state.taxRate = action.payload?.tax_rate
+            state.dataPaymentMethodCustomer = action.payload?.payment_methods || []
+            state.taxRate = action.payload?.tax_rate || 0
+            state.paymentMethodCash = action.payload?.payment_method_cash || null
             state.statusCodePaymentMethodsCustomer = 200
             state.errorPaymentMethodsCustomer = null
         },

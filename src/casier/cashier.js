@@ -34,7 +34,8 @@ import {
     ProductUnavailableModal, 
     PaymentSuccessNonCashCashier, 
     SuccessAlertPaymentCash,
-    InvalidAmountModal
+    InvalidAmountModal,
+    CashPaymentUnavailableModal,
 } from "../component/alert"
 import {QRCodeCanvas} from 'qrcode.react'
 import { format } from 'date-fns'
@@ -110,6 +111,7 @@ const ComponentCartCashier = ({cartRef}) => {
     const [emailError, setEmailError] = useState()
     const [productUnavailable, setProductUnavailable] = useState(false)
     const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
+    const [paymentUnavailable, setPaymentUnavailable] = useState(false)
     const [modelMoneyReceved, setModelMoneyReceved] = useState(false)
     const [error, setError] = useState(false)
     const [ dataCart, setDataCart ] = useState({
@@ -123,7 +125,7 @@ const ComponentCartCashier = ({cartRef}) => {
     })
 
     // handle get payment method 
-    const {dataPaymentMethodInternal, taxRateInternal, loadingPaymentMethodsInternal} = useSelector((state) => state.persisted.paymentMethodsInternal)
+    const {dataPaymentMethodInternal, taxRateInternal, loadingPaymentMethodsInternal, paymentMethodCash} = useSelector((state) => state.persisted.paymentMethodsInternal)
     useEffect(() => {
         if (dataPaymentMethodInternal.length === 0 || !dataPaymentMethodInternal) {
             dispatch(fetchPaymentMethodsInternal())
@@ -211,7 +213,7 @@ const ComponentCartCashier = ({cartRef}) => {
     }
 
     useEffect(() => {
-        const tax = taxRateInternal * subTotal;
+        const tax = Math.floor(taxRateInternal * subTotal);
 
         if (dataCart.payment_method === "QR") {
             const rawFee = feeTransaction * (subTotal + tax);
@@ -300,11 +302,17 @@ const ComponentCartCashier = ({cartRef}) => {
     }
     
     const { clearCartCashier } = cartCashierSlice.actions
-    const {successCreateTransactionInternal, errorProductUnavailable, errorInvalidAmountPrice, dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
+    const {successCreateTransactionInternal, errorProductUnavailable, errorInvalidAmountPrice, errorCashNonActive, dataSuccessCreateTransactionInternal, errorCreateTransactionInternal, loadingCreateTransactionInternal } = useSelector((state) => state.createTransactionInternalState)
     const { resetCreateTransactionInternal } = createTransactionInternalSlice.actions
     useEffect(() => {
         setSpinnerFixed(loadingCreateTransactionInternal)
     }, [loadingCreateTransactionInternal])
+
+    useEffect(() => {
+        if (errorCashNonActive) {
+            setPaymentUnavailable(true)
+        }
+    }, [errorCashNonActive])
 
     useEffect(() => {
         if (errorProductUnavailable) {
@@ -317,11 +325,6 @@ const ComponentCartCashier = ({cartRef}) => {
             setInvalidAmountPrice(true)
         }
     }, [errorInvalidAmountPrice])
-
-    const handleCloseInvalidAmountPrice = () => {
-        setInvalidAmountPrice(false)
-        dispatch(resetCreateTransactionInternal())
-    }
 
     useEffect(() => {
         if (errorCreateTransactionInternal) {
@@ -348,6 +351,17 @@ const ComponentCartCashier = ({cartRef}) => {
             amount_price: 0,
             money_received: 0,
         })
+        dispatch(resetCreateTransactionInternal())
+    }
+
+    const handleClearCashNonActive = () => {
+        setDataCart((prev) => ({
+            ...prev,
+            payment_method: '',
+            fee: 0,
+            channel_code: '',
+            payment_method_id: null,
+        }))
         dispatch(resetCreateTransactionInternal())
     }
 
@@ -429,6 +443,16 @@ const ComponentCartCashier = ({cartRef}) => {
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+
+                {/* payment cash non active */}
+                {  paymentUnavailable && (
+                    <CashPaymentUnavailableModal
+                    onClose={() => setPaymentUnavailable(false)}
+                    colorsType="internal"
+                    fetchData={fetchPaymentMethodsInternal}
+                    resetChart={handleClearCashNonActive}
+                    />
+                )}
 
                 {/* product unavailable */}
                 { productUnavailable && (
@@ -537,21 +561,23 @@ const ComponentCartCashier = ({cartRef}) => {
                                                 </button>
                                             );
                                         })}
-
-                                        <button
-                                            onClick={() => handleChoicePaymentMethod({ paymentMethod: "CASH", channelCode: "CASH", fee: 0 })}
-                                            className={`flex items-center w-full px-4 py-2 text-sm text-left ${dataCart.channel_code === 'CASH' ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
-                                        >
-                                            <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
-                                                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                                            </div>
-                                            CASH
-                                            {dataCart.channel_code === 'CASH' && (
-                                                <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            )}
-                                        </button>
+                                        
+                                        { paymentMethodCash.status_payment && (
+                                            <button
+                                                onClick={() => handleChoicePaymentMethod({ paymentMethod: "CASH", channelCode: "CASH", fee: 0 })}
+                                                className={`flex items-center w-full px-4 py-2 text-sm text-left ${dataCart.channel_code === 'CASH' ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
+                                            >
+                                                <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
+                                                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                                </div>
+                                                CASH
+                                                {dataCart.channel_code === 'CASH' && (
+                                                    <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        )}
                                     </>
                                 )}
 
@@ -882,6 +908,7 @@ const ProductCashier = ({onClose}) => {
                     image={productData.image} 
                     description={productData.description} 
                     type={"INTERNAL"}
+                    // taxRate={} di sisi customer saja yang handle taxrate di state
                 />
             )}
         </>

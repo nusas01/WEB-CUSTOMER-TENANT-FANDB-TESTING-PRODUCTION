@@ -54,6 +54,7 @@ export const { addItem, deleteItem, updateItem, clearCart } = cartSlice.actions;
 
 
 
+
 export const initialCartCashierState = {
     subTotal: 0,
     items: []

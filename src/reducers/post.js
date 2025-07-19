@@ -138,6 +138,7 @@ const initialCreateTransactionCustomer = {
     error: null,
     errorProductUnavailable: null,
     errorAmountPrice: null,
+    errorCashNonActive: null,
     loading: false,
 }
 export const createTransactionCustomerSlice = createSlice({
@@ -153,6 +154,7 @@ export const createTransactionCustomerSlice = createSlice({
             state.errorProductUnavailable = action.payload.errorProductUnavailable
             state.errorAmountPrice = action.payload.errorAmountPrice
             state.statusCode = action.payload.statusCode
+            state.errorCashNonActive = action.payload.errorCashNonActive
         }, 
         setLoadingCreateTransactionCustomer: (state, action) => {
             state.loading = action.payload;
@@ -163,6 +165,7 @@ export const createTransactionCustomerSlice = createSlice({
             state.errorAmountPrice = null
             state.statusCode = null
             state.error = null
+            state.errorCashNonActive = null
         }
     }
 })
@@ -212,6 +215,7 @@ const initialCreateTransactionInternalState = {
     errorCreateTransactionInternal: null,
     errorProductUnavailable: null,
     errorInvalidAmountPrice: null,
+    errorCashNonActive: null,
     loadingCreateTransactionInternal: false,
 }
 export const createTransactionInternalSlice = createSlice({
@@ -229,6 +233,7 @@ export const createTransactionInternalSlice = createSlice({
             state.errorCreateTransactionInternal = action.payload.error 
             state.errorProductUnavailable = action.payload.errorProductUnavailable
             state.errorInvalidAmountPrice = action.payload.errorAmountPrice
+            state.errorCashNonActive = action.payload.errorCashNonActive
             state.dataSuccessCreateTransactionInternal = null
             state.successCreateTransactionInternal = null
         }, 
@@ -241,6 +246,7 @@ export const createTransactionInternalSlice = createSlice({
             state.successCreateTransactionInternal = null
             state.errorCreateTransactionInternal = null
             state.errorInvalidAmountPrice = null
+            state.errorCashNonActive = null
         }
     }
 })

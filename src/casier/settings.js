@@ -90,6 +90,10 @@ export default function KasirSettings() {
     if (successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods) {
       setSuccessAlert(true)
 
+      if (successUpdatePaymentMethods) {
+        dispatch(fetchPaymentMethodsInternal())
+      }
+
       const timer = setTimeout(() => {
         setSuccessAlert(false)
         dispatch(resetUpdateDataEmployee())
@@ -98,9 +102,6 @@ export default function KasirSettings() {
       }, 3000)
 
       return () => clearTimeout(timer)
-    }
-    if (successUpdatePaymentMethods) {
-      dispatch(fetchPaymentMethodsInternal())
     }
   }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
   
@@ -151,7 +152,12 @@ export default function KasirSettings() {
             <div className='fixed'>
               <ErrorAlert
                 message={messageError}
-                onClose={() => setAlertError(false)}
+                onClose={() => { 
+                  setAlertError(false)
+                  dispatch(resetUpdatePaymentMethodsInternal())
+                  dispatch(resetChangePasswordInternal())
+                  dispatch(resetUpdatePaymentMethodsInternal())
+                }}
               />
             </div>
             )}
@@ -160,7 +166,12 @@ export default function KasirSettings() {
               <div className='fixed'>
                 <SuccessAlert 
                 message={messageSuccess} 
-                onClose={() => setSuccessAlert(false)}
+                onClose={() => { 
+                  setSuccessAlert(false)
+                  dispatch(resetUpdatePaymentMethodsInternal())
+                  dispatch(resetChangePasswordInternal())
+                  dispatch(resetUpdatePaymentMethodsInternal())
+                }}
                 />
               </div>
             )}

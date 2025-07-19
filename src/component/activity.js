@@ -183,7 +183,9 @@ export default function Activity() {
                                 <div style={{display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '50px'}}>
                                     {dataTransactionOnGoing.map((data, index) => (
                                         <div key={index} className="container-belum-bayar p-6 bg-light">
-                                            <p class="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
+                                            { data.status_transaction == 'PENDING' && (
+                                                <p class="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
+                                            )}
                                             <div className="flex justify-end">
                                                 { data.status_transaction === "PENDING" ? (
                                                     <p style={{margin: '5px 0'}}>
@@ -226,14 +228,22 @@ export default function Activity() {
                                                     ))}
 
                                                     <div>
-                                                        <div className="spase-bettwen" style={{padding: '15px 0'}}>
-                                                            <p>{data.order.length} item</p>
-                                                            { data.status_transaction === "PAID" ? (
+                                                        <div>
+                                                            <div className="flex justify-between items-center" style={{ padding: '15px 0' }}>
+                                                                <p>{data.order.length} item</p>
+                                                                
+                                                                {(data.status_transaction === "PAID" && data.order_status === 'PROCESS') ? (
                                                                 <p>Pesanan Anda Sedang Kami Proses</p>
-                                                            ) : (
-                                                                <p>Jumlah Harus Dibayar : Rp{(data.amount_price).toLocaleString("id-ID")}</p>
-                                                            )}
+                                                                ) : data.order_status === "PROGRESS" ? (
+                                                                <p>Pesanan Sedang Diproses</p>
+                                                                ) : data.order_status === "FINISHED" ? (
+                                                                <p>Pesanan Selesai</p>
+                                                                ) : (
+                                                                <p>Jumlah Harus Dibayar: Rp{data.amount_price.toLocaleString("id-ID")}</p>
+                                                                )}
+                                                            </div>
                                                         </div>
+
 
                                                         {data.status_transaction !== 'PAID' && (
                                                             <div className="spase-bettwen">
