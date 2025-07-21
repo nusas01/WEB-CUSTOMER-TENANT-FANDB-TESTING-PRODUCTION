@@ -23,3 +23,18 @@ export const SpinnerRelative = ({h}) => {
         </div>
     )
 }
+
+export const BottomLoadingIndicator = ({ isVisible }) => {
+  if (!isVisible) return null;
+  
+  return (
+    <div className="flex justify-center items-center py-6">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <span className="text-sm text-gray-600 font-medium">Memuat data...</span>
+      </div>
+    </div>
+  );
+};

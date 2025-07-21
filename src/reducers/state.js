@@ -43,6 +43,7 @@ import {
   getNeracaInternalSlice,
   getDataEmployeeInternalSlice,
   searchOrderInternalSlice,
+  getSearchTransactionInternalSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -167,6 +168,7 @@ const nonPersistedReducers = {
   changePasswordInternalState: changePasswordInternalSlice.reducer,
   updatePaymentMethodsInternalState: updatePaymentMethodsInternalSlice.reducer,
   searchOrderInternalState: searchOrderInternalSlice.reducer,
+  getSearchTransactionInternalState: getSearchTransactionInternalSlice.reducer, 
 }
 
 const rootReducer = combineReducers({

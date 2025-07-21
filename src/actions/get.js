@@ -28,7 +28,8 @@ import {
     getTablesInternalSlice,
     getNeracaInternalSlice,
     getDataEmployeeInternalSlice,
-    searchOrderInternalSlice
+    searchOrderInternalSlice,
+    getSearchTransactionInternalSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -162,6 +163,35 @@ export const fetchTransactionHistoryCustomer = (page) => {
         dispatch(setLoadingGetTransactionHistoryCustomer(false))
       }
     }
+}
+
+const {fetchSuccessSearchTransactionInternal, fetchErrorSearchTransactionInternal, setLoadingSearchTransactionInternal} = getSearchTransactionInternalSlice.actions
+export const fetchSearchTransactionInternal = (id_transaction) => {
+  return async (dispatch, getState) => {
+    const { statusExpiredToken } = getState().statusExpiredTokenState;
+    if (statusExpiredToken) return;
+
+    dispatch(setLoadingSearchTransactionInternal(true))
+    try {
+      const response = await axiosInstance.get(`${process.env.REACT_APP_SEARCH_TRANSACTION_INTERNAL_URL}`, {
+        withCredentials: true, 
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY
+        },
+        params: {
+          id_transaction: id_transaction,
+        }
+      })
+      dispatch(fetchSuccessSearchTransactionInternal(response.data))
+    } catch(error) {
+      if (error.response?.data?.code === "TOKEN_EXPIRED") {
+          dispatch(setStatusExpiredToken(true))
+      }
+      dispatch(fetchErrorSearchTransactionInternal(error.response.data?.error))
+    } finally {
+      dispatch(setLoadingSearchTransactionInternal(false))
+    }
+  }
 }
 
 const {setLoadingGetPaymentMethodsCustomer, fetchSuccessGetPaymentMethodsCustomer, fetchErrorGetPaymentMethodsCustomer} = getPaymentMethodsCustomerSlice.actions;
@@ -367,41 +397,74 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
 }
 
 
-const {setLoadingTransactionHistoryInternal, fetchErrorTransactionHistoryInternal, fetchSuccessTransactionHistoryInternal} = transactionHistoryInternalSlice.actions
-export const fetchTransactionHistory = (data) => {
+const {
+    setLoadingTransactionHistoryInternal, 
+    fetchErrorTransactionHistoryInternal, 
+    fetchSuccessTransactionHistoryInternal,
+    incrementPage,
+} = transactionHistoryInternalSlice.actions
+export const fetchTransactionHistory = (data, isLoadMore = false) => {
     return async (dispatch, getState) => {
-      const { statusExpiredToken } = getState().statusExpiredTokenState;
-      if (statusExpiredToken) return; 
+        const { statusExpiredToken } = getState().statusExpiredTokenState;
+        if (statusExpiredToken) return;
+        
+        const currentState = getState().persisted.transactionHistoryInternal;
+        
+        // Jika sedang loading dan ini bukan initial load, skip
+        if (currentState.isLoadingMore && isLoadMore) {
+            return;
+        }
 
-      dispatch(setLoadingTransactionHistoryInternal(true))
-      try {
-          const response = await axiosInstance.get(`${process.env.REACT_APP_GET_TRANSACTION_HISTORY_INTERNAL_URL}`, { 
-              withCredentials: true,
-              headers: {
-                  'API_KEY': process.env.REACT_APP_API_KEY
-                },
-              params: data,
-          })
-          dispatch(fetchSuccessTransactionHistoryInternal(response.data?.data))
-          console.log("apa yang terjadi ini di history vhoufvhouf: ", response.data)
-      } catch(error) {
-          if (error.response?.data?.code === "TOKEN_EXPIRED") {
-              dispatch(setStatusExpiredToken(true))
-          }
-
-          if (error === null) {
-              return
-          } else {
-              const data = {
-                  error: error.response?.data?.error || error.message || 'Unknown error',
-                  statusCode: error.response?.status || 500
-              }
-              dispatch(fetchErrorTransactionHistoryInternal(data))
-          }
-
-      } finally {
-          dispatch(setLoadingTransactionHistoryInternal(false))
-      }
+        dispatch(setLoadingTransactionHistoryInternal(true))
+        
+        try {
+            const response = await axiosInstance.get(
+                `${process.env.REACT_APP_GET_TRANSACTION_HISTORY_INTERNAL_URL}`, 
+                {
+                    withCredentials: true,
+                    headers: {
+                        'API_KEY': process.env.REACT_APP_API_KEY
+                    },
+                    params: {
+                        ...data,
+                        page: data.page || 1
+                    },
+                }
+            )
+            
+            const responseData = {
+                data: response.data?.data || [],
+                hasMore: response.data?.hasMore || false,
+                totalCount: response.data?.totalCount || 0,
+                totalRevenue: response.data?.totalRevenue || 0,
+                page: data.page || 1
+            };
+            
+            dispatch(fetchSuccessTransactionHistoryInternal(responseData))
+            
+            console.log("Transaction history response: ", {
+                currentPage: data.page,
+                hasMore: response.data?.hasMore,
+                dataLength: response.data?.data?.length,
+                totalCount: response.data?.totalCount
+            })
+            
+        } catch(error) {
+            if (error.response?.data?.code === "TOKEN_EXPIRED") {
+                dispatch(setStatusExpiredToken(true))
+            }
+            if (error === null) {
+                return
+            } else {
+                const errorData = {
+                    error: error.response?.data?.error || error.message || 'Unknown error',
+                    statusCode: error.response?.status || 500
+                }
+                dispatch(fetchErrorTransactionHistoryInternal(errorData))
+            }
+        } finally {
+            dispatch(setLoadingTransactionHistoryInternal(false))
+        }
     }
 }
 
@@ -783,32 +846,27 @@ export const fetchAssetsStoreInternal = (data) => {
   }
 }
 
-
+// get order dengan order_status process and progress
 const {fetchSuccessOrdersInternal, fetchErrorOrdersInternal, appendOrdersInternal, setLoadingOrdersInternal} = getOrdersInternalSlice.actions
-export const fetchOrdersInternal = (startDate = null, endDate = null) => {
+export const fetchOrdersInternal = () => {
   return async (dispatch, getState) => {
     const { statusExpiredToken } = getState().statusExpiredTokenState;
     if (statusExpiredToken) return; 
 
     dispatch(setLoadingOrdersInternal(true))
       try {
-        const params = {};
-        if (startDate) params.start_date = startDate;
-        if (endDate) params.end_date = endDate;
-
         const response = await axiosInstance.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
-          },
-          params,
+          }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
-        if (startDate || endDate) {
-          dispatch(appendOrdersInternal(response?.data))
-        } else {
-          dispatch(fetchSuccessOrdersInternal(response?.data))
-        }
+        // if (startDate || endDate) {
+        //   dispatch(appendOrdersInternal(response?.data?.data))
+        // } else {
+          dispatch(fetchSuccessOrdersInternal(response?.data?.data))
+        // }
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -821,49 +879,80 @@ export const fetchOrdersInternal = (startDate = null, endDate = null) => {
   }
 }
 
-const {fetchSuccessOrdersFinishedInternal, fetchErrorOrdersFinishedInternal, setLoadingOrdersFinishedInternal} = getOrdersFinishedInternalSlice.actions
-export const fetchOrdersFinishedInternal = (startDate, endDate) => {
+const { fetchSuccessOrdersFinishedInternal, fetchErrorOrdersFinishedInternal, setLoadingOrdersFinishedInternal } = getOrdersFinishedInternalSlice.actions
+export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore = false) => {
   return async (dispatch, getState) => {
     const { statusExpiredToken } = getState().statusExpiredTokenState;
-    if (statusExpiredToken) return; 
+    if (statusExpiredToken) return;
+    
+    const currentState = getState().persisted.dataOrdersFinishedInternal;
+    
+    // Prevent multiple simultaneous requests
+    if (currentState.isLoadMore && isLoadMore) {
+      console.log("Already loading more, skipping request");
+      return;
+    }
+    
+    if (currentState.loadingOrdersFinishedInternal && !isLoadMore) {
+      console.log("Already loading initial data, skipping request");
+      return;
+    }
 
-    dispatch(setLoadingOrdersFinishedInternal(true))
-      try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
-          withCredentials: true,
-          headers: {
-            'API_KEY': process.env.REACT_APP_API_KEY
-          },
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-            status_fineshed: 'FINISHED',
-          }
-        })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
-        // dispatch(fetchSuccessOrdersFinishedInternal(response?.data))
-        dispatch(appendOrdersInternal(response?.data))
-      } catch (error) {
-        if (error.response?.data?.code === "TOKEN_EXPIRED") {
-            dispatch(setStatusExpiredToken(true))
+    dispatch(setLoadingOrdersFinishedInternal({ loading: true, isLoadMore }))
+    
+    try {
+      const response = await axiosInstance.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
+        withCredentials: true,
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY
+        },
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          status_finished: 'FINISHED',
+          page: page,
         }
-
-        dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error))
-      } finally {
-        dispatch(setLoadingOrdersFinishedInternal(false))
+      })
+      
+      console.log("Fetch response:", response.data);
+      
+      dispatch(fetchSuccessOrdersFinishedInternal({
+        data: response?.data?.data || [],
+        hasMore: response?.data?.hasMore || false,
+        totalCount: response?.data?.totalCount || 0,
+        totalRevenue: response?.data?.totalRevenue || 0,
+      }))
+    } catch (error) {
+      console.error("Fetch error:", error);
+      if (error.response?.data?.code === "TOKEN_EXPIRED") {
+        dispatch(setStatusExpiredToken(true))
       }
+      dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error || 'Unknown error'))
+    }
   }
 }
 
 const {fetchSuccessSearchOrder, fetchErrorSearchOrder, setLoadingSearchOrder, addSearchOrder} = searchOrderInternalSlice.actions
-export const fetchSearchOrderInternal = (searchQuery, currentPage) => async (dispatch) => {
-  try {
-    dispatch(setLoadingSearchOrder(true));
+export const fetchSearchOrderInternal = (searchQuery, currentPage, isLoadMore = false) => async (dispatch, getState) => {
+  const { statusExpiredToken } = getState().statusExpiredTokenState;
+  if (statusExpiredToken) return;
 
+  const currentState = getState().searchOrderInternalState;
+
+  if (currentState.isLoadMore && isLoadMore) {
+    return;
+  }
+
+  if (currentState.isLoadingSearchOrder && !isLoadMore) {
+    return;
+  }
+
+  dispatch(setLoadingSearchOrder({ loading: true, isLoadMore }));
+  try {
     const response = await axiosInstance.get(`${process.env.REACT_APP_GET_SEARCH_ORDER_INTERNAL_URL}`, {
       withCredentials: true,
       headers: {
-        'API_KEY': process.env.REACT_APP_API_KEY
+        'API_KEY': process.env.REACT_APP_API_KEY,
       },
       params: {
         key: searchQuery,
@@ -871,21 +960,23 @@ export const fetchSearchOrderInternal = (searchQuery, currentPage) => async (dis
       },
     });
 
-    const result = response.data;
-
     dispatch(
       fetchSuccessSearchOrder({
-        data: result.data || [],
-        page: currentPage,
-        hasMore: result.hasMore ?? false, // Ambil langsung dari backend
+        data: response.data?.data || [],
+        hasMore: response.data?.hasMore || false,
+        totalCount: response.data?.totalCount || 0,
+        totalRevenue: response.data?.totalRevenue || 0,
       })
     );
-  } catch (err) {
-    dispatch(fetchErrorSearchOrder(err.message || "Error fetching search data"));
-  } finally {
-    dispatch(setLoadingSearchOrder(false));
+  } catch (error) {
+    if (error.response?.data?.code === 'TOKEN_EXPIRED') {
+      dispatch(setStatusExpiredToken(true));
+    }
+
+    dispatch(fetchErrorSearchOrder(error.response?.data?.error || 'Error fetching search data'));
   }
 };
+
 
 const {fetchSuccessTablesInternal, fetchErrorTablesInternal, setLoadingTablesInternal} = getTablesInternalSlice.actions
 export const fetchTablesInternal = () => {

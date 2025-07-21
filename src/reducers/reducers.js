@@ -1,4 +1,9 @@
-import { createSlice, findNonSerializableValue } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"
+import { 
+    fetchTransactionHistory,
+    fetchOrdersFinishedInternal,
+    fetchSearchOrderInternal,
+ } from "../actions/get";
 
 const initialOrderTypeState = {
     orderTakeAway: null,
@@ -129,8 +134,8 @@ export const dataDrafToVoidInternalSlice = createSlice({
 
 
 const initialFilterOrderInternalState = {
-    startDate: null,
-    endDate: null,
+    startDate: '',
+    endDate: '',
     statusFilter: 'PROCESS',
 }
 export const filterOrderInternalSlice = createSlice({
@@ -147,13 +152,88 @@ export const filterOrderInternalSlice = createSlice({
             state.statusFilter = action.payload
         },
         resetFilterGeneralJournal: (state) => {
-            state.startDate = null
-            state.endDate = null
+            state.startDate = ''
+            state.endDate = ''
             state.statusFilter = 'PROCESS'       
         }
     }
 })
 
+export const loadMoreTransactionHistory = () => {
+    return async (dispatch, getState) => {
+        const state = getState().persisted;
+        const { transactionHistoryInternal } = state;
+        const { dataFilteringTransactionHistoryState } = state;
+        
+        // Cek apakah masih bisa load more
+        if (!transactionHistoryInternal.hasMore || 
+            transactionHistoryInternal.isLoadingMore ||
+            transactionHistoryInternal.loadingTransactionHistoryInternal) {
+            return;
+        }
+
+        const nextPage = transactionHistoryInternal.page + 1;
+        
+        const data = {
+            method: dataFilteringTransactionHistoryState.method,
+            status: dataFilteringTransactionHistoryState.status,
+            startDate: dataFilteringTransactionHistoryState.startDate,
+            endDate: dataFilteringTransactionHistoryState.endDate,
+            startTime: dataFilteringTransactionHistoryState.startTime,
+            endTime: dataFilteringTransactionHistoryState.endTime,
+            page: nextPage
+        };
+
+        console.log("Loading more data for page:", nextPage);
+        
+        return dispatch(fetchTransactionHistory(data, true));
+    }
+}
+
+export const loadMoreOrderFinished = () => {
+  return async (dispatch, getState) => {
+    const state = getState().persisted;
+    const { dataOrdersFinishedInternal } = state; // Pastikan nama state sesuai
+    const { filterOrderInternal } = state;
+    
+    // Cek apakah masih bisa load more
+    if (!dataOrdersFinishedInternal?.hasMore || 
+        dataOrdersFinishedInternal?.isLoadMore ||
+        dataOrdersFinishedInternal?.loadingOrdersFinishedInternal) {
+      console.log("Cannot load more - conditions not met");
+      return;
+    }
+    
+    const nextPage = (dataOrdersFinishedInternal?.page || 1) + 1;
+    console.log("Loading more data for page:", nextPage);
+    
+    return dispatch(fetchOrdersFinishedInternal(
+      filterOrderInternal.startDate,
+      filterOrderInternal.endDate,
+      nextPage,
+      true // isLoadMore = true
+    ));
+  }
+}
+
+export const loadMoreSearchOrderInternal = (keyword) => {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const { searchOrderInternalState } = state;
+
+        // Cek apakah masih bisa load more
+        if (!searchOrderInternalState.hasMore || 
+            searchOrderInternalState.isLoadMore ||
+            searchOrderInternalState.loadingSearchOrderInternal) {
+            return;
+        }
+
+        const nextPage = (searchOrderInternalState.page || 1) + 1;
+        console.log("Loading more data for page:", nextPage);
+
+        return dispatch(fetchSearchOrderInternal(keyword, nextPage, true));
+    }
+}
 
 
 

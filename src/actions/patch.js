@@ -162,7 +162,7 @@ export const availableProductInternal = (data) => async (dispatch) => {
     } 
 }
 
-const {updateOrderStatusById, deleteOrderById} = getOrdersInternalSlice.actions
+const {appendOrdersInternal} = getOrdersInternalSlice.actions
 const {setSuccessToProgressOrder, setErrorToProgressOrder, setLoadingToProgressOrder} = toProgressOrderInternalSlice.actions
 export const toProgressOrderInternal = (data) => async (dispatch) => {
     const config = {
@@ -176,7 +176,7 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     try {
         const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
         dispatch(setSuccessToProgressOrder(response.data?.data))
-        dispatch(updateOrderStatusById(response.data?.data))
+        dispatch(appendOrdersInternal(response.data?.data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -189,7 +189,7 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     }
 }
 
-const { addOrderFinishedInternal } = getOrdersFinishedInternalSlice.actions
+// const { addOrderFinishedInternal } = getOrdersFinishedInternalSlice.actions
 const {setSuccessToFinishedOrder, setErrorToFinishedOrder, setLoadingToFinishedOrder} = toFinishedOrderInternalSlice.actions
 export const toFinishedOrderInternal = (data) => async (dispatch) => {
     const config = {
@@ -206,8 +206,8 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         }
         const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
         dispatch(setSuccessToFinishedOrder(response.data?.data))
-        dispatch(addOrderFinishedInternal(data))
-        dispatch(deleteOrderById(data.id))
+        // dispatch(addOrderFinishedInternal(data))
+        dispatch(appendOrdersInternal(response.data?.data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {

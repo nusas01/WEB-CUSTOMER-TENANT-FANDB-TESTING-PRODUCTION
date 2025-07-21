@@ -1,4 +1,6 @@
 import {Database, RefreshCw} from 'lucide-react'
+import React, { useEffect } from 'react'
+import { useInView } from 'react-intersection-observer'
 
 export const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -27,3 +29,24 @@ export const EmptyState = ({ title, description, onRetry }) => (
     )}
   </div>
 );
+
+export const useInfiniteScroll = ({ 
+  hasMore, 
+  loading, 
+  loadMore, 
+  threshold = 0.1,
+  rootMargin = '100px' 
+}) => {
+  const { ref, inView } = useInView({
+    threshold,
+    rootMargin,
+  });
+
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      loadMore();
+    }
+  }, [inView, hasMore, loading, loadMore]);
+
+  return { ref, inView };
+};

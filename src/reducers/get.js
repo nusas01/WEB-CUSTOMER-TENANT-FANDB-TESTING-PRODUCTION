@@ -367,34 +367,66 @@ export const dataFilteringTransactionHistorySlice = createSlice({
     }
 })
 
-
 const intitalTransactionHistoryState = {
     dataTransactionHistoryInternal: [],
+    page: 1,
+    hasMore: true,
     errorTransactionHistoryInternal: null,
     statusCodeTransactionHistoryInternal: null,
     loadingTransactionHistoryInternal: false,
+    isLoadingMore: false,
+    totalCount: 0,
+    totalRevenue: 0,
 }
 export const transactionHistoryInternalSlice = createSlice({
     name: 'transactionHistoryInternal',
     initialState: intitalTransactionHistoryState,
     reducers: {
         setLoadingTransactionHistoryInternal: (state, action) => {
-            state.loadingTransactionHistoryInternal = action.payload
+            if (state.page === 1) {
+                state.loadingTransactionHistoryInternal = action.payload
+            } else {
+                state.isLoadingMore = action.payload
+            }
         },
         fetchSuccessTransactionHistoryInternal: (state, action) => {
-            state.dataTransactionHistoryInternal = action.payload
+            const { data, hasMore, totalCount, totalRevenue, page } = action.payload;
+            
+            if (page === 1) {
+                state.dataTransactionHistoryInternal = data
+            } else {
+                state.dataTransactionHistoryInternal = [
+                    ...state.dataTransactionHistoryInternal,
+                    ...data
+                ]
+            }
+            
+            state.hasMore = hasMore
+            state.totalCount = totalCount || state.dataTransactionHistoryInternal.length
+            state.page = page
+            state.totalRevenue = totalRevenue
             state.statusCodeTransactionHistoryInternal = 200
             state.errorTransactionHistoryInternal = null
             state.loadingTransactionHistoryInternal = false
+            state.isLoadingMore = false
         },
         fetchErrorTransactionHistoryInternal: (state, action) => {
             state.errorTransactionHistoryInternal = action.payload.error
             state.statusCodeTransactionHistoryInternal = action.payload.statusCode
             state.loadingTransactionHistoryInternal = false
+            state.isLoadingMore = false
         },
         resetTransactionHitoryInternal: (state) => {  
             state.errorTransactionHistoryInternal = null
             state.dataTransactionHistoryInternal = []
+            state.page = 1
+            state.hasMore = true
+            state.totalCount = 0
+            state.isLoadingMore = false
+            state.totalRevenue = 0
+        },
+        incrementPage: (state) => {
+            state.page += 1
         }
     }
 })
@@ -471,6 +503,33 @@ export const getAllCreateTransactionInternalSlice = createSlice({
 })
 
 
+const initialSearchTransactionInternalState = {
+    dataSearchTransactionInternal: [],
+    errorSearchTransactionInternal: null,
+    loadingSearchTransactionInternal: false
+}
+export const getSearchTransactionInternalSlice = createSlice({
+    name: "searchTransactionInternal",
+    initialState: initialSearchTransactionInternalState,
+    reducers: {
+        setLoadingSearchTransactionInternal: (state, action) => {
+            state.loadingSearchTransactionInternal = action.payload
+        },
+        fetchSuccessSearchTransactionInternal: (state, action) => {
+            state.dataSearchTransactionInternal = [action.payload]
+            state.errorSearchTransactionInternal = null
+        },
+        fetchErrorSearchTransactionInternal: (state, action) => {
+            state.errorSearchTransactionInternal = action.payload
+        },
+        resetSearchTransactionInternal: (state) => {
+            state.dataSearchTransactionInternal = []
+            state.errorSearchTransactionInternal = null
+        }
+    }
+})
+
+
 const initialGetPaymentMethodsInternalState = {
     dataPaymentMethodInternal: [],
     taxRateInternal: 0,
@@ -498,35 +557,35 @@ export const getPaymentMethodsInternalSlice = createSlice({
 })
 
 
-const initialAllDataOrderInternalState = {
-    dataOrderIntenal: [],
-    errorDataOrderIntenal: null,
-    loadingDataOrderInternal: false
-} 
-export const getAllDataOrderInternalSlice = createSlice({
-    name: "dataOrderInternal",
-    initialState: initialAllDataOrderInternalState,
-    reducers: {
-        setLoadingGetAllDataOrderInternal: (state, action) => {
-            state.loadingDataOrderInternal = action.payload
-        },
-        fetchSuccessGetAllDataOrderInternal: (state, action) => {
-            state.dataOrderIntenal = action.payload
-            state.errorDataOrderIntenal = null
-        },
-        fetchErrorGetAllDataOrderInternal: (state, action) => {
-            state.errorDataOrderIntenal = action.payload.error
-            state.dataOrderIntenal = []
-        }, 
-        removeDataOrderInternalById: (state, action) => {
-            const idToRemove = action.payload
-            state.dataOrderIntenal = state.dataOrderIntenal.filter(item => item.id !== idToRemove)
-        },
-        addDataOrderInternal: (state, action) => {
-            state.dataOrderIntenal.push(action.payload);
-        }
-    }
-})
+// const initialAllDataOrderInternalState = {
+//     dataOrderIntenal: [],
+//     errorDataOrderIntenal: null,
+//     loadingDataOrderInternal: false
+// } 
+// export const getAllDataOrderInternalSlice = createSlice({
+//     name: "dataOrderInternal",
+//     initialState: initialAllDataOrderInternalState,
+//     reducers: {
+//         setLoadingGetAllDataOrderInternal: (state, action) => {
+//             state.loadingDataOrderInternal = action.payload
+//         },
+//         fetchSuccessGetAllDataOrderInternal: (state, action) => {
+//             state.dataOrderIntenal = action.payload
+//             state.errorDataOrderIntenal = null
+//         },
+//         fetchErrorGetAllDataOrderInternal: (state, action) => {
+//             state.errorDataOrderIntenal = action.payload.error
+//             state.dataOrderIntenal = []
+//         }, 
+//         removeDataOrderInternalById: (state, action) => {
+//             const idToRemove = action.payload
+//             state.dataOrderIntenal = state.dataOrderIntenal.filter(item => item.id !== idToRemove)
+//         },
+//         addDataOrderInternal: (state, action) => {
+//             state.dataOrderIntenal.push(action.payload);
+//         }
+//     }
+// })
 
 
 const initialCategorytInternalState = {
@@ -872,22 +931,19 @@ export const getOrdersInternalSlice = createSlice({
             const idToDelete = action.payload
             state.dataOrdersInternal = state.dataOrdersInternal.filter(item => item.id !== idToDelete)
         },
-        updateOrderStatusById: (state, action) => {
-            const transaction = state.dataOrdersInternal.find(item => item.id === action.payload.id)
-            if (transaction) {
-                transaction.order_status = action.payload.order_status
-            }
-        },
         appendOrdersInternal: (state, action) => {
-            const newOrders = action.payload;
-
-            const safeCopy = [...state.dataOrdersInternal]; // Hindari Proxy revoked
-            console.log("Sebelum append (safe):", safeCopy);
-            console.log("Apakah action ini dijalankan:", newOrders);
+            const newOrders = Array.isArray(action.payload) ? action.payload : [action.payload];
 
             newOrders.forEach((order) => {
-                const exists = state.dataOrdersInternal.some(existing => existing.id === order.id);
-                if (!exists) {
+                const existing = state.dataOrdersInternal.find(item => item.id === order.id);
+
+                if (existing) {
+                // Update order_status (bisa ditambah update field lain jika perlu)
+                if (order.order_status !== undefined) {
+                    existing.order_status = order.order_status;
+                }
+                } else {
+                // Order belum ada, langsung push
                 state.dataOrdersInternal.push(order);
                 }
             });
@@ -908,68 +964,116 @@ export const getOrdersInternalSlice = createSlice({
 
 const initialSearchOrderInternalState = {
   dataSearchOrder: [],
-  page: 1,
   loadingSearchOrder: false,
   errorSearchOrder: null,
+  page: 1,
   hasMore: true,
+  isLoadMore: false,
+  totalCount: 0,
+  totalRevenue: 0,
 };
 export const searchOrderInternalSlice = createSlice({
   name: "searchOrder",
   initialState: initialSearchOrderInternalState,
   reducers: {
     setLoadingSearchOrder: (state, action) => {
-      state.loadingSearchOrder = action.payload;
+        if (state.page === 1 && !action.payload.isLoadMore) {
+        state.loadingSearchOrder = action.payload.loading;
+        } else {
+        state.isLoadMore = action.payload.loading;
+        }
     },
     fetchSuccessSearchOrder: (state, action) => {
-      const { data, page, hasMore } = action.payload;
-      state.dataSearchOrder = [...state.dataSearchOrder, ...data];
-      state.page = page;
-      state.hasMore = hasMore;
+        const { data, page, hasMore, totalCount, totalRevenue } = action.payload;
+
+        if (page === 1) {
+            state.dataSearchOrder = data;
+        } else {
+            state.dataSearchOrder = [...state.dataSearchOrder, ...data];
+        }
+
+        state.page = page;
+        state.hasMore = hasMore;
+        state.totalCount = totalCount;
+        state.totalRevenue = totalRevenue;
+        state.errorSearchOrder = null;
+        state.loadingSearchOrder = false;
+        state.isLoadMore = false;
     },
     fetchErrorSearchOrder: (state, action) => {
       state.errorSearchOrder = action.payload;
       state.loadingSearchOrder = false;
+      state.isLoadMore = false;
     },
     resetSearchOrder: (state) => {
       state.dataSearchOrder = [];
       state.page = 1;
       state.errorSearchOrder = null;
       state.hasMore = true;
+      state.isLoadMore = false;
+      state.totalCount = 0;
+      state.loadingSearchOrder = false;
+      state.totalRevenue = 0;
     },
   },
 });
 
 const initialOrdersFinishedInternalState = {
-    dataOrdersFinishedInternal: [],
-    errorOrdersFinishedInternal: null,
-    loadingOrdersFinishedInternal: false,
-} 
+  dataOrdersFinished: [],
+  errorOrdersFinishedInternal: null,
+  loadingOrdersFinishedInternal: false,
+  page: 1,
+  hasMore: true,
+  isLoadMore: false,
+  totalCount: 0,
+  totalRevenue: 0,
+}
+
 export const getOrdersFinishedInternalSlice = createSlice({
-    name: "dataOrdersFinishedInternal",
-    initialState: initialOrdersFinishedInternalState,
-    reducers: {
-        setLoadingOrdersFinishedInternal: (state, action) => {
-            state.loadingOrdersFinishedInternal = action.payload
-        },
-        fetchSuccessOrdersFinishedInternal: (state, action) => {
-            state.dataOrdersFinishedInternal = action.payload
-            state.errorOrdersFinishedInternal = null
-        },
-        fetchErrorOrdersFinishedInternal: (state, action) => {
-           state.errorOrdersFinishedInternal = action.payload
-           state.dataOrdersFinishedInternal = []
-        },
-        resetErrorOrdersFinishedInternal: (state) => {
-            state.errorOrdersFinishedInternal = null
-        },
-        addOrderFinishedInternal: (state, action) => {
-            const newTransaction = {
-                ...action.payload,
-                order_status: "FINISHED"
-            }
-            state.dataOrdersFinishedInternal.push(newTransaction)
-        }
+  name: "dataOrdersFinishedInternal",
+  initialState: initialOrdersFinishedInternalState,
+  reducers: {
+    setLoadingOrdersFinishedInternal: (state, action) => {
+      if (state.page === 1 && !action.payload.isLoadMore) {
+        state.loadingOrdersFinishedInternal = action.payload.loading
+      } else {
+        state.isLoadMore = action.payload.loading
+      }
+    },
+    fetchSuccessOrdersFinishedInternal: (state, action) => {
+      const { data, hasMore, totalCount, totalRevenue, isLoadMore } = action.payload
+     
+      // Untuk load more, append data. Untuk initial load, replace data
+      state.dataOrdersFinished = [...state.dataOrdersFinished, ...(data || [])]
+      state.hasMore = hasMore
+      state.totalCount = totalCount
+      state.totalRevenue = totalRevenue
+      state.errorOrdersFinishedInternal = null
+      state.loadingOrdersFinishedInternal = false
+      state.isLoadMore = false
+    },
+    fetchErrorOrdersFinishedInternal: (state, action) => {
+      state.errorOrdersFinishedInternal = action.payload
+      state.isLoadMore = false
+      state.loadingOrdersFinishedInternal = false
+    },
+    resetErrorOrdersFinishedInternal: (state) => {
+      state.errorOrdersFinishedInternal = null
+    },
+    incrementPage: (state) => {
+      state.page = state.page + 1
+    },
+    resetFinishedOrdersPagination: (state) => {
+      state.dataOrdersFinished = []
+      state.page = 1
+      state.hasMore = true
+      state.isLoadMore = false
+      state.errorOrdersFinishedInternal = null
+      state.totalRevenue = 0
+      state.totalCount = 0
+      state.loadingOrdersFinishedInternal = false
     }
+  }
 })
 
 const initialTablesInternalState = {

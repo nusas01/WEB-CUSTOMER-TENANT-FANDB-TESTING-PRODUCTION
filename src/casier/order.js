@@ -1,5 +1,5 @@
 import Sidebar from "../component/sidebar"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { 
   Clock, 
   CheckCircle, 
@@ -41,15 +41,18 @@ import {
 } from "../reducers/patch.js";
 import { da, se } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-import {formatCurrency} from "../helper/helper.js";
+import {formatCurrency, useInfiniteScroll} from "../helper/helper.js";
 import { 
   toProgressOrderInternal, 
   toFinishedOrderInternal,
  } from "../actions/patch.js";
  import {
-  filterOrderInternalSlice
+  filterOrderInternalSlice,
+  loadMoreOrderFinished,
+  loadMoreSearchOrderInternal,
  } from "../reducers/reducers.js"
 import {DateFilterComponent} from '../helper/formatdate.js'
+import { set } from "date-fns";
 
 export default function KasirOrders() {
   const dispatch = useDispatch();
@@ -202,6 +205,7 @@ export default function KasirOrders() {
 const OrderDashboard = () => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState([]);
+  const [hasInitializedSearch, setHasInitializedSearch] = useState(false);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState({
@@ -214,16 +218,18 @@ const OrderDashboard = () => {
   const dispatch = useDispatch();
   const [spinnerRelative, setSpinnerRelative] = useState(false);
   const [spinnerFixed, setSpinnerFixed] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  // data filter from state
+  // Filter state
   const { setStartDate, setEndDate, setStatusFilter, resetFilterGeneralJournal } = filterOrderInternalSlice.actions
   const { startDate, endDate, statusFilter } = useSelector((state) => state.persisted.filterOrderInternal)
 
   // integrasi dengan data state dan api 
   // Order process and progress
-  const { deleteOrdersExceptToday } = getOrdersInternalSlice.actions
+  // const { deleteOrdersExceptToday } = getOrdersInternalSlice.actions
   const { dataOrdersInternal, loadingOrdersInternal } = useSelector((state) => state.persisted.dataOrdersInternal)
   console.log("data orders: ", dataOrdersInternal)
+  
   useEffect(() => {
     if (!dataOrdersInternal || dataOrdersInternal.length === 0) {
       dispatch(fetchOrdersInternal())
@@ -234,93 +240,136 @@ const OrderDashboard = () => {
     setSpinnerRelative(loadingOrdersInternal)
   }, [loadingOrdersInternal])
 
+  const handleRefreshOrders = () => {
+    dispatch(fetchOrdersInternal())
+  }
+  
+  // Finished orders state - pastikan selector sesuai dengan struktur Redux
+  const { resetFinishedOrdersPagination } = getOrdersFinishedInternalSlice.actions
+  const finishedOrdersState = useSelector((state) => state.persisted.dataOrdersFinishedInternal)
+  
+  // Destructure dengan default values untuk mencegah undefined
+  const { 
+    dataOrdersFinished = [],
+    loadingOrdersFinishedInternal = false, 
+    page: pageOrderFinished = 1, 
+    hasMore: hasMoreOrderFinished = false,
+    isLoadMore: isLoadMoreOrderFinished = false,
+    totalCount: totalCountOrderFinished = 0,
+    totalRevenue: totalRevenueOrderFinished = 0,
+  } = finishedOrdersState || {}
 
-  // order finised
-  const { dataOrdersFinishedInternal, loadingOrdersFinishedInternal } = useSelector((state) => state.persisted.dataOrdersFinishedInternal)
+  console.log("Finished orders state:", {
+    dataOrdersFinished,
+    hasMoreOrderFinished,
+    isLoadMoreOrderFinished,
+    pageOrderFinished
+  });
 
-  useEffect(() => {
-    if (!dataOrdersFinishedInternal || dataOrdersFinishedInternal.length === 0) {
-      dispatch(fetchOrdersFinishedInternal(startDate, endDate))
+  // Get finished orders
+  const dataOrdersFinishedInternal = useMemo(() => {
+    if (statusFilter === 'FINISHED') {
+      return dataOrdersFinished || []
     }
-  }, [])
+    return []
+  }, [dataOrdersFinished, statusFilter])
 
   useEffect(() => {
-    setSpinnerRelative(loadingOrdersFinishedInternal)
-  }, [loadingOrdersFinishedInternal])
-
-
-  // handle get data dengan start dan end date 
-  useEffect(() => {
-    if (startDate !== '' && endDate !== '') {
-      if (statusFilter === 'PROCESS' || statusFilter === 'PROGRESS') {
-        dispatch(fetchOrdersInternal(startDate, endDate))
-      }
-
-      if (statusFilter === 'FINISHED') {
-        dispatch(fetchOrdersFinishedInternal(startDate, endDate))
-      }
+    if (statusFilter !== 'FINISHED') {
+      dispatch(resetFinishedOrdersPagination())
+      dispatch(setStartDate(''))
+      dispatch(setEndDate(''))
     }
-  }, [startDate, endDate, statusFilter])
+  }, [statusFilter])
+
+  // Initial fetch effect
+  useEffect(() => {
+    const shouldFetch = (
+      statusFilter === 'FINISHED' && 
+      startDate !== '' && 
+      endDate !== '' && 
+      dataOrdersFinished.length === 0 &&
+      !loadingOrdersFinishedInternal &&
+      !hasInitialized
+    );
+    
+    console.log("Initial fetch effect:", {
+      statusFilter,
+      startDate,
+      endDate,
+      shouldFetch,
+      hasInitialized,
+      loading: loadingOrdersFinishedInternal
+    });
+    
+    if (shouldFetch) {
+      setHasInitialized(true);
+      dispatch(resetFinishedOrdersPagination());
+      dispatch(fetchOrdersFinishedInternal(startDate, endDate, 1, false));
+    }
+  }, [statusFilter, startDate, endDate, dispatch, loadingOrdersFinishedInternal, hasInitialized])
 
   useEffect(() => {
-    const allOrders = dataOrdersInternal || [];
+    if (dataOrdersFinishedInternal.length > 0 && !hasInitializedSearch) {
+      setStats(prevStats => ({
+        ...prevStats,
+        total: totalCountOrderFinished,
+        progress: 0,
+        received: 0,
+        totalRevenue: totalRevenueOrderFinished,
+        finished: totalCountOrderFinished,
+      }));
+    }
+  }, [dataOrdersFinishedInternal, hasInitializedSearch])
 
-    let filtered = [];
-    let totalRevenue = 0;
-    let progress = 0;
-    let received = 0;
-    let finished = 0;
 
-    const query = searchQuery?.toLowerCase() || '';
+  // Reset initialization when filter changes
+  useEffect(() => {
+    if (statusFilter !== 'FINISHED') {
+      setHasInitialized(false);
+    }
+  }, [statusFilter, startDate, endDate])
 
-    allOrders.forEach(order => {
-      const status = order.order_status?.toUpperCase() || '';
-      const username = order.username?.toLowerCase() || '';
-      const email = order.email?.toLowerCase() || '';
-      const table = order.table?.toString().toLowerCase() || '';
-      const id = order.id?.toLowerCase() || '';
 
-      // Statistik tetap dihitung semua order
-      if (status === 'PROCESS') progress++;
-      if (status === 'PROGRESS') received++;
-      if (status === 'FINISHED') finished++;
-      totalRevenue += order.amount_price || 0;
+  // Loading states
+  useEffect(() => {
+    setSpinnerRelative(loadingOrdersFinishedInternal && pageOrderFinished === 1)
+  }, [loadingOrdersFinishedInternal, pageOrderFinished])
 
-      // Filter berdasarkan status dan search query
-      const matchStatus = statusFilter === 'ALL' || status === statusFilter.toUpperCase();
-      const matchSearch = !searchQuery || (
-        username.includes(query) ||
-        email.includes(query) ||
-        table.includes(query) ||
-        id.includes(query)
-      );
 
-      if (matchStatus && matchSearch) {
-        filtered.push(order);
-      }
+  // Load more callback - diperbaiki
+  const loadMoreFinishedOrdersCallback = useCallback(() => {
+    console.log("Load more callback triggered:", {
+      statusFilter,
+      hasMoreOrderFinished,
+      isLoadMoreOrderFinished
     });
+    
+    if (statusFilter === 'FINISHED' && hasMoreOrderFinished && !isLoadMoreOrderFinished) {
+      console.log("Dispatching loadMoreOrderFinished");
+      dispatch(loadMoreOrderFinished());
+    }
+  }, [statusFilter, hasMoreOrderFinished, isLoadMoreOrderFinished, dispatch])
 
-    setFilteredOrders(filtered);
-    setStats({
-      total: allOrders.length,
-      progress,
-      received,
-      finished,
-      totalRevenue
-    });
-  }, [dataOrdersInternal, statusFilter, searchQuery]);
+  // Infinite scroll hook
+  const { ref: loadMoreFinishedRef } = useInfiniteScroll({
+    hasMore: hasMoreOrderFinished,
+    loading: isLoadMoreOrderFinished,
+    loadMore: loadMoreFinishedOrdersCallback,
+    threshold: 1.0,
+    rootMargin: '100px',
+  })
 
   // handle reset filter
-  const {resetSearchOrder} = searchOrderInternalSlice.actions
+  const { resetSearchOrder } = searchOrderInternalSlice.actions
   const handleResetFilter = () => {
-    dispatch(deleteOrdersExceptToday())
     dispatch(resetFilterGeneralJournal())
     dispatch(resetSearchOrder())
     setSearchQuery('')
   }
 
   // handle status to progress order
-  const {loadingToProgressOrder} = useSelector((state) => state.toProgressOrderInternalState)
+  const { loadingToProgressOrder } = useSelector((state) => state.toProgressOrderInternalState)
 
   useEffect(() => {
     setSpinnerFixed(loadingToProgressOrder)
@@ -330,16 +379,14 @@ const OrderDashboard = () => {
     const data = {
       transaction_id: orderId,
     }
-
     dispatch(toProgressOrderInternal(data))
   };
 
-
   // handle status to finished order
-  const {loadingToFinishedOrder} = useSelector((state) => state.toFinishedOrderInternalState)
+  const { loadingToFinishedOrder } = useSelector((state) => state.toFinishedOrderInternalState)
   
   const handleFinishOrder = (data) => {
-    console.log("data finsihed order: ", data)
+    console.log("data finished order: ", data)
     dispatch(toFinishedOrderInternal(data))
   };
 
@@ -375,54 +422,61 @@ const OrderDashboard = () => {
     });
   };
 
-
   // handle search to api 
-  const {dataSearchOrder, page, loadingSearchOrder, hasMore} = useSelector((state) => state.searchOrderInternalState)
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observerRef = useRef(null);
-  const loadMoreRef = useRef(null);
+  const { 
+    dataSearchOrder, 
+    loadingSearchOrder, 
+    page: pageSearchOrder, 
+    hasMore: hasMoreSearchOrder,
+    isLoadMore: isLoadMoreSearchOrder,
+    totalCount: totalCountSearchOrder, 
+    totalRevenue: totalRevenueSearchOrder,
+  } = useSelector((state) => state.searchOrderInternalState)
+
+  // get search order 
+  const dataSearchOrderInternal = useMemo(() => {})
+
+  useEffect(() => {
+    if (dataSearchOrder.length > 0) {
+      setStats({
+          total: totalCountSearchOrder,
+          progress: 0,
+          received: 0,
+          finished: 0,
+          totalRevenue: totalRevenueSearchOrder,
+        });
+    }
+  }, [dataSearchOrder])
+
+  useEffect(() => {
+    if (searchQuery === '') {
+      dispatch(resetSearchOrder())
+      setHasInitializedSearch(false)
+    }
+  }, [searchQuery])
 
   // Handle search dengan reset page
   const handleSearch = () => {
     console.log("key nya apa kawan: ", searchQuery)
-    dispatch(fetchSearchOrderInternal(searchQuery, page));
+    setHasInitializedSearch(true);
+    dispatch(resetSearchOrder());
+    dispatch(fetchSearchOrderInternal(searchQuery, pageSearchOrder, false));
   };
 
-  // Handle load more data
-  const handleLoadMore = useCallback(() => {
-    if (!loadingSearchOrder && !isLoadingMore && dataSearchOrder.length > 0) {
-      setIsLoadingMore(true);
-      dispatch(fetchSearchOrderInternal({keyword: searchQuery, page: page}))
-        .finally(() => setIsLoadingMore(false));
+  const loadMoreSearchOrderCallback = useCallback(() => {
+    if (searchQuery !== '' && hasMoreSearchOrder && !isLoadMoreSearchOrder) {
+      console.log("Dispatching loadMoreSearchOrderInternal");
+      dispatch(loadMoreSearchOrderInternal(searchQuery));
     }
-  }, [dispatch, loadingSearchOrder, isLoadingMore, dataSearchOrder.length]);
+  }, [searchQuery, hasMoreSearchOrder, isLoadMoreSearchOrder])
 
-  // Intersection Observer untuk infinite scroll
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting) {
-          handleLoadMore();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px'
-      }
-    );
-
-    observer.observe(loadMoreRef.current);
-    observerRef.current = observer;
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleLoadMore]);
+  const { ref: loadMoreSearchOrderRef } = useInfiniteScroll({
+    hasMore: hasMoreSearchOrder,
+    loading: isLoadMoreSearchOrder,
+    loadMore: loadMoreSearchOrderCallback,
+    threshold: 1.0,
+    rootMargin: '100px',
+  })
 
   useEffect(() => {
     if (dataSearchOrder.length > 0) {
@@ -433,6 +487,50 @@ const OrderDashboard = () => {
   useEffect(() => {
     setSpinnerRelative(loadingSearchOrder && dataSearchOrder.length === 0)
   }, [loadingSearchOrder, dataSearchOrder.length])
+
+
+
+  // Filter orders effect
+  useEffect(() => {
+    if (dataOrdersFinishedInternal.length === 0 && statusFilter !== 'FINISHED' && !hasInitializedSearch) {
+      const allOrders = dataOrdersInternal || [];
+      let filtered = [];
+      let totalRevenue = 0;
+      let progress = 0;
+      let received = 0;
+      let finished = 0;
+      
+      allOrders.forEach(order => {
+        const status = order.order_status?.toUpperCase() || '';
+        
+        if (status === 'PROCESS') progress++;
+        if (status === 'PROGRESS') received++;
+        if (status === 'FINISHED') finished++;
+        totalRevenue += order.amount_price || 0;
+      });
+  
+      filtered = allOrders.filter(order => {
+        const status = order.order_status?.toUpperCase() || '';
+        const username = order.username?.toLowerCase() || '';
+        const email = order.email?.toLowerCase() || '';
+        const table = order.table?.toString().toLowerCase() || '';
+        const id = order.id?.toString().toLowerCase() || '';
+        
+        const matchStatus = statusFilter === 'ALL' || status === statusFilter.toUpperCase();
+        
+        return matchStatus;
+      });
+      
+      setFilteredOrders(filtered);
+      setStats({
+        total: allOrders.length,
+        progress,
+        received,
+        finished,
+        totalRevenue
+      });
+    }
+  }, [dataOrdersInternal, hasInitializedSearch, dataSearchOrder, statusFilter]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -453,7 +551,15 @@ const OrderDashboard = () => {
                 <p className="text-gray-600 text-xs">Kelola pesanan masuk dan pantau status pembayaran</p>
               </div>
             </div>
+
             <div className="flex items-center gap-3">
+              <button 
+              onClick={() => handleRefreshOrders()}
+              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span>Refresh</span>
+              </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Bell className="w-5 h-5 text-gray-600" />
               </button>
@@ -472,10 +578,6 @@ const OrderDashboard = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
                 <p className="text-2xl font-bold text-gray-800">{formatCurrency(stats.totalRevenue)}</p>
-                <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +8% from yesterday
-                </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-white" />
@@ -492,7 +594,10 @@ const OrderDashboard = () => {
                 <p className="text-3xl font-bold text-gray-800">{stats.total}</p>
                 <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3" />
-                  +12% from last week
+                  { dataOrdersFinished.length > 0
+                    ? `${dataOrdersFinished.length} orders finished by filter`
+                    : 'Orders today'
+                  }
                 </p>
               </div>
               <div className="w-12 h-12 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
@@ -569,58 +674,64 @@ const OrderDashboard = () => {
           </div>
 
           {/* Filter Row */}
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex gap-4 justify-between items-end">
             {/* Search Input */}
-            <div className="flex-1 min-w-[220px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute inset-y-0 left-4 my-auto text-gray-400" size={20}/>
-                <input
-                  type="text"
-                  placeholder="Search by customer, email, table..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            <div className="flex gap-2">
+              <div className="flex-1 min-w-[300px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute inset-y-0 left-4 my-auto text-gray-400" size={20}/>
+                  <input
+                    type="text"
+                    placeholder="Search by customer, email, table..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              {/* Search Button */}
+              <div>
+                <label className="invisible block">Search Button</label>
+                <button
+                  onClick={() => handleSearch()}
+                  className="flex items-center gap-2 px-2 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow transition-all"
+                >
+                  <Search className="w-4 h-4" />
+                  Search Orders
+                </button>
               </div>
             </div>
 
-            {/* Search Button */}
-            <div>
-              <label className="invisible block mb-1">Search Button</label>
-              <button
-                onClick={handleSearch}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow transition-all"
-              >
-                <Search className="w-4 h-4" />
-                Search Orders
-              </button>
-            </div>
 
             {/* Status Filter */}
-            <div className="min-w-[150px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status Filter</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="ALL">All Status</option>
-                <option value="PROCESS">Process</option>
-                <option value="PROGRESS">Progress / Received</option>
-                <option value="FINISHED">Finished</option>
-              </select>
-            </div>
+            <div className="flex gap-4">
+              <div className="min-w-[150px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status Filter</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => dispatch(setStatusFilter(e.target.value))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="ALL">All Status</option>
+                  <option value="PROCESS">Process</option>
+                  <option value="PROGRESS">Progress / Received</option>
+                  <option value="FINISHED">Finished</option>
+                </select>
+              </div>
 
-            {/* Start Date and endate */}
-            <DateFilterComponent 
-            startDate={startDate}
-            endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            maxRangeDays={7}
-            />
+              {/* Start Date and endate */}
+              { statusFilter === 'FINISHED' && (
+                <DateFilterComponent 
+                startDate={startDate}
+                endDate={endDate}
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
+                maxRangeDays={7}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -631,16 +742,16 @@ const OrderDashboard = () => {
             </div>
         )}
 
-        {!spinnerRelative && filteredOrders.length === 0 && (
+        {!spinnerRelative && filteredOrders.length === 0 && dataOrdersFinishedInternal.length === 0 && (
           <div>
             <NoOrdersContainer />
           </div>
         )}
 
-        {!spinnerRelative && filteredOrders.length > 0 && (
+        {!spinnerRelative && (filteredOrders.length > 0 || dataOrdersFinishedInternal.length > 0) && (
 
             <>
-              {filteredOrders.map((order) => (
+              {((dataOrdersFinishedInternal.length > 0 && statusFilter === 'FINISHED' && !hasInitializedSearch) ? dataOrdersFinishedInternal : filteredOrders).map((order) => (
                 <div key={order.id} className="bg-white mb-2 rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
                   <div className="p-4">
                     {/* Order Header */}
@@ -779,6 +890,44 @@ const OrderDashboard = () => {
                   </div>
                 </div>
               ))}
+
+              { hasInitializedSearch && (
+                <div 
+                  ref={loadMoreSearchOrderRef} 
+                  className="w-full h-10 flex items-center justify-center"
+                >
+                  {isLoadMoreSearchOrder && (
+                    <div className="flex items-center gap-2 py-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                      <span className="text-sm text-gray-500">Loading more orders...</span>
+                    </div>
+                  )}
+                  {!hasMoreSearchOrder && dataSearchOrder.length > 0 && (
+                    <div className="py-2 text-sm text-gray-500">
+                      No more orders to load
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {statusFilter === 'FINISHED' && !hasInitializedSearch && (
+                <div 
+                  ref={loadMoreFinishedRef} 
+                  className="w-full h-10 flex items-center justify-center"
+                >
+                  {isLoadMoreOrderFinished && (
+                    <div className="flex items-center gap-2 py-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                      <span className="text-sm text-gray-500">Loading more orders...</span>
+                    </div>
+                  )}
+                  {!hasMoreOrderFinished && dataOrdersFinishedInternal.length > 0 && (
+                    <div className="py-2 text-sm text-gray-500">
+                      No more orders to load
+                    </div>
+                  )}
+                </div>
+              )}
             </>
         )}
       </div>

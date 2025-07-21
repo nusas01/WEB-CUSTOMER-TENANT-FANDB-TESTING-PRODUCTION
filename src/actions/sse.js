@@ -4,6 +4,7 @@ import {
     transactionNonCashOnGoingInternalSlice,
     getAllDataOrderInternalSlice,
     getAllCreateTransactionInternalSlice,
+    getOrdersInternalSlice,
  } from "../reducers/get"
 import {
     paymentSuccessTransactionCashierSlice
@@ -110,14 +111,14 @@ const SSETransactionNonCashOnGoingInternal = () => {
 
 const { addPaymentSuccessTransactionCashier } = paymentSuccessTransactionCashierSlice.actions
 const { removeGetAllCreateTransactionById } = getAllCreateTransactionInternalSlice.actions
-const { addDataOrderInternal } = getAllDataOrderInternalSlice.actions
+const {  appendOrdersInternal } = getOrdersInternalSlice.actions
 const SSEOrderInternal = () => {
     const dispatch = useDispatch()
     const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
     const url = `${process.env.REACT_APP_SSE_ORDER_INTERNAL_URL}?API_KEY=${encodedApiKey}`
 
     useSSE(url, (data) => {
-        dispatch(addDataOrderInternal(data))
+        dispatch(appendOrdersInternal(data))
 
         if (!data.email || data.email !== '') {
             dispatch(removeGetAllCreateTransactionById(data.id))
