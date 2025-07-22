@@ -393,3 +393,28 @@ export const createTableInternalSlice = createSlice({
         },
     }
 })
+
+const initialCreateQROrderTypeTakeAwayState = {
+    // untuk success nya di handle di getTablesInternalSlice
+    errorCreateQROrderTypeTakeAway: null,
+    loadingCreateQROrderTypeTakeAway: false,
+    alredyCreated: false,
+}
+export const createQROrderTypeTakeAwaySlice = createSlice({
+    name: "createQROrderTypeTakeAway",
+    initialState: initialCreateQROrderTypeTakeAwayState,
+    reducers: {
+        setAlrdyCreatedQROrderTypeTakeAway: (state, action) => {
+            state.alredyCreated = action.payload
+        },
+        setErrorCreateQROrderTypeTakeAway: (state, action) => {
+            state.errorCreateQROrderTypeTakeAway = action.payload
+        },
+        setLoadingCreateQROrderTypeTakeAway: (state, action) => {
+            state.loadingCreateQROrderTypeTakeAway = action.payload
+        },
+        resetCreateQROrderTypeTakeAway: (state) => {
+            state.errorCreateQROrderTypeTakeAway = null
+        }
+    }
+})

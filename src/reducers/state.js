@@ -58,6 +58,7 @@ import {
   deleteProductInternalSlice,
   inputGeneralJournalInternalSlice,
   createTableInternalSlice,
+  createQROrderTypeTakeAwaySlice,
 } from './post'
 import {
   updateInternalSlice,
@@ -169,6 +170,7 @@ const nonPersistedReducers = {
   updatePaymentMethodsInternalState: updatePaymentMethodsInternalSlice.reducer,
   searchOrderInternalState: searchOrderInternalSlice.reducer,
   getSearchTransactionInternalState: getSearchTransactionInternalSlice.reducer, 
+  createQROrderTypeTakeAwayState: createQROrderTypeTakeAwaySlice.reducer,
 }
 
 const rootReducer = combineReducers({

@@ -23,7 +23,10 @@ import {
 import Sidebar  from '../component/sidebar';
 import { fetchDataEmployeeInternal } from '../actions/get'
 import { getDataEmployeeInternalSlice } from '../reducers/get'
-import { ErrorAlert, SuccessAlert } from '../component/alert';
+import { 
+  Toast,
+  ToastPortal,
+} from '../component/alert';
 import { SpinnerFixed } from '../helper/spinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -53,8 +56,7 @@ import { current } from '@reduxjs/toolkit';
  
 export default function KasirSettings() {
   const dispatch = useDispatch()
-  const [alertError, setAlertError] = useState(false)
-  const [successAlert, setSuccessAlert] = useState(false)
+  const [toast, setToast] = useState({ show: false, type: '', message: '' })
   const [spinnerFixed, setSpinnerFixed] = useState(false)
 
   // response get data employee
@@ -81,21 +83,28 @@ export default function KasirSettings() {
     setSpinnerFixed(loadingUpdateDataEmployee)
   }, [loadingUpdateDataEmployee])
 
-
   useEffect(() => {
     setSpinnerFixed(loadingChangePassword)
   }, [loadingChangePassword])
 
   useEffect(() => {
     if (successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods) {
-      setSuccessAlert(true)
+      const message = successUpdateDataEmployee
+        ? 'Data berhasil diperbarui'
+        : successChangePassword
+        ? 'Password berhasil diperbarui'
+        : successUpdatePaymentMethods
+        ? 'Metode pembayaran berhasil diperbarui'
+        : '';
+      
+      setToast({ show: true, type: 'success', message })
 
       if (successUpdatePaymentMethods) {
         dispatch(fetchPaymentMethodsInternal())
       }
 
       const timer = setTimeout(() => {
-        setSuccessAlert(false)
+        setToast({ show: false, type: '', message: '' })
         dispatch(resetUpdateDataEmployee())
         dispatch(resetChangePasswordInternal())
         dispatch(resetUpdatePaymentMethodsInternal())
@@ -105,13 +114,22 @@ export default function KasirSettings() {
     }
   }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
   
-
   useEffect(() => {
     if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods) {
-      setAlertError(true)
+      const message = errorDataEmployeeInternal
+        ? 'Terjadi kesalahan pada sistem saat memuat data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi.'
+        : errorUpdateDataEmployee 
+        ? 'Terjadi kesalahan pada sistem saat memperbaruhi data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+        : errorChangePassword 
+        ? 'Terjadi kesalahan pada sistem saat memperbaruhi password. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+        : errorUpdatePaymentMethods 
+        ? 'Terjadi kesalahan pada sistem saat memperbarui metode pembayaran. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
+        : ''
+
+      setToast({ show: true, type: 'error', message })
 
       const timer = setTimeout(() => {
-        setAlertError(false)
+        setToast({ show: false, type: '', message: '' })
         dispatch(resetErrorDataEmployeeInternal())
         dispatch(resetUpdateDataEmployee())
         dispatch(resetChangePasswordInternal())
@@ -122,66 +140,45 @@ export default function KasirSettings() {
     }
   }, [errorDataEmployeeInternal, errorUpdateDataEmployee, errorChangePassword, errorUpdatePaymentMethods])
 
-  const messageSuccess = successUpdateDataEmployee
-  ? 'Data berhasil diperbarui'
-  : successChangePassword
-  ? 'Password berhasil diperbarui'
-  : '';
-
-  const messageError = errorDataEmployeeInternal
-  ? 'Terjadi kesalahan pada sistem saat memuat data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi.'
-  : errorUpdateDataEmployee 
-  ? 'Terjadi kesalahan pada sistem saat memperbaruhi data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-  : errorChangePassword 
-  ? 'Terjadi kesalahan pada sistem saat memperbaruhi password. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-  : errorUpdatePaymentMethods 
-  ? 'Terjadi kesalahan pada sistem saat memperbarui metode pembayaran. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-  : ''
+  // Handle toast close
+  const handleToastClose = () => {
+    setToast({ show: false, type: '', message: '' })
+    dispatch(resetErrorDataEmployeeInternal())
+    dispatch(resetUpdateDataEmployee())
+    dispatch(resetChangePasswordInternal())
+    dispatch(resetUpdatePaymentMethodsInternal())
+  }
 
   return (
-      <div className='flex'>
-          <div className='w-1/10 min-w-[250px]'>
-              <Sidebar activeMenu="settings"/>
-          </div>
-
-          { spinnerFixed && (
-            <SpinnerFixed/>
-          )}
-
-          {alertError && (
-            <div className='fixed'>
-              <ErrorAlert
-                message={messageError}
-                onClose={() => { 
-                  setAlertError(false)
-                  dispatch(resetUpdatePaymentMethodsInternal())
-                  dispatch(resetChangePasswordInternal())
-                  dispatch(resetUpdatePaymentMethodsInternal())
-                }}
-              />
-            </div>
-            )}
-
-            {successAlert && (
-              <div className='fixed'>
-                <SuccessAlert 
-                message={messageSuccess} 
-                onClose={() => { 
-                  setSuccessAlert(false)
-                  dispatch(resetUpdatePaymentMethodsInternal())
-                  dispatch(resetChangePasswordInternal())
-                  dispatch(resetUpdatePaymentMethodsInternal())
-                }}
-                />
-              </div>
-            )}
-
-          <div className='flex-1'>
-              <SettingsDashboard />
-          </div>
+    <div className='flex'>
+      <div className='w-1/10 min-w-[250px]'>
+        <Sidebar activeMenu="settings"/>
       </div>
+
+      {spinnerFixed && (
+        <SpinnerFixed/>
+      )}
+
+      {/* Toast Portal */}
+      {toast.show && (
+        <ToastPortal>
+          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={handleToastClose}
+              duration={3000}
+            />
+          </div>
+        </ToastPortal>
+      )}
+
+      <div className='flex-1'>
+        <SettingsDashboard />
+      </div>
+    </div>
   )
-} 
+}
 
 const SettingsDashboard = () => {
   const dispatch = useDispatch()

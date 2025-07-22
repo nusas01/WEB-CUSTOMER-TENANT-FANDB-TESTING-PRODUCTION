@@ -18,6 +18,7 @@ import axios from "axios"
     deleteProductInternalSlice,
     inputGeneralJournalInternalSlice,
     createTableInternalSlice,
+    createQROrderTypeTakeAwaySlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -396,7 +397,7 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
     }
 }
 
-const { addTableInternal } = getTablesInternalSlice.actions
+const { addTableInternal, updateOrderTypeTakeAway } = getTablesInternalSlice.actions
 const { setSuccessCreateTableInternal, setErrorCreateTableIntenal, setLoadingCreateTableInternal } = createTableInternalSlice.actions
 export const createTabelInternal = (data) => async (dispatch) => {
     const configJson = {
@@ -425,5 +426,34 @@ export const createTabelInternal = (data) => async (dispatch) => {
         console.log("response data create transacrion internal: ", error)
     } finally {
         dispatch(setLoadingCreateTableInternal(false))
+    }
+}
+
+const {setAlrdyCreatedQROrderTypeTakeAway, setErrorCreateQROrderTypeTakeAway, setLoadingCreateQROrderTypeTakeAway} = createQROrderTypeTakeAwaySlice.actions
+export const createQROrderTypeTakeAway = () => async (dispatch) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingCreateQROrderTypeTakeAway(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_CREATE_QR_ORDER_TYPE_TAKE_AWAY_INTERNAL_URL}`, {}, configJson)
+        console.log("response data create QR order type take away: ", response)
+        if (response.data?.alreadyExists) {
+            dispatch(setAlrdyCreatedQROrderTypeTakeAway(response.data?.success))
+        } else {
+            dispatch(updateOrderTypeTakeAway(response.data?.imageQr))
+        }
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        console.log(error)
+        dispatch(setErrorCreateQROrderTypeTakeAway(error.response?.data?.error))
+    } finally {
+        dispatch(setLoadingCreateQROrderTypeTakeAway(false))
     }
 }

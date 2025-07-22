@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useRef, useState } from "react"
-import {Plus, Search, Eye, X, CheckCircle, Computer, Bell, Settings} from "lucide-react"
+import {Plus, Search, Eye, X, CheckCircle, Computer, Bell, Settings, RefreshCw} from "lucide-react"
 import {
     fetchPaymentMethodsInternal, 
     fetchProductsCustomer,
@@ -29,7 +29,8 @@ import  { addItemCashier, deleteItemCashier, updateItemCashier, clearCartCashier
 import { Tuple } from "@reduxjs/toolkit"
 import { validateEmail } from "../helper/validate"
 import {
-    ErrorAlert, 
+    Toast,
+    ToastPortal,
     ConfirmationModal, 
     ProductUnavailableModal, 
     PaymentSuccessNonCashCashier, 
@@ -113,7 +114,7 @@ const ComponentCartCashier = ({cartRef}) => {
     const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
     const [paymentUnavailable, setPaymentUnavailable] = useState(false)
     const [modelMoneyReceved, setModelMoneyReceved] = useState(false)
-    const [error, setError] = useState(false)
+    const [toast, setToast] = useState(null)
     const [ dataCart, setDataCart ] = useState({
       payment_method: '',
       fee: 0, 
@@ -328,10 +329,12 @@ const ComponentCartCashier = ({cartRef}) => {
 
     useEffect(() => {
         if (errorCreateTransactionInternal) {
-            setError(true)
+            setToast({
+                type: 'error',
+                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+            })
 
             const timer = setTimeout(() => {
-                setError(false)
                 dispatch(resetCreateTransactionInternal())
             }, 3000) 
 
@@ -498,14 +501,19 @@ const ComponentCartCashier = ({cartRef}) => {
                 )}
 
                 {/* alertError */}
-                { error && (
-                    <ErrorAlert
-                     message={"Somthing error in our server"}
-                     onClose={() => setError(false)}
-                     />
-                    
+                {toast && (
+                    <ToastPortal> 
+                        <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+                        <Toast 
+                        message={toast.message} 
+                        type={toast.type} 
+                        onClose={() => setToast(null)} 
+                        duration={3000}
+                        />
+                        </div>
+                    </ToastPortal>
                 )}
-
+        
                 {/* add product */}
                 <div
                     onClick={() => setOpenModelAddProduct(true)}
@@ -790,11 +798,12 @@ const ProductCashier = ({onClose}) => {
         setProductData(product)
         setShowModelAddProduct(show)
     }
+    
+    const handleRefreshProducts = () => {
+        dispatch(fetchProductsCustomer())
+    }
 
     const { items } = useSelector((state) => state.cartCashierState)
-
-    console.log(items)
-    console.log(datas)
 
     return (
         <>
@@ -807,14 +816,24 @@ const ProductCashier = ({onClose}) => {
                     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto">
                         
                         {/* Input Search */}
-                        <div className="relative w-full flex items-center mb-6">
-                            <Search className="absolute left-3 text-gray-600" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"
-                            />
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="relative w-[50%] flex items-center">
+                                <Search className="absolute left-3 text-gray-600" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"
+                                />
+                            </div>
+                            <button 
+                            onClick={() => handleRefreshProducts()}
+                            className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                                <span>Refresh</span>
+                            </button>
                         </div>
+
 
                         {/* Produk */}
                         <div>
@@ -919,7 +938,6 @@ const ComponentOrderCashier = () => {
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(true)
     const [loadingFixed, setLoadingFixed] = useState(false)
-    const [error, setError] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedTransaction, setSelectedTransaction] = useState(null) // To store transaction for modal
     const modelRef = useRef()
@@ -1010,7 +1028,6 @@ const ComponentOrderCashier = () => {
         setAllertPendingCheckTransactionNonCash(false)
         setAllertSuccessCheckTransactionNonCash(false)
         setAllertErrorCheckTransactionNonCash(false)
-        setError(false)
     }
 
     return (

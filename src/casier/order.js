@@ -29,7 +29,7 @@ import {
  } from "../actions/get.js"
 import { useDispatch, useSelector } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner.js";
-import { ErrorAlert, SuccessAlert } from "../component/alert";
+import { Toast, ToastPortal } from "../component/alert";
 import { 
   getOrdersInternalSlice,
   getOrdersFinishedInternalSlice, 
@@ -56,9 +56,8 @@ import { set } from "date-fns";
 
 export default function KasirOrders() {
   const dispatch = useDispatch();
-  const [errorAlert, setErrorAlert] = useState(false);
-  const [successAlert, setSuccessAlert] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("Orders")
+  const [toast, setToast] = useState({ show: false, type: '', message: '' });
+  const [activeMenu, setActiveMenu] = useState("Orders");
 
   // handle response error when fetching orders
   const { resetErrorOrdersInternal } = getOrdersInternalSlice.actions
@@ -66,10 +65,14 @@ export default function KasirOrders() {
 
   useEffect(() => {
     if (errorOrdersInternal) {
-      setErrorAlert(true);
+      setToast({
+        show: true,
+        type: 'error',
+        message: 'Terjadi kesalahan saat memuat data pesanan. Kami sudah menerima laporan ini dan sedang memperbaikinya.'
+      });
 
       const timer = setTimeout(() => {
-        setErrorAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetErrorOrdersInternal());
       }, 3000);
 
@@ -83,10 +86,14 @@ export default function KasirOrders() {
 
   useEffect(() => {
     if (errorOrdersFinishedInternal) {
-      setErrorAlert(true);
+      setToast({
+        show: true,
+        type: 'error',
+        message: 'Terjadi kesalahan saat memuat data pesanan yang sudah selesai. Kami sudah menerima laporan ini dan sedang memperbaikinya.'
+      });
 
       const timer = setTimeout(() => {
-        setErrorAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetErrorOrdersFinishedInternal());
       }, 3000);
 
@@ -94,16 +101,20 @@ export default function KasirOrders() {
     }
   }, [errorOrdersFinishedInternal])
 
-
   // handle response change status to progress order
   const { resetToProgressOrder } = toProgressOrderInternalSlice.actions
   const { errorToProgressOrder, successToProgressOrder } = useSelector((state) => state.toProgressOrderInternalState)
+
   useEffect(() => {
     if (errorToProgressOrder) {
-      setErrorAlert(true);
+      setToast({
+        show: true,
+        type: 'error',
+        message: 'Gagal memperbarui status pesanan menjadi Received. Silakan coba lagi atau hubungi admin jika masalah terus berlanjut.'
+      });
 
       const timer = setTimeout(() => {
-        setErrorAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetToProgressOrder());
       }, 3000);
 
@@ -113,10 +124,14 @@ export default function KasirOrders() {
 
   useEffect(() => {
     if (successToProgressOrder) {
-      setSuccessAlert(true);
+      setToast({
+        show: true,
+        type: 'success',
+        message: 'Status pesanan berhasil diperbarui menjadi sedang diproses.'
+      });
 
       const timer = setTimeout(() => {
-        setSuccessAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetToProgressOrder());
       }, 3000);
 
@@ -124,17 +139,20 @@ export default function KasirOrders() {
     }
   }, [successToProgressOrder])
 
-
   // handle response change status to finished order
   const { resetToFinishedOrder } = toFinishedOrderInternalSlice.actions
   const { successToFinishedOrder, errorToFinishedOrder } = useSelector((state) => state.toFinishedOrderInternalState)
 
   useEffect(() => {
     if (errorToFinishedOrder) {
-      setErrorAlert(true);
+      setToast({
+        show: true,
+        type: 'error',
+        message: 'Gagal menyelesaikan pesanan. Silakan coba kembali atau laporkan ke admin jika masalah masih terjadi.'
+      });
 
       const timer = setTimeout(() => {
-        setErrorAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetToFinishedOrder());
       }, 3000);
 
@@ -144,63 +162,59 @@ export default function KasirOrders() {
 
   useEffect(() => {
     if (successToFinishedOrder) {
-      setSuccessAlert(true);
+      setToast({
+        show: true,
+        type: 'success',
+        message: 'Pesanan berhasil diselesaikan.'
+      });
 
       const timer = setTimeout(() => {
-        setSuccessAlert(false);
+        setToast({ show: false, type: '', message: '' });
         dispatch(resetToFinishedOrder());
       }, 3000);
+
+      return () => clearTimeout(timer);
     }
   }, [successToFinishedOrder])
 
+  // Handle toast close
+  const handleToastClose = () => {
+    setToast({ show: false, type: '', message: '' });
+    // Reset all possible actions when manually closing
+    dispatch(resetErrorOrdersInternal());
+    dispatch(resetErrorOrdersFinishedInternal());
+    dispatch(resetToProgressOrder());
+    dispatch(resetToFinishedOrder());
+  }
 
-    return (
-        <div className="flex">
-            {errorAlert && (
-              <div className="fixed">
-                <ErrorAlert
-                    message={
-                        errorOrdersFinishedInternal
-                            ? "Terjadi kesalahan saat memuat data pesanan yang sudah selesai. Kami sudah menerima laporan ini dan sedang memperbaikinya."
-                            : errorToProgressOrder
-                            ? "Gagal memperbarui status pesanan menjadi Received. Silakan coba lagi atau hubungi admin jika masalah terus berlanjut."
-                            : errorToFinishedOrder
-                            ? "Gagal menyelesaikan pesanan. Silakan coba kembali atau laporkan ke admin jika masalah masih terjadi."
-                            : ""
-                          }
-                        onClose={() => setErrorAlert(false)}
-                />
-              </div>
-            )}
+  return (
+    <div className="flex">
+      {/* Toast Portal */}
+      {toast.show && (
+        <ToastPortal>
+          <div className='fixed top-4 right-4 z-50'>
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={handleToastClose}
+              duration={3000}
+            />
+          </div>
+        </ToastPortal>
+      )}
 
-            {successAlert && (
-              <div className="fixed">
-                <SuccessAlert
-                  message={
-                    successToProgressOrder
-                      ? "Status pesanan berhasil diperbarui menjadi sedang diproses."
-                      : successToFinishedOrder
-                      ? "Pesanan berhasil diselesaikan."
-                      : ""
-                  }
-                  onClose={() => setSuccessAlert(false)}
-                />
-              </div>
-            )}
+      {/* Sidebar - Fixed width */}
+      <div className="w-1/10 min-w-[250px]">
+        <Sidebar activeMenu={activeMenu} />
+      </div>
 
-            {/* Sidebar - Fixed width */}
-            <div className="w-1/10 min-w-[250px]">
-                <Sidebar 
-                activeMenu={activeMenu}
-                />
-            </div>
+      <div className="flex-1">
+        <OrderDashboard />
+      </div>
+    </div>
+  )
+}
 
-            <div className="flex-1">
-                <OrderDashboard/>
-            </div>
-        </div>
-    )
-} 
 
 const OrderDashboard = () => {
   const navigate = useNavigate()

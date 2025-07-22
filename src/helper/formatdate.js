@@ -46,40 +46,19 @@ export const DateFilterComponent = ({
   setEndDate,
   maxRangeDays = 7,
 }) => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [isDateRangeInvalid, setIsDateRangeInvalid] = useState(false);
-
-  const validateDateRange = (start, end) => {
-    const startDay = dayjs(start);
-    const endDay = dayjs(end);
-    const diff = endDay.diff(startDay, "day");
-
-    if (diff < 0) {
-      toast.error("Tanggal akhir tidak boleh sebelum tanggal awal!");
-      setIsDateRangeInvalid(true);
-      return false;
-    }
-
-    if (diff >= maxRangeDays) {
-      toast.warning(`Rentang tanggal tidak boleh lebih dari ${maxRangeDays} hari!`);
-      setIsDateRangeInvalid(true);
-      return false;
-    }
-
-    setIsDateRangeInvalid(false);
-    return true;
-  };
 
   const handleStartDateChange = (e) => {
     const newStartDate = e.target.value;
     // Validasi hanya dilakukan jika endDate sudah diisi
-    if (endDate && !validateDateRange(newStartDate, endDate)) return;
+    if (endDate && !validateDateRange(newStartDate, endDate, maxRangeDays, setIsDateRangeInvalid)) return;
     dispatch(setStartDate(newStartDate));
   };
 
   const handleEndDateChange = (e) => {
     const newEndDate = e.target.value;
-    if (startDate && !validateDateRange(startDate, newEndDate)) return;
+    if (startDate && !validateDateRange(startDate, newEndDate, maxRangeDays, setIsDateRangeInvalid)) return;
     dispatch(setEndDate(newEndDate));
   };
 
@@ -118,3 +97,23 @@ export const DateFilterComponent = ({
   );
 };
 
+export const validateDateRange = (start, end, maxRangeDays, setIsDateRangeInvalid) => {
+    const startDay = dayjs(start);
+    const endDay = dayjs(end);
+    const diff = endDay.diff(startDay, "day");
+
+    if (diff < 0) {
+      toast.error("Tanggal akhir tidak boleh sebelum tanggal awal!");
+      setIsDateRangeInvalid(true);
+      return false;
+    }
+
+    if (diff >= maxRangeDays) {
+      toast.warning(`Rentang tanggal tidak boleh lebih dari ${maxRangeDays} hari!`);
+      setIsDateRangeInvalid(true);
+      return false;
+    }
+
+    setIsDateRangeInvalid(false);
+    return true;
+  };

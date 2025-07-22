@@ -993,7 +993,10 @@ export const fetchTablesInternal = () => {
           },
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
-        dispatch(fetchSuccessTablesInternal(response?.data))
+        dispatch(fetchSuccessTablesInternal({ 
+          tables: response?.data?.tables, 
+          orderTypeTakeAway: response?.data?.order_type_take_away,
+        }))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))

@@ -35,7 +35,8 @@ import {
   fetchGeneralJournalDrafInternal,
 } from '../../actions/get';
 import {formatCurrency} from '../../helper/helper'
-
+import {DateFilterComponent,validateDateRange} from '../../helper/formatdate';
+ 
 export default function GeneralJournalDashboard() {
     const [activeMenu, setActiveMenu] = useState("general-journal")
     const dispatch = useDispatch()
@@ -90,289 +91,24 @@ const JournalDashboard = () => {
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalByEventPerDayInternal)
   }, [loadingGeneralJournalByEventPerDayInternal])
-  // const [journalDataNonAgregasi] = useState([
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "penjualan",
-  //     "transaction_id": "TX123456789",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "DEBIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Pendapatan",
-  //         "type": "KREDIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4001",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "DEBIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Pendapatan",
-  //         "type": "KREDIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4001",
-  //         "keterangan": ""
-  //       }, 
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "DEBIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Pendapatan",
-  //         "type": "KREDIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "pembelian",
-  //     "transaction_id": "",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Persediaan Bahan Baku",
-  //         "type": "DEBIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1201",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "KREDIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       }, 
-  //       {
-  //         "account_name": "Persediaan Bahan Baku",
-  //         "type": "DEBIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1201",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "KREDIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "retur_penjualan",
-  //     "transaction_id": "TX123456790",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Retur Penjualan",
-  //         "type": "DEBIT",
-  //         "amount": 50000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4002",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "KREDIT",
-  //         "amount": 50000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   }
-  // ]);
 
   // Sample data dengan berbagai status
   const { dataGeneralJournalByEventAllInternal : journalDataAgregasi, loadingGeneralJournalByEventAllInternal} = useSelector((state) => state.persisted.getGeneralJournalByEventInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalByEventAllInternal)
   }, [loadingGeneralJournalByEventAllInternal])
-  // const [journalDataAgregasi] = useState([
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "penjualan",
-  //     "transaction_id": "TX123456789",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "DEBIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Pendapatan",
-  //         "type": "KREDIT",
-  //         "amount": 150000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "pembelian",
-  //     "transaction_id": "",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Persediaan Bahan Baku",
-  //         "type": "DEBIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1201",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "KREDIT",
-  //         "amount": 200000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     "date": "2025-07-04",
-  //     "event": "retur_penjualan",
-  //     "transaction_id": "TX123456790",
-  //     "accounts": [
-  //       {
-  //         "account_name": "Retur Penjualan",
-  //         "type": "DEBIT",
-  //         "amount": 50000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "4002",
-  //         "keterangan": ""
-  //       },
-  //       {
-  //         "account_name": "Kas",
-  //         "type": "KREDIT",
-  //         "amount": 50000.0,
-  //         "action": "FINALIZE",
-  //         "account_code": "1001",
-  //         "keterangan": ""
-  //       }
-  //     ]
-  //   }
-  // ]);
+
 
   const {dataGeneralJournalDrafInternal : journalDataDraf, loadingGeneralJournalDrafInternal} = useSelector((state) => state.persisted.getGeneralJournalDrafInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalDrafInternal )
   }, [loadingGeneralJournalDrafInternal])
-  // const [journalDataDraf] = useState([
-  //   {
-  //     account_name: "Persediaan Bahan Baku",
-  //     detail: {
-  //       type: "Pembelian Bahan Baku",
-  //       date: "2024-01-15",
-  //       option_acquisition: "Tunai",
-  //       amount: 5000000,
-  //       keterangan: "Pembelian bahan baku untuk produksi",
-  //       data_general_journal: {
-  //         "Persediaan Bahan Baku": "uuid-1",
-  //         "Kas": "uuid-2"
-  //       }
-  //     }
-  //   },
-  //   {
-  //     account_name: "Aset Tetap",
-  //     detail: {
-  //       type: "Pencatatan Aset Tetap",
-  //       date: "2024-01-20",
-  //       option_acquisition: "Kredit",
-  //       harga_perolehan: 50000000,
-  //       keterangan: "Pembelian mesin produksi",
-  //       name_asset: "Mesin Produksi A",
-  //       tanggal_perolehan: "2024-01-20",
-  //       umur_manfaat_tahun: 10,
-  //       metode_penyusutan: "Garis Lurus",
-  //       nilai_sisa: 5000000,
-  //       is_depreciable: true,
-  //       rate: 0.1,
-  //       data_general_journal: {
-  //         "Aset Tetap": "uuid-3",
-  //         "Utang Usaha": "uuid-4"
-  //       },
-  //       asset_id: "asset-uuid-1"
-  //     }
-  //   }
-  // ]);
 
 
   const {dataGeneralJournalVoidInternal : journalDataVoid, loadingGeneralJournalVoidInternal} = useSelector((state) => state.persisted.getGeneralJournalVoidInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalVoidInternal)
   }, [loadingGeneralJournalVoidInternal])
-  // const [journalDataVoid] = useState([
-  //   {
-  //     account_name: "Persediaan Bahan Baku",
-  //     detail: {
-  //       type: "Pembelian Bahan Baku",
-  //       date: "2024-01-15",
-  //       option_acquisition: "Tunai",
-  //       amount: 5000000,
-  //       keterangan: "Pembelian bahan baku untuk produksi",
-  //       data_general_journal: {
-  //         "Persediaan Bahan Baku": "uuid-1",
-  //         "Kas": "uuid-2"
-  //       }
-  //     }
-  //   },
-  //   {
-  //     account_name: "Aset tetap",
-  //     detail: {
-  //       type: "Pencatatan Aset Tetap",
-  //       date: "2024-01-20",
-  //       option_acquisition: "Kredit",
-  //       harga_perolehan: 50000000,
-  //       keterangan: "Pembelian mesin produksi",
-  //       name_asset: "Mesin Produksi A",
-  //       tanggal_perolehan: "2024-01-20",
-  //       umur_manfaat_tahun: 10,
-  //       metode_penyusutan: "Garis Lurus",
-  //       nilai_sisa: 5000000,
-  //       is_depreciable: true,
-  //       rate: 0.1,
-  //       data_general_journal: {
-  //         "Aset Tetap": "uuid-3",
-  //         "Utang Usaha": "uuid-4"
-  //       },
-  //       asset_id: "asset-uuid-1"
-  //     }
-  //   }
-  // ]);
 
   
 
@@ -394,18 +130,10 @@ const JournalDashboard = () => {
   
 
   // Filter states
-  const today = new Date().toISOString().split('T')[0];
-  // const [startDate, setStartDate] = useState(today);
-  // const [endDate, setEndDate] = useState(today);
-  // const [statusFilter, setStatusFilter] = useState('FINALIZE');
-  // const [eventFilter, setEventFilter] = useState('Agregasi');
-  // const [searchTerm, setSearchTerm] = useState('');
   const {startDate, endDate, statusFilter, eventFilter, searchTerm} = useSelector((state) => state.persisted.filterGeneralJournalInternal)
   const {setStartDate, setEndDate, setStatusFilter, setEventFilter, setSearchTerm, resetFilterGeneralJournal} = filterGeneralJournalInternalSlice.actions
   useEffect(() => {
     if (statusFilter === null) {
-      dispatch(setStartDate(today))
-      dispatch(setEndDate(today))
       dispatch(setStatusFilter('FINALIZE'))
       dispatch(setEventFilter('Agregasi'))
     }
@@ -613,8 +341,25 @@ const totalsAlternative = useMemo(() => {
       // Atau gunakan: dateInputRef.current.focus();
     }
   };
+
+
+  // VALIDATE DATE RANGE  
+  const maxRangeDays = 7;
+  const [isDateRangeInvalid, setIsDateRangeInvalid] = useState(false);
   
-  console.log("data journal to void :", journalDataVoid)
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    // Validasi hanya dilakukan jika endDate sudah diisi
+    if (endDate && !validateDateRange(newStartDate, endDate, maxRangeDays, setIsDateRangeInvalid)) return;
+    dispatch(setStartDate(newStartDate));
+  };
+
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    if (startDate && !validateDateRange(startDate, newEndDate, maxRangeDays, setIsDateRangeInvalid)) return;
+    dispatch(setEndDate(newEndDate));
+  };
+  
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
@@ -647,31 +392,39 @@ const totalsAlternative = useMemo(() => {
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               {/* Date Filter */}
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Periode:</label>
-                <div className="relative">
+              <div className='relative'>
+
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Periode:</label>
+                  <div className="relative">
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={handleStartDateChange}
+                        className={`pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30 ${
+                          statusFilter === "DRAF" ? "bg-gray-100 cursor-not-allowed" : ""
+                        }`}
+                        disabled={statusFilter === "DRAF"} 
+                      />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sampai:</span>
+                  <div className="relative">
                     <input
                       type="date"
-                      value={startDate}
-                      onChange={(e) => dispatch(setStartDate(e.target.value))}
+                      value={endDate}
+                      onChange={handleEndDateChange}
                       className={`pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30 ${
                         statusFilter === "DRAF" ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                       disabled={statusFilter === "DRAF"} 
                     />
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sampai:</span>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => dispatch(setEndDate(e.target.value))}
-                    className={`pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30 ${
-                      statusFilter === "DRAF" ? "bg-gray-100 cursor-not-allowed" : ""
-                    }`}
-                    disabled={statusFilter === "DRAF"} 
-                  />
-                </div>
+                {isDateRangeInvalid && (
+                  <div className="text-xs text-red-500 absolute">
+                    Tanggal tidak valid. Maksimal {maxRangeDays} hari dan tidak boleh lebih.
+                  </div>
+                )}
               </div>
 
               {/* Status Filter */}
@@ -759,9 +512,9 @@ const totalsAlternative = useMemo(() => {
         </div>
 
         { ((statusFilter === 'DRAF' && journalDataDraf.length > 0) || (eventFilter === 'Agregasi' && journalDataAgregasi.length > 0) || 
-          (eventFilter === 'Non Agregasi' &&journalDataNonAgregasi.length > 0)) && startDate === today && endDate === today && (
+          (eventFilter === 'Non Agregasi' &&journalDataNonAgregasi.length > 0)) && (
           <div className="text-sm text-red-800 rounded mb-3">
-              Menampilkan data untuk <strong>hari ini</strong> {FormatISODate(today)}
+              Menampilkan data untuk <strong>hari ini</strong>
           </div>
         )}
 

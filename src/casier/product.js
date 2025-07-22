@@ -1,7 +1,11 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useState, forwardRef, useRef } from "react"
 import { Pencil, Trash, Search, Plus, Box, Bell, Settings, Package, Tag } from "lucide-react"
-import { ErrorAlert, SuccessAlert, DeleteConfirmationModal } from "../component/alert"
+import { 
+  DeleteConfirmationModal,
+  Toast,
+  ToastPortal
+} from "../component/alert"
 import { useSelector, useDispatch } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner"
 import { useNavigate } from "react-router-dom"
@@ -30,11 +34,10 @@ import {
 } from "../actions/patch"
 
 export default function KasirProducts() {
-    const dispatch = useDispatch()
+   const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Product")
-    const [error, setError] = useState(false)
-    const [modalSuccess, setModalSuccess] = useState(null)
     const [spinnerFixed, setSpinnerFixed] = useState(false)
+    const [toast, setToast] = useState(null);
 
     // handle response add product
     const { resetCreateProductInternal } = createProductInternalSlice.actions
@@ -47,24 +50,29 @@ export default function KasirProducts() {
 
     useEffect(() => {
         if (errorCreateProductInternal) {
-        setError(true)
-        const timeout = setTimeout(() => {
-            setError(false)
-            dispatch(resetCreateProductInternal())
-        }, 3000)
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
+            const timeout = setTimeout(() => {
+                dispatch(resetCreateProductInternal())
+            }, 3000)
 
-        return () => clearTimeout(timeout)
+            return () => clearTimeout(timeout)
         }
     }, [errorCreateProductInternal, dispatch])
-
 
     // handle error get category and product 
     const { errorCategoyAndProductIntenal } = useSelector((state) => state.persisted.getCategoryAndProductInternal)
     useEffect(() => {
       if (errorCategoyAndProductIntenal) {
-        setError(true)
+        setToast({
+            message: "there was an error on our server, we are fixing it",
+            type: 'error'
+        });
+        
         const timeout = setTimeout(() => {
-          setError(false)
           dispatch(resetCreateProductInternal())
         }, 3000)
 
@@ -72,17 +80,18 @@ export default function KasirProducts() {
       }
     }, [errorCategoyAndProductIntenal, dispatch])
 
-
-
     // handle response create category
     const { resetCreateCategoryInternal } = createCategoryInternalSlice.actions
     const { successCreateCategoryInternal, errorFieldCreateCategoryInternal, errorCreateCategoryInternal } = useSelector((state) => state.createCategoryInternalState)
     useEffect(() => {
         if (errorCreateCategoryInternal) {
-            setError(true)
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
             const timeout = setTimeout(() => {
-            setError(false)
-            dispatch(resetCreateCategoryInternal())
+                dispatch(resetCreateCategoryInternal())
             }, 3000)
 
             return () => clearTimeout(timeout)
@@ -91,10 +100,12 @@ export default function KasirProducts() {
 
     useEffect(() => {
         if (successCreateCategoryInternal) {
-            setModalSuccess('Berhasil Menambahkan Category')
+            setToast({
+                message: "Berhasil Menambahkan Category",
+                type: 'success'
+            });
             
             const timeout = setTimeout(() => {
-                setModalSuccess(null)
                 dispatch(resetCreateCategoryInternal())
             }, 2000)
     
@@ -102,17 +113,19 @@ export default function KasirProducts() {
         }
     }, [successCreateCategoryInternal])
         
-
     // handle Response update product
     const {resetDataTempUpdateProduct} = dataTempUpdateProductSlice.actions
     const {resetUpdateProductInternal} = updateInternalSlice.actions
-    const {errorUpdateProductInternal } = useSelector((state) => state.updateInternalState)
+    const {errorUpdateProductInternal, successUpdateProductInternal} = useSelector((state) => state.updateInternalState)
     useEffect(() => {
         if (errorUpdateProductInternal) {
             window.scrollTo({ top: 0, behavior: 'smooth' })
-            setError(true)
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
             const timeout = setTimeout(() => {
-                setError(false)
                 dispatch(resetDataTempUpdateProduct())
                 dispatch(resetUpdateProductInternal())
             }, 2000)
@@ -121,6 +134,21 @@ export default function KasirProducts() {
         }
     }, [errorUpdateProductInternal])
 
+    useEffect(() => {
+        if (successUpdateProductInternal) {
+            setToast({
+                message: "Berhasil Mengupdate Produk",
+                type: 'success'
+            });
+            
+            const timeout = setTimeout(() => {
+                dispatch(resetDataTempUpdateProduct())
+                dispatch(resetUpdateProductInternal())
+            }, 2000)
+
+            return () => clearTimeout(timeout)
+        }
+    }, [successUpdateProductInternal])
 
     // handle response available product 
     const {resetAvailableProduct} = availbaleProductlSlice.actions
@@ -134,17 +162,18 @@ export default function KasirProducts() {
     useEffect(() => {
         if(errorAvailableProduct) {
              window.scrollTo({ top: 0, behavior: 'smooth' })
-            setError(true)
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
             const timeout = setTimeout(() => {
-                setError(false)
                 dispatch(resetAvailableProduct())
             }, 2000)
 
             return () => clearTimeout(timeout)
         }
     }, [errorAvailableProduct])
-
-
 
     // handle response delete product
     const { resetDeleteProductInternal } = deleteProductInternalSlice.actions
@@ -158,9 +187,12 @@ export default function KasirProducts() {
     useEffect(() => {
         if (errorDeleteProductInternal) {
             window.scrollTo({ top: 0, behavior: 'smooth' })
-            setError(true)
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
             const timeout = setTimeout(() => {
-                setError(false)
                 dispatch(resetDeleteProductInternal())
             }, 2000)
 
@@ -170,15 +202,18 @@ export default function KasirProducts() {
 
     return (
         <div className="flex">
-            { error && (
-                <ErrorAlert 
-                message={"there was an error on our server, we are fixing it"}
-                onClose={() => setError(false)}
-                />
-            )}
-
-            { modalSuccess && (
-            <SuccessAlert message={modalSuccess}/>
+            {/* Toast Notification */}
+            {toast && (
+                <ToastPortal> 
+                  <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+                    <Toast 
+                        message={toast.message} 
+                        type={toast.type} 
+                        onClose={() => setToast(null)} 
+                        duration={3000}
+                    />
+                  </div>
+                </ToastPortal>
             )}
 
             {/* Sidebar - Fixed width */}
@@ -230,7 +265,7 @@ function ProductsTable() {
      if (amountCategory === 0 && amountProduct === 0 && dataCategoryAndProduct.length === 0) {
         dispatch(fetchCategoryAndProductInternal())
       }
-    }, [dispatch])
+    }, [])
 
     useEffect(() =>  {
       setSpinnerProduct(loadingCategoryAndProductInternal)
@@ -280,34 +315,34 @@ function ProductsTable() {
     const {dataTempUpdateProduct} = useSelector((state) => state.dataTempUpdateProductState)
 
     useEffect(() => {
-    if (successUpdateProductInternal) {
-      var image
-      const extension = dataTempUpdateProduct.image?.name
-      ? image = dataTempUpdateProduct.id + '.' + dataTempUpdateProduct.image.name.split('.').pop().toLowerCase()
-      : image = dataTempUpdateProduct.image
+      if (successUpdateProductInternal) {
+        var image
+        const extension = dataTempUpdateProduct.image?.name
+        ? image = dataTempUpdateProduct.id + '.' + dataTempUpdateProduct.image.name.split('.').pop().toLowerCase()
+        : image = dataTempUpdateProduct.image
 
-      console.log("DISPATCH dipanggil", {
-        categoryId: dataTempUpdateProduct.category_id,
-        previousCategoryId: dataTempUpdateProduct.previous_category_id,
-        productId: dataTempUpdateProduct.id,
-      })
+        console.log("DISPATCH dipanggil", {
+          categoryId: dataTempUpdateProduct.category_id,
+          previousCategoryId: dataTempUpdateProduct.previous_category_id,
+          productId: dataTempUpdateProduct.id,
+        })
 
-      dispatch(updateProductInCategory({
-        categoryId: dataTempUpdateProduct.category_id,
-        productId: dataTempUpdateProduct.id,
-        updatedProduct: {
-          available: dataTempUpdateProduct.available,
-          id: dataTempUpdateProduct.id,
-          name: dataTempUpdateProduct.name,
-          price: dataTempUpdateProduct.price,
-          desc: dataTempUpdateProduct.desc,
-          hpp: dataTempUpdateProduct.hpp,
-          image: image
-        }
-      }))
-      dispatch(resetUpdateProductInternal())
-      dispatch(resetDataTempUpdateProduct())
-    }
+        dispatch(updateProductInCategory({
+          categoryId: dataTempUpdateProduct.category_id,
+          productId: dataTempUpdateProduct.id,
+          updatedProduct: {
+            available: dataTempUpdateProduct.available,
+            id: dataTempUpdateProduct.id,
+            name: dataTempUpdateProduct.name,
+            price: dataTempUpdateProduct.price,
+            desc: dataTempUpdateProduct.desc,
+            hpp: dataTempUpdateProduct.hpp,
+            image: image
+          }
+        }))
+        dispatch(resetUpdateProductInternal())
+        dispatch(resetDataTempUpdateProduct())
+      }
   }, [successUpdateProductInternal])
 
 

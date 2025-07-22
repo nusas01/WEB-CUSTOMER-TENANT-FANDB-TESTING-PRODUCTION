@@ -666,6 +666,16 @@ export const getCategoryAndProductInternalSlice = createSlice({
         toggleProductAvailability: (state, action) => {
             const productId = action.payload;
 
+            // Ubah di data utama
+            for (const category of state.dataCategoryAndProduct) {
+                const product = category.product.find((p) => p.id === productId);
+                if (product) {
+                product.available = !product.available;
+                break;
+                }
+            }
+
+            // Ubah juga di filteredProduct jika sedang aktif
             for (const category of state.filteredProduct) {
                 const product = category.product.find((p) => p.id === productId);
                 if (product) {
@@ -1077,6 +1087,7 @@ export const getOrdersFinishedInternalSlice = createSlice({
 })
 
 const initialTablesInternalState = {
+    orderTypeTakeAway: '',
     dataTablesInternal: [],
     errorTablesInternal: null,
     loadingTablesInternal: false,
@@ -1089,18 +1100,21 @@ export const getTablesInternalSlice = createSlice({
             state.loadingTablesInternal = action.payload
         },
         fetchSuccessTablesInternal: (state, action) => {
-            state.dataTablesInternal = action.payload
+            state.dataTablesInternal = action.payload.tables || []
+            state.orderTypeTakeAway = action.payload.orderTypeTakeAway || ''
             state.errorTablesInternal = null
         },
         fetchErrorTablesInternal: (state, action) => {
            state.errorTablesInternal = action.payload
-           state.dataTablesInternal = []
         },
         resetErrorTablesInternal: (state) => {
             state.errorTablesInternal = null
         },
         addTableInternal: (state, action) => {
             state.dataTablesInternal.push(action.payload);
+        },
+        updateOrderTypeTakeAway: (state, action) => {
+            state.orderTypeTakeAway = action.payload;
         },
         deleteTableInternalByNumber: (state) => {
             if (state.dataTablesInternal.length === 0) return;
