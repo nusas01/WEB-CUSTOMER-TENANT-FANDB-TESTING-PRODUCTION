@@ -88,10 +88,27 @@ const NeracaComponent = () => {
   const { startDate, endDate } = useSelector((state) => state.persisted.filterDateNeracaInternal)
 
   useEffect(() => {
-    if (dataNeracaInternal === null || !dataNeracaInternal) {
+    if (dataNeracaInternal.length === 0) {
       dispatch(fetchNeracaInternal(startDate, endDate))
     }
   }, [])
+
+  const handleFilterDate = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    const maxRange = 366 * 24 * 60 * 60 * 1000; // 366 hari (tahun kabisat)
+    const diff = end - start;
+
+    if (diff > maxRange) {
+      setDateRangeError("Rentang tanggal tidak boleh lebih dari 1 tahun.");
+    } else if (start > end) {
+      setDateRangeError("Tanggal mulai tidak boleh setelah tanggal akhir.");
+    } else {
+      setDateRangeError("");
+      dispatch(fetchNeracaInternal(startDate, endDate))
+    }
+  }
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -107,7 +124,6 @@ const NeracaComponent = () => {
           setDateRangeError("Tanggal mulai tidak boleh setelah tanggal akhir.");
         } else {
           setDateRangeError("");
-          dispatch(fetchNeracaInternal(startDate, endDate))
         }
       }
   }, [startDate, endDate])
@@ -346,7 +362,7 @@ const NeracaComponent = () => {
             </div>
             
             {/* Filter Tanggal */}
-            <div className="flex flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-xl">
+            <div className="flex relative flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-xl">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-gray-800 rounded-lg">
                   <Calendar className="w-4 h-4 text-white" />
@@ -355,9 +371,11 @@ const NeracaComponent = () => {
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => dispatch(setStartDate(e.target.value))}
                   className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                 />
+              </div>
+              <div className='absolute bottom-1'>
                 {dateRangeError && (
                   <span className="text-xs text-red-500 ml-10">{dateRangeError}</span>
                 )}
@@ -367,13 +385,16 @@ const NeracaComponent = () => {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => dispatch(setEndDate(e.target.value))}
                   className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                 />
               </div>
-              <div className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium">
+              <div 
+              className="flex cursor-pointer items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+              onClick={() => handleFilterDate()}
+              >
                 <Filter className="w-4 h-4" />
-                Filter
+                Klik Filter
               </div>
             </div>
           </div>

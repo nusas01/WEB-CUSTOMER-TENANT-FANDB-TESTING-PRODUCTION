@@ -259,7 +259,7 @@ const OrderDashboard = () => {
   }
   
   // Finished orders state - pastikan selector sesuai dengan struktur Redux
-  const { resetFinishedOrdersPagination } = getOrdersFinishedInternalSlice.actions
+  // const { resetFinishedOrdersPagination } = getOrdersFinishedInternalSlice.actions
   const finishedOrdersState = useSelector((state) => state.persisted.dataOrdersFinishedInternal)
   
   // Destructure dengan default values untuk mencegah undefined
@@ -288,40 +288,46 @@ const OrderDashboard = () => {
     return []
   }, [dataOrdersFinished, statusFilter])
 
-  useEffect(() => {
-    if (statusFilter !== 'FINISHED') {
-      dispatch(resetFinishedOrdersPagination())
-      dispatch(setStartDate(''))
-      dispatch(setEndDate(''))
-    }
-  }, [statusFilter])
+  // useEffect(() => {
+  //   if (statusFilter !== 'FINISHED') {
+  //     dispatch(resetFinishedOrdersPagination())
+  //     dispatch(setStartDate(''))
+  //     dispatch(setEndDate(''))
+  //   }
+  // }, [statusFilter])
 
   // Initial fetch effect
-  useEffect(() => {
-    const shouldFetch = (
-      statusFilter === 'FINISHED' && 
-      startDate !== '' && 
-      endDate !== '' && 
-      dataOrdersFinished.length === 0 &&
-      !loadingOrdersFinishedInternal &&
-      !hasInitialized
-    );
+  // useEffect(() => {
+  //   const shouldFetch = (
+  //     statusFilter === 'FINISHED' && 
+  //     startDate !== '' && 
+  //     endDate !== '' && 
+  //     dataOrdersFinished.length === 0 &&
+  //     !loadingOrdersFinishedInternal &&
+  //     !hasInitialized
+  //   );
     
-    console.log("Initial fetch effect:", {
-      statusFilter,
-      startDate,
-      endDate,
-      shouldFetch,
-      hasInitialized,
-      loading: loadingOrdersFinishedInternal
-    });
+  //   console.log("Initial fetch effect:", {
+  //     statusFilter,
+  //     startDate,
+  //     endDate,
+  //     shouldFetch,
+  //     hasInitialized,
+  //     loading: loadingOrdersFinishedInternal
+  //   });
     
-    if (shouldFetch) {
-      setHasInitialized(true);
-      dispatch(resetFinishedOrdersPagination());
-      dispatch(fetchOrdersFinishedInternal(startDate, endDate, 1, false));
+  //   if (shouldFetch) {
+  //     setHasInitialized(true);
+  //     // dispatch(resetFinishedOrdersPagination());
+  //     dispatch(fetchOrdersFinishedInternal(startDate, endDate, 1, false));
+  //   }
+  // }, [statusFilter, startDate, endDate, dispatch, loadingOrdersFinishedInternal, hasInitialized])
+  const handleFilterOrderFinished = () => {
+    if (startDate === '' || endDate === '') {
+      return
     }
-  }, [statusFilter, startDate, endDate, dispatch, loadingOrdersFinishedInternal, hasInitialized])
+    dispatch(fetchOrdersFinishedInternal(startDate, endDate, 1, false));
+  }
 
   useEffect(() => {
     if (dataOrdersFinishedInternal.length > 0 && !hasInitializedSearch) {
@@ -338,11 +344,11 @@ const OrderDashboard = () => {
 
 
   // Reset initialization when filter changes
-  useEffect(() => {
-    if (statusFilter !== 'FINISHED') {
-      setHasInitialized(false);
-    }
-  }, [statusFilter, startDate, endDate])
+  // useEffect(() => {
+  //   if (statusFilter !== 'FINISHED') {
+  //     setHasInitialized(false);
+  //   }
+  // }, [statusFilter, startDate, endDate])
 
 
   // Loading states
@@ -506,7 +512,7 @@ const OrderDashboard = () => {
 
   // Filter orders effect
   useEffect(() => {
-    if (dataOrdersFinishedInternal.length === 0 && statusFilter !== 'FINISHED' && !hasInitializedSearch) {
+    if (dataOrdersFinishedInternal.length === 0 && !isLoadMoreOrderFinished && !hasInitializedSearch) {
       const allOrders = dataOrdersInternal || [];
       let filtered = [];
       let totalRevenue = 0;
@@ -737,13 +743,24 @@ const OrderDashboard = () => {
 
               {/* Start Date and endate */}
               { statusFilter === 'FINISHED' && (
-                <DateFilterComponent 
-                startDate={startDate}
-                endDate={endDate}
-                setStartDate={setStartDate}
-                setEndDate={setEndDate}
-                maxRangeDays={7}
-                />
+                <div className="flex space-x-2">
+                  <DateFilterComponent 
+                    startDate={startDate}
+                    endDate={endDate}
+                    setStartDate={setStartDate}
+                    setEndDate={setEndDate}
+                    maxRangeDays={7}
+                  />
+                  <div>
+                    <p className="invisible">apa ini</p>
+                    <button 
+                      onClick={handleFilterOrderFinished}
+                      className="px-7 mb-1 py-2.5 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center"
+                    >
+                      <span>Filter</span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -756,11 +773,13 @@ const OrderDashboard = () => {
             </div>
         )}
 
-        {!spinnerRelative && filteredOrders.length === 0 && dataOrdersFinishedInternal.length === 0 && (
-          <div>
-            <NoOrdersContainer />
-          </div>
-        )}
+       {!spinnerRelative 
+        && ((stats.progress === 0 && statusFilter === 'PROCESS')
+        || (stats.finished === 0 && statusFilter === 'FINISHED') 
+        || (stats.received === 0 && statusFilter === 'PROGRESS'))
+        ? <div><NoOrdersContainer /></div>
+        : null}
+
 
         {!spinnerRelative && (filteredOrders.length > 0 || dataOrdersFinishedInternal.length > 0) && (
 
@@ -924,7 +943,7 @@ const OrderDashboard = () => {
                 </div>
               )}
 
-              {statusFilter === 'FINISHED' && !hasInitializedSearch && (
+              {statusFilter === 'FINISHED' && !hasInitializedSearch && dataOrdersFinishedInternal.length > 0 && (
                 <div 
                   ref={loadMoreFinishedRef} 
                   className="w-full h-10 flex items-center justify-center"

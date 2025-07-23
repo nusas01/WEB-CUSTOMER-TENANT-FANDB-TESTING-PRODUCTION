@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, use, useCallback } from 'react';
 import { 
   Calendar, 
   Filter, 
@@ -26,7 +26,11 @@ import{VoidJournalConfirmationModal, ErrorAlert} from '../../component/alert'
 import {
   filterGeneralJournalInternalSlice, 
   dataDrafToVoidInternalSlice,
+  loadMoreGeneralJournalNonAgregasi,
 } from '../../reducers/reducers'
+import {
+  getGeneralJournalByEventPerDayInternalSlice
+} from '../../reducers/get.js'
 import { SpinnerRelative } from '../../helper/spinner';
 import {
   fetchGeneralJournalByEventAllInternal, 
@@ -34,8 +38,9 @@ import {
   fetchGeneralJournalVoidInternal, 
   fetchGeneralJournalDrafInternal,
 } from '../../actions/get';
-import {formatCurrency} from '../../helper/helper'
+import {formatCurrency, useInfiniteScroll} from '../../helper/helper'
 import {DateFilterComponent,validateDateRange} from '../../helper/formatdate';
+import { set } from 'date-fns';
  
 export default function GeneralJournalDashboard() {
     const [activeMenu, setActiveMenu] = useState("general-journal")
@@ -87,24 +92,37 @@ const JournalDashboard = () => {
   const dispatch = useDispatch()
   const [spinnerRelative, setSpinnerRelative] = useState(false)
 
-  const {dataGeneralJournalByEventPerDayInternal : journalDataNonAgregasi, loadingGeneralJournalByEventPerDayInternal} = useSelector((state) => state.persisted.getGeneralJournalByEventPerDayInternal)
+  // data general journal status finisize 
+  const {resetGeneralJournalEventPerDayPagination} = getGeneralJournalByEventPerDayInternalSlice.actions
+  const {
+    dataGeneralJournalByEventPerDayInternal : journalDataNonAgregasi,
+    loadingGeneralJournalByEventPerDayInternal = false,
+    page: pageJournalNonAgregasi,
+    hasMore: hasMoreJournalNonAgregasi,
+    isLoadMore: isLoadMoreNonAgregasi,
+    totalEntry: totalEntryNonAgregasi = 0,
+    totalKredit: totalKreditNonAgregasi = 0,
+    totalDebet: totalDebetNonAgregasi = 0,
+  } = useSelector((state) => state.persisted.getGeneralJournalByEventPerDayInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalByEventPerDayInternal)
   }, [loadingGeneralJournalByEventPerDayInternal])
 
-  // Sample data dengan berbagai status
+
+  // data general journal status finisize event agregasi
   const { dataGeneralJournalByEventAllInternal : journalDataAgregasi, loadingGeneralJournalByEventAllInternal} = useSelector((state) => state.persisted.getGeneralJournalByEventInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalByEventAllInternal)
   }, [loadingGeneralJournalByEventAllInternal])
 
-
+  // general journal data draf
   const {dataGeneralJournalDrafInternal : journalDataDraf, loadingGeneralJournalDrafInternal} = useSelector((state) => state.persisted.getGeneralJournalDrafInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalDrafInternal )
   }, [loadingGeneralJournalDrafInternal])
 
 
+  // general journal data void
   const {dataGeneralJournalVoidInternal : journalDataVoid, loadingGeneralJournalVoidInternal} = useSelector((state) => state.persisted.getGeneralJournalVoidInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalVoidInternal)
@@ -132,43 +150,109 @@ const JournalDashboard = () => {
   // Filter states
   const {startDate, endDate, statusFilter, eventFilter, searchTerm} = useSelector((state) => state.persisted.filterGeneralJournalInternal)
   const {setStartDate, setEndDate, setStatusFilter, setEventFilter, setSearchTerm, resetFilterGeneralJournal} = filterGeneralJournalInternalSlice.actions
-  useEffect(() => {
-    if (statusFilter === null) {
-      dispatch(setStatusFilter('FINALIZE'))
-      dispatch(setEventFilter('Agregasi'))
-    }
-  }, [statusFilter])
-
 
   useEffect(() => {
     if (statusFilter === 'FINALIZE') {
-      if (eventFilter === 'Agregasi') {
-        dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
-      } else if (eventFilter === 'Non Agregasi') {
-        dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate))
+        if (eventFilter === 'Agregasi') {
+          if (journalDataAgregasi.length === 0) {
+            dispatch(fetchGeneralJournalByEventAllInternal('', ''))
+          }
+        } else if (eventFilter === 'Non Agregasi') {
+          if (journalDataNonAgregasi.length === 0) {
+            dispatch(fetchGeneralJournalByEventPerDayInternal('', '', 1, false))
+          }
+        }
       }
-    }
 
-    if (statusFilter === 'DRAF') {
-      dispatch(fetchGeneralJournalDrafInternal())
-    } 
+      if (statusFilter === 'DRAF') {
+        if (journalDataDraf.length === 0) {
+          dispatch(fetchGeneralJournalDrafInternal())
+        }
+      } 
 
-    if (statusFilter === 'VOID') {
-      dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
-    }
-  }, [startDate, endDate, statusFilter])
+      if (statusFilter === 'VOID') {
+        if (journalDataVoid.length === 0) {
+          dispatch(fetchGeneralJournalVoidInternal('', ''))
+        }
+      }
+  }, [])
 
   useEffect(() => {
-    if (eventFilter == 'Agregasi') {
-        dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
+    if (statusFilter === 'FINALIZE') {
+        if (eventFilter === 'Agregasi') {
+          if (journalDataAgregasi.length === 0) {
+            dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
+          }
+        } else if (eventFilter === 'Non Agregasi') {
+          if (journalDataNonAgregasi.length === 0) {
+            dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate, 1, false))
+          }
+        }
+      }
+
+      if (statusFilter === 'DRAF') {
+        if (journalDataDraf.length === 0) {
+          dispatch(fetchGeneralJournalDrafInternal())
+        }
+      } 
+
+      if (statusFilter === 'VOID') {
+        if (journalDataVoid.length === 0) {
+          dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
+        }
+      }
+  }, [statusFilter, eventFilter])
+
+  useEffect(() => {
+    if (startDate !== '' && endDate !== '') {
+      if (statusFilter === 'FINALIZE') {
+        if (eventFilter === 'Agregasi') {
+            dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
+        } else if (eventFilter === 'Non Agregasi') {
+            dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate, 1, false))
+        }
+      }
+
+      if (statusFilter === 'VOID') {
+          dispatch(fetchGeneralJournalVoidInternal())
+      } 
     } 
-    if (eventFilter === 'Non Agregasi') {
-        dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate))
-    }
-  }, [eventFilter])
+  }, [startDate, endDate, eventFilter, statusFilter])
+
+
+  const handleResetFilter = () => {
+    dispatch(fetchGeneralJournalVoidInternal('', ''))
+    dispatch(fetchGeneralJournalByEventAllInternal('', '', 1, false))
+    dispatch(fetchGeneralJournalByEventPerDayInternal('', '', 1, false))
+    dispatch(setEndDate(''))
+    dispatch(setStartDate(''))
+  }
 
   console.log(journalDataAgregasi)
   console.log('non:', journalDataNonAgregasi)
+
+  // handle load more data non agregasi
+  const handleLoadMoreJournalNonAgregasiCallback = useCallback(() => {
+    // ✅ Fix: Kondisi yang lebih sederhana dan jelas
+    if (eventFilter === 'Non Agregasi' && 
+        hasMoreJournalNonAgregasi && 
+        !isLoadMoreNonAgregasi && 
+        !loadingGeneralJournalByEventPerDayInternal) {
+        
+        console.log("Triggering load more from useEffect");
+        dispatch(loadMoreGeneralJournalNonAgregasi());
+    }
+}, [eventFilter, hasMoreJournalNonAgregasi, isLoadMoreNonAgregasi, loadingGeneralJournalByEventPerDayInternal, dispatch])
+
+// ✅ IMPROVED INFINITE SCROLL HOOK
+const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
+    hasMore: hasMoreJournalNonAgregasi,
+    loading: isLoadMoreNonAgregasi || loadingGeneralJournalByEventPerDayInternal,
+    loadMore: handleLoadMoreJournalNonAgregasiCallback,
+    threshold: 1.0,
+    rootMargin: '100px',
+})
+
 
   // Get status icon and color
   const getStatusConfig = (status) => {
@@ -213,15 +297,8 @@ const JournalDashboard = () => {
   console.log('journalDataAgregasi length:', journalDataAgregasi?.length || 0);
   
   if (eventFilter === 'Non Agregasi') {
-    journalDataNonAgregasi.forEach(entry => {
-      entry.accounts.forEach(acc => {
-        if (acc.type === 'DEBIT') {
-          totalDebit += acc.amount;
-        } else if (acc.type === 'KREDIT') {
-          totalKredit += acc.amount;
-        }
-      });
-    });
+    totalDebit = totalDebetNonAgregasi
+    totalKredit = totalKreditNonAgregasi
   }
   
   if (eventFilter === 'Agregasi') {
@@ -244,38 +321,38 @@ const JournalDashboard = () => {
 }, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
 
 // Alternatif: Jika ingin menghitung keduanya sekaligus
-const totalsAlternative = useMemo(() => {
-  let totalDebit = 0;
-  let totalKredit = 0;
+// const totalsAlternative = useMemo(() => {
+//   let totalDebit = 0;
+//   let totalKredit = 0;
   
-  // Hitung Non Agregasi
-  if (eventFilter === 'Non Agregasi' && journalDataNonAgregasi) {
-    journalDataNonAgregasi.forEach(entry => {
-      entry.accounts.forEach(acc => {
-        if (acc.type === 'DEBIT') {
-          totalDebit += acc.amount;
-        } else if (acc.type === 'KREDIT') {
-          totalKredit += acc.amount;
-        }
-      });
-    });
-  }
+//   // Hitung Non Agregasi
+//   if (eventFilter === 'Non Agregasi' && journalDataNonAgregasi) {
+//     journalDataNonAgregasi.forEach(entry => {
+//       entry.accounts.forEach(acc => {
+//         if (acc.type === 'DEBIT') {
+//           totalDebit += acc.amount;
+//         } else if (acc.type === 'KREDIT') {
+//           totalKredit += acc.amount;
+//         }
+//       });
+//     });
+//   }
   
-  // Hitung Agregasi
-  if (eventFilter === 'Agregasi' && journalDataAgregasi) {
-    journalDataAgregasi.forEach(entry => {
-      entry.accounts.forEach(acc => {
-        if (acc.type === 'DEBIT') {
-          totalDebit += acc.amount;
-        } else if (acc.type === 'KREDIT') {
-          totalKredit += acc.amount;
-        }
-      });
-    });
-  }
+//   // Hitung Agregasi
+//   if (eventFilter === 'Agregasi' && journalDataAgregasi) {
+//     journalDataAgregasi.forEach(entry => {
+//       entry.accounts.forEach(acc => {
+//         if (acc.type === 'DEBIT') {
+//           totalDebit += acc.amount;
+//         } else if (acc.type === 'KREDIT') {
+//           totalKredit += acc.amount;
+//         }
+//       });
+//     });
+//   }
   
-  return { totalDebit, totalKredit };
-}, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
+//   return { totalDebit, totalKredit };
+// }, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
 
 
   // Get unique events for filter
@@ -358,8 +435,9 @@ const totalsAlternative = useMemo(() => {
     const newEndDate = e.target.value;
     if (startDate && !validateDateRange(startDate, newEndDate, maxRangeDays, setIsDateRangeInvalid)) return;
     dispatch(setEndDate(newEndDate));
+    setIsDateRangeInvalid(false); // Reset validasi saat endDate diubah
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
@@ -399,7 +477,7 @@ const totalsAlternative = useMemo(() => {
                   <div className="relative">
                       <input
                         type="date"
-                        value={startDate}
+                        value={statusFilter !== 'DRAF' ? startDate || '' : ''}
                         onChange={handleStartDateChange}
                         className={`pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30 ${
                           statusFilter === "DRAF" ? "bg-gray-100 cursor-not-allowed" : ""
@@ -411,7 +489,7 @@ const totalsAlternative = useMemo(() => {
                   <div className="relative">
                     <input
                       type="date"
-                      value={endDate}
+                      value={statusFilter !== 'DRAF' ? endDate || '' : ''}
                       onChange={handleEndDateChange}
                       className={`pl-3 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-30 ${
                         statusFilter === "DRAF" ? "bg-gray-100 cursor-not-allowed" : ""
@@ -500,7 +578,7 @@ const totalsAlternative = useMemo(() => {
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
                   <div>
                     <p className="text-sm font-medium text-purple-700">Total Entries</p>
-                    <p className="text-xl font-bold text-purple-800">{eventFilter === 'Agregasi' ? journalDataAgregasi.length : journalDataNonAgregasi.length}</p>
+                    <p className="text-xl font-bold text-purple-800">{eventFilter === 'Agregasi' ? journalDataAgregasi.length : totalEntryNonAgregasi}</p>
                   </div>
                   <div className="bg-purple-200 p-2 rounded-full">
                     <FileText className="h-5 w-5 text-purple-700" />
@@ -652,7 +730,8 @@ const totalsAlternative = useMemo(() => {
                       ))
                     ) : (
                       // Render data Non Agregasi
-                      Object.entries(groupedDataNonAgregasi).map(([event, entries], index) => (
+                     <>
+                      {Object.entries(groupedDataNonAgregasi).map(([event, entries], index) => (
                         <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
                           <div className="bg-gray-800 flex justify-between px-6 py-4">
                             <h4 className="text-lg font-semibold text-white capitalize">
@@ -733,9 +812,28 @@ const totalsAlternative = useMemo(() => {
                             })}
                           </div>
                         </div>
-                      ))
-                    )
-                  ) : (statusFilter === 'DRAF' ?  (
+                      ))}
+
+                      { eventFilter === 'Non Agregasi' && (
+                          <div
+                            ref={loadMoreGeneralJournalNonAgregasiRef}
+                            className="w-full h-10 flex items-center justify-center"
+                          >
+                            { isLoadMoreNonAgregasi && (
+                              <div className="flex items-center gap-2 py-2">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                                <span className="text-sm text-gray-500">Loading more data...</span>
+                              </div>
+                            )}
+                            {!hasMoreJournalNonAgregasi && journalDataNonAgregasi.length > 0 && (
+                              <div className="py-2 text-sm text-gray-500">
+                                No more data to load
+                              </div>
+                            )}
+                          </div>
+                        )}
+                     </>
+                  )) : (statusFilter === 'DRAF' ?  (
                     <DrafVoidDataComponent drafData={journalDataDraf}  typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
                   ) : (
                     statusFilter === 'VOID' && (

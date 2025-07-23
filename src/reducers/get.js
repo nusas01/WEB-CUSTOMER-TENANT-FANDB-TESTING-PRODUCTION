@@ -726,7 +726,7 @@ export const getCategoryAndProductInternalSlice = createSlice({
 })
 
 const initialLabaRugiInternalState = {
-    dataLabaRugiInternal: null,
+    dataLabaRugiInternal: [],
     errorLabaRugiIntenal: null,
     loadingLabaRugiInternal: false,
 } 
@@ -738,12 +738,12 @@ export const getLabaRugiInternalSlice = createSlice({
             state.loadingLabaRugiInternal = action.payload
         },
         fetchSuccessLabaRugiInternal: (state, action) => {
-            state.dataLabaRugiInternal = action.payload
+            state.dataLabaRugiInternal = action.payload || []
             state.errorLabaRugiIntenal = null
         },
         fetchErrorLabaRugiInternal: (state, action) => {
            state.errorLabaRugiIntenal = action.payload
-           state.dataLabaRugiInternal = null
+           state.dataLabaRugiInternal = []
         },
         resetErrorLabaRugiInternal: (state) => {
             state.errorLabaRugiIntenal = null
@@ -753,7 +753,7 @@ export const getLabaRugiInternalSlice = createSlice({
 
 
 const initialNeracaInternalState = {
-    dataNeracaInternal: null,
+    dataNeracaInternal: [],
     errorNeracaIntenal: null,
     loadingNeracaInternal: false,
 } 
@@ -765,12 +765,12 @@ export const getNeracaInternalSlice = createSlice({
             state.loadingNeracaInternal = action.payload
         },
         fetchSuccessNeracaInternal: (state, action) => {
-            state.dataNeracaInternal = action.payload
+            state.dataNeracaInternal = action.payload || []
             state.errorNeracaIntenal = null
         },
         fetchErrorNeracaInternal: (state, action) => {
            state.errorNeracaIntenal = action.payload
-           state.dataNeracaInternal = null
+           state.dataNeracaInternal = []
         },
         resetErrorNeracaInternal: (state) => {
             state.errorNeracaIntenal = null
@@ -800,30 +800,73 @@ export const getGeneralJournalByEventAllInternalSlice = createSlice({
         },
     }
 })
-
 const initialGeneralJournalByEventPerDayInternalState = {
     dataGeneralJournalByEventPerDayInternal: [],
     errorGeneralJournalByEventPerDayIntenal: null,
     loadingGeneralJournalByEventPerDayInternal: false,
+    hasMore: true,
+    isLoadMore: false,
+    page: 1,
+    totalEntry: 0,
+    totalKredit: 0,
+    totalDebet: 0,
 } 
+
 export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
     name: "dataGeneralJournalByEventPerDay",
     initialState: initialGeneralJournalByEventPerDayInternalState,
     reducers: {
         setLoadingGeneralJournalByEventPerDayInternal: (state, action) => {
-            state.loadingGeneralJournalByEventPerDayInternal= action.payload
+            // ✅ Fix: Periksa apakah ini load more atau loading awal
+            if (action.payload.isLoadMore) {
+                state.isLoadMore = action.payload.loading
+            } else {
+                state.loadingGeneralJournalByEventPerDayInternal = action.payload.loading
+            }
         },
         fetchSuccessGeneralJournalByEventPerDayInternal: (state, action) => {
-            state.dataGeneralJournalByEventPerDayInternal = action.payload || []
+            const { data, hasMore, totalEntry, totalKredit, totalDebet, isLoadMore, page } = action.payload
+
+            if (isLoadMore) {
+                state.dataGeneralJournalByEventPerDayInternal = [
+                    ...state.dataGeneralJournalByEventPerDayInternal,
+                    ...(data || [])
+                ]
+            } else {
+                state.dataGeneralJournalByEventPerDayInternal = data || []
+            }
+
+            // ✅ Fix: Update page setelah berhasil fetch
+            if (page) {
+                state.page = page
+            }
+
+            state.hasMore = hasMore
+            state.totalEntry = totalEntry
+            state.totalKredit = totalKredit
+            state.totalDebet = totalDebet
             state.errorGeneralJournalByEventPerDayIntenal = null
+            state.loadingGeneralJournalByEventPerDayInternal = false
+            state.isLoadMore = false
         },
         fetchErrorGeneralJournalByEventPerDayInternal: (state, action) => {
            state.errorGeneralJournalByEventPerDayIntenal = action.payload
-           state.dataGeneralJournalByEventPerDayInternal = []
+           state.loadingGeneralJournalByEventPerDayInternal = false
+           state.isLoadMore = false
         },
+        resetGeneralJournalEventPerDayPagination: (state) => {
+            state.dataGeneralJournalByEventPerDayInternal = []
+            state.page = 1
+            state.hasMore = true
+            state.isLoadMore = false
+            state.errorGeneralJournalByEventPerDayIntenal = null
+            state.totalDebet = 0
+            state.totalKredit = 0
+            state.totalEntry = 0
+            state.loadingGeneralJournalByEventPerDayInternal = false
+        }
     }
 })
-
 
 const initialGeneralJournalVoidInternalState = {
     dataGeneralJournalVoidInternal: [],

@@ -3,6 +3,7 @@ import {
     fetchTransactionHistory,
     fetchOrdersFinishedInternal,
     fetchSearchOrderInternal,
+    fetchGeneralJournalByEventPerDayInternal,
  } from "../actions/get";
 
 const initialOrderTypeState = {
@@ -39,8 +40,8 @@ export const buttonActivityCustomerSlice = createSlice({
 const initialFilterGeneralJournalInternalState = {
     startDate: null,
     endDate: null,
-    statusFilter: null,
-    eventFilter: null, 
+    statusFilter: 'FINALIZE',
+    eventFilter: 'Agregasi', 
     searchTerm: null,
 }
 export const filterGeneralJournalInternalSlice = createSlice({
@@ -65,8 +66,8 @@ export const filterGeneralJournalInternalSlice = createSlice({
         resetFilterGeneralJournal: (state) => {
             state.startDate = null
             state.endDate = null
-            state.statusFilter = null
-            state.eventFilter = null
+            state.statusFilter = 'FINALIZE'
+            state.eventFilter = 'Agregasi'
             state.searchTerm = null            
         }
     }
@@ -235,7 +236,34 @@ export const loadMoreSearchOrderInternal = (keyword) => {
     }
 }
 
-
+export const loadMoreGeneralJournalNonAgregasi = () => {
+    return async (dispatch, getState) => {
+        const state = getState().persisted
+        const { getGeneralJournalByEventPerDayInternal } = state 
+        const { filterGeneralJournalInternal } = state 
+        
+        if (!getGeneralJournalByEventPerDayInternal?.hasMore || 
+            getGeneralJournalByEventPerDayInternal?.isLoadMore ||
+            getGeneralJournalByEventPerDayInternal?.loadingGeneralJournalByEventPerDayInternal) {
+            console.log("Cannot load more - conditions not met", {
+                hasMore: getGeneralJournalByEventPerDayInternal?.hasMore,
+                isLoadMore: getGeneralJournalByEventPerDayInternal?.isLoadMore,
+                loading: getGeneralJournalByEventPerDayInternal?.loadingGeneralJournalByEventPerDayInternal
+            });
+            return;
+        }
+        
+        const nextPage = (getGeneralJournalByEventPerDayInternal?.page || 1) + 1;
+        console.log("Loading more data for page:", nextPage);
+        
+        return dispatch(fetchGeneralJournalByEventPerDayInternal(
+            filterGeneralJournalInternal.startDate,
+            filterGeneralJournalInternal.endDate,
+            nextPage,
+            true // isLoadMore
+        ))
+    }
+}
 
 
 

@@ -707,8 +707,8 @@ export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
           params: {
-            startDate: startDate,
-            endDate: endDate
+            start_date: startDate,
+            end_date: endDate
           }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)
@@ -725,35 +725,63 @@ export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
     }
 }
 
-const {fetchSuccessGeneralJournalByEventPerDayInternal, fetchErrorGeneralJournalByEventPerDayInternal, setLoadingGeneralJournalByEventPerDayInternal} = getGeneralJournalByEventPerDayInternalSlice.actions 
-export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate) => {
+const {fetchSuccessGeneralJournalByEventPerDayInternal, fetchErrorGeneralJournalByEventPerDayInternal, setLoadingGeneralJournalByEventPerDayInternal} = getGeneralJournalByEventPerDayInternalSlice.actions
+export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, page = 1, isLoadMore = false) => {
     return async (dispatch, getState) => {
-      const { statusExpiredToken } = getState().statusExpiredTokenState;
-      if (statusExpiredToken) return; 
-
-      dispatch(setLoadingGeneralJournalByEventPerDayInternal(true))
-      try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_PER_DAY_INTERNAL_URL}`, {
-          withCredentials: true,
-          headers: {
-            'API_KEY': process.env.REACT_APP_API_KEY
-          },
-          params: {
-            startDate: startDate,
-            endDate: endDate
-          }
-        })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
-        dispatch(fetchSuccessGeneralJournalByEventPerDayInternal(response?.data))
-      } catch (error) {
-        if (error.response?.data?.code === "TOKEN_EXPIRED") {
-            dispatch(setStatusExpiredToken(true))
+        const { statusExpiredToken } = getState().statusExpiredTokenState;
+        if (statusExpiredToken) return;
+        
+        const currentState = getState().persisted.getGeneralJournalByEventPerDayInternal;
+        
+        // ✅ Fix: Pengecekan kondisi yang lebih baik
+        if (currentState.isLoadMore && isLoadMore) {
+            console.log("Already loading more, skipping...");
+            return
+        }      
+        if (currentState.loadingGeneralJournalByEventPerDayInternal && !isLoadMore) {
+            console.log("Already loading, skipping...");
+            return
         }
-
-        dispatch(fetchErrorGeneralJournalByEventPerDayInternal(error.response?.data?.error))
-      } finally {
-        dispatch(setLoadingGeneralJournalByEventPerDayInternal(false))
-      }
+        
+        console.log("Starting fetch:", { startDate, endDate, page, isLoadMore });
+        
+        dispatch(setLoadingGeneralJournalByEventPerDayInternal({loading: true, isLoadMore}))
+        
+        try {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_BY_EVENT_PER_DAY_INTERNAL_URL}`, {
+                withCredentials: true,
+                headers: {
+                    'API_KEY': process.env.REACT_APP_API_KEY
+                },
+                params: {
+                    start_date: startDate,
+                    end_date: endDate,
+                    page: page,
+                }
+            })
+            
+            console.log("Fetch response:", {
+                dataLength: response?.data?.data?.length,
+                hasNext: response?.data?.has_next,
+                page: page
+            });
+            
+            dispatch(fetchSuccessGeneralJournalByEventPerDayInternal({
+                data: response?.data?.data || [],
+                hasMore: response?.data?.has_next || false,
+                totalEntry: response?.data?.total_groups || 0,
+                totalKredit: response?.data?.total_kredit || 0,
+                totalDebet: response?.data?.total_debit || 0,
+                isLoadMore: isLoadMore,
+                page: page // ✅ Fix: Kirim page ke reducer
+            }))
+        } catch (error) {
+            console.error("Fetch error:", error);
+            if (error.response?.data?.code === "TOKEN_EXPIRED") {
+                dispatch(setStatusExpiredToken(true))
+            }
+            dispatch(fetchErrorGeneralJournalByEventPerDayInternal(error.response?.data?.error))
+        }
     }
 }
 
@@ -771,8 +799,8 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate) => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
           params: {
-            startDate: startDate,
-            endDate: endDate
+            start_date: startDate,
+            end_date: endDate
           }
         })
         console.log("kenapa ini tidaj di ajalankan: ", response)

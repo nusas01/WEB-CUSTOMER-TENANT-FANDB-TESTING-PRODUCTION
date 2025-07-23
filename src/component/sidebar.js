@@ -130,11 +130,7 @@ const Sidebar = ({activeMenu}) => {
               className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "finances" && 'bg-gray-200'}`}
             >
               <NavItem Icon={Wallet} title="Finances" />
-              { openFinance ? (
-                <ChevronDown/>
-              ) : (
                 <ChevronRight/>
-              )}
             </div>
 
             {openFinance && (
