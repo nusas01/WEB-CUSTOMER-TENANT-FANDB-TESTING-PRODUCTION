@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { TrendingUp, Clock, Banknote, CreditCard, RefreshCw, Filter, Search, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
+import { TrendingUp, Clock, Banknote, CreditCard, Minimize, Maximize, RefreshCw, Filter, Search, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import FilterPanel from "./dateFilter"
 import { useDispatch, useSelector } from "react-redux"
@@ -38,7 +38,7 @@ import { da } from "date-fns/locale"
 import {ConfirmationModal, CashPaymentModal, ErrorAlert} from "./alert"
 import { useInfiniteScroll } from "../helper/helper"
 
-const TransactionTable = () => {
+const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const panelRef = useRef(null)
   const [search, setSearch] = useState("")
   const [dateFilter, setDateFilter] = useState(false)
@@ -564,13 +564,13 @@ const TransactionTable = () => {
             <div className="flex items-center gap-2">
               <button 
               onClick={() => handleRefreshTransaction()}
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-100"
               >
                 <RefreshCw className="h-4 w-4" />
                 <span>Refresh</span>
               </button>
-              <button className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105">
-                <Bell className="w-5 h-5 text-gray-600" />
+              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 hover:scale-105 rounded-lg transition-colors">
+               {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
               </button>
               <button 
                 className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105" 

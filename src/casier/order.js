@@ -20,7 +20,9 @@ import {
   Settings,
   Ticket,
   Plus,
-  RotateCcw
+  RotateCcw,
+  Maximize, 
+  Minimize,
 } from 'lucide-react';
 import { 
   fetchOrdersInternal,
@@ -41,7 +43,11 @@ import {
 } from "../reducers/patch.js";
 import { da, se } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-import {formatCurrency, useInfiniteScroll} from "../helper/helper.js";
+import {
+  formatCurrency, 
+  useInfiniteScroll,
+  useFullscreen,
+} from "../helper/helper.js";
 import { 
   toProgressOrderInternal, 
   toFinishedOrderInternal,
@@ -58,6 +64,11 @@ export default function KasirOrders() {
   const dispatch = useDispatch();
   const [toast, setToast] = useState({ show: false, type: '', message: '' });
   const [activeMenu, setActiveMenu] = useState("Orders");
+
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+
 
   // handle response error when fetching orders
   const { resetErrorOrdersInternal } = getOrdersInternalSlice.actions
@@ -188,7 +199,7 @@ export default function KasirOrders() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex relative">
       {/* Toast Portal */}
       {toast.show && (
         <ToastPortal>
@@ -204,19 +215,35 @@ export default function KasirOrders() {
       )}
 
       {/* Sidebar - Fixed width */}
-      <div className="w-1/10 min-w-[250px]">
-        <Sidebar activeMenu={activeMenu} />
+      {!isFullScreen && (
+        <div className="w-1/10 min-w-[250px]">
+          <Sidebar activeMenu={activeMenu} />
+        </div>
+      )}
+
+       {/* Main Content */}
+      <div
+        ref={contentRef}
+        className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+      >
+        <OrderDashboard 
+          isFullScreen={isFullScreen}
+          fullscreenchange={toggleFullScreen}
+        />
       </div>
 
-      <div className="flex-1">
-        <OrderDashboard />
-      </div>
+      {/* Full Screen Indicator */}
+      {isFullScreen && (
+        <div className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white px-3 py-1 rounded-lg text-sm">
+          Full Screen Mode - Press ESC to exit
+        </div>
+      )}
     </div>
   )
 }
 
 
-const OrderDashboard = () => {
+const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState([]);
   const [hasInitializedSearch, setHasInitializedSearch] = useState(false);
@@ -576,13 +603,13 @@ const OrderDashboard = () => {
             <div className="flex items-center gap-3">
               <button 
               onClick={() => handleRefreshOrders()}
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-100"
               >
                 <RefreshCw className="h-4 w-4" />
                 <span>Refresh</span>
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
+              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+               {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
                 <Settings className="w-5 h-5 text-gray-600" />

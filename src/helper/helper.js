@@ -1,5 +1,5 @@
 import {Database, RefreshCw} from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 export const formatCurrency = (amount) => {
@@ -49,4 +49,71 @@ export const useInfiniteScroll = ({
   }, [inView, hasMore, loading, loadMore]);
 
   return { ref, inView };
+};
+
+export const useFullscreen = (targetRef) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const enterFullScreen = useCallback(() => {
+    const element = targetRef.current;
+    if (element?.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element?.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if (element?.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element?.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
+  }, [targetRef]);
+
+  const exitFullScreen = useCallback(() => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }, []);
+
+  const toggleFullScreen = useCallback(() => {
+    if (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    ) {
+      exitFullScreen();
+    } else {
+      enterFullScreen();
+    }
+  }, [enterFullScreen, exitFullScreen]);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      const isFs =
+        !!document.fullscreenElement ||
+        !!document.webkitFullscreenElement ||
+        !!document.mozFullScreenElement ||
+        !!document.msFullscreenElement;
+      setIsFullScreen(isFs);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullScreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullScreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullScreenChange);
+    };
+  }, []);
+
+  return { isFullScreen, toggleFullScreen };
 };
