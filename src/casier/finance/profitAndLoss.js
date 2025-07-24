@@ -98,6 +98,7 @@ const ProfitAndLoss = () => {
      dataLabaRugiInternal.total_beban === 0 && 
      dataLabaRugiInternal.laba_bersih === 0);
 
+     
   // Empty State Component
   const EmptyState = () => (
     <div className="bg-white rounded-lg flex justify-center shadow-md p-12 text-center">
@@ -234,7 +235,7 @@ const ProfitAndLoss = () => {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => dispatch(setEndDate(e.target.value))}
                   className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
                 />
               </div>

@@ -259,7 +259,7 @@ const OrderDashboard = () => {
   }
   
   // Finished orders state - pastikan selector sesuai dengan struktur Redux
-  // const { resetFinishedOrdersPagination } = getOrdersFinishedInternalSlice.actions
+  const { resetFinishedOrdersPagination } = getOrdersFinishedInternalSlice.actions
   const finishedOrdersState = useSelector((state) => state.persisted.dataOrdersFinishedInternal)
   
   // Destructure dengan default values untuk mencegah undefined
@@ -383,6 +383,7 @@ const OrderDashboard = () => {
   // handle reset filter
   const { resetSearchOrder } = searchOrderInternalSlice.actions
   const handleResetFilter = () => {
+    dispatch(resetFinishedOrdersPagination())
     dispatch(resetFilterGeneralJournal())
     dispatch(resetSearchOrder())
     setSearchQuery('')
@@ -946,16 +947,16 @@ const OrderDashboard = () => {
               {statusFilter === 'FINISHED' && !hasInitializedSearch && dataOrdersFinishedInternal.length > 0 && (
                 <div 
                   ref={loadMoreFinishedRef} 
-                  className="w-full h-10 flex items-center justify-center"
+                  className="w-full h-10 flex items-center justify-center px-2 sm:px-4"
                 >
                   {isLoadMoreOrderFinished && (
                     <div className="flex items-center gap-2 py-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
-                      <span className="text-sm text-gray-500">Loading more orders...</span>
+                      <span className="text-sm text-gray-500 whitespace-nowrap">Loading more orders...</span>
                     </div>
                   )}
-                  {!hasMoreOrderFinished && dataOrdersFinishedInternal.length > 0 && (
-                    <div className="py-2 text-sm text-gray-500">
+                  {!hasMoreOrderFinished && (
+                    <div className="py-2 text-sm text-gray-500 text-center">
                       No more orders to load
                     </div>
                   )}

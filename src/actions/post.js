@@ -374,11 +374,13 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
             const state = getState();
             const { dataGeneralJournalByEventPerDayInternal } = state.getGeneralJournalByEventPerDayInternal || {};
 
-            if (data.action === "DRAF") {
+            console.log("data input general journal wkwwkwk: ", data)
+
+            if (data.detail.action === "DRAF") {
                 dispatch(fetchGeneralJournalDrafInternal());
             }
 
-            if (data.action === "FINALIZE") {
+            if (data.detail.action === "FINALIZE") {
                 dispatch(fetchGeneralJournalByEventAllInternal());
 
                 if (Array.isArray(dataGeneralJournalByEventPerDayInternal) && dataGeneralJournalByEventPerDayInternal.length > 0) {

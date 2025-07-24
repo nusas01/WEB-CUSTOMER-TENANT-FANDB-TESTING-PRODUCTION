@@ -13,7 +13,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  BookText
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
 import {FormatISODate} from '../../helper/formatdate.js'
@@ -27,6 +28,7 @@ import {
   filterGeneralJournalInternalSlice, 
   dataDrafToVoidInternalSlice,
   loadMoreGeneralJournalNonAgregasi,
+  loadMoreGeneralJournalVoidInternal,
 } from '../../reducers/reducers'
 import {
   getGeneralJournalByEventPerDayInternalSlice
@@ -116,14 +118,23 @@ const JournalDashboard = () => {
   }, [loadingGeneralJournalByEventAllInternal])
 
   // general journal data draf
-  const {dataGeneralJournalDrafInternal : journalDataDraf, loadingGeneralJournalDrafInternal} = useSelector((state) => state.persisted.getGeneralJournalDrafInternal)
+  const {
+    dataGeneralJournalDrafInternal : journalDataDraf, 
+    loadingGeneralJournalDrafInternal = false,
+  } = useSelector((state) => state.persisted.getGeneralJournalDrafInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalDrafInternal )
   }, [loadingGeneralJournalDrafInternal])
 
 
   // general journal data void
-  const {dataGeneralJournalVoidInternal : journalDataVoid, loadingGeneralJournalVoidInternal} = useSelector((state) => state.persisted.getGeneralJournalVoidInternal)
+  const {
+    dataGeneralJournalVoidInternal : journalDataVoid, 
+    loadingGeneralJournalVoidInternal = false, 
+    page: pageJournalVoid = 1,
+    hasMore: hasMoreJournalVoid = false,
+    isLoadMore: isLoadMoreJournalVoid = false,
+  } = useSelector((state) => state.persisted.getGeneralJournalVoidInternal)
   useEffect(() => {
     setSpinnerRelative(loadingGeneralJournalVoidInternal)
   }, [loadingGeneralJournalVoidInternal])
@@ -172,10 +183,19 @@ const JournalDashboard = () => {
 
       if (statusFilter === 'VOID') {
         if (journalDataVoid.length === 0) {
-          dispatch(fetchGeneralJournalVoidInternal('', ''))
+          dispatch(fetchGeneralJournalVoidInternal('', '', 1, false))
         }
       }
   }, [])
+
+  // handle ketika sebelumny fetch data menggunkan date maka hapus filter
+  useEffect(() => {
+    if ((startDate === '' && endDate !== '') || (startDate !== '' && endDate === '')) {
+      dispatch(fetchGeneralJournalByEventAllInternal('', ''))
+      dispatch(fetchGeneralJournalByEventPerDayInternal('', '', 1, false))
+      dispatch(fetchGeneralJournalVoidInternal('', '', 1, false))
+    }
+  }, [startDate, endDate])
 
   useEffect(() => {
     if (statusFilter === 'FINALIZE') {
@@ -198,7 +218,7 @@ const JournalDashboard = () => {
 
       if (statusFilter === 'VOID') {
         if (journalDataVoid.length === 0) {
-          dispatch(fetchGeneralJournalVoidInternal(startDate, endDate))
+          dispatch(fetchGeneralJournalVoidInternal(startDate, endDate, 1, false))
         }
       }
   }, [statusFilter, eventFilter])
@@ -214,14 +234,14 @@ const JournalDashboard = () => {
       }
 
       if (statusFilter === 'VOID') {
-          dispatch(fetchGeneralJournalVoidInternal())
+          dispatch(fetchGeneralJournalVoidInternal(startDate, endDate, 1, false))
       } 
     } 
   }, [startDate, endDate, eventFilter, statusFilter])
 
 
   const handleResetFilter = () => {
-    dispatch(fetchGeneralJournalVoidInternal('', ''))
+    dispatch(fetchGeneralJournalVoidInternal('', '', 1, false))
     dispatch(fetchGeneralJournalByEventAllInternal('', '', 1, false))
     dispatch(fetchGeneralJournalByEventPerDayInternal('', '', 1, false))
     dispatch(setEndDate(''))
@@ -242,17 +262,32 @@ const JournalDashboard = () => {
         console.log("Triggering load more from useEffect");
         dispatch(loadMoreGeneralJournalNonAgregasi());
     }
-}, [eventFilter, hasMoreJournalNonAgregasi, isLoadMoreNonAgregasi, loadingGeneralJournalByEventPerDayInternal, dispatch])
+  }, [eventFilter, hasMoreJournalNonAgregasi, isLoadMoreNonAgregasi, loadingGeneralJournalByEventPerDayInternal, dispatch])
 
-// ✅ IMPROVED INFINITE SCROLL HOOK
-const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
-    hasMore: hasMoreJournalNonAgregasi,
-    loading: isLoadMoreNonAgregasi || loadingGeneralJournalByEventPerDayInternal,
-    loadMore: handleLoadMoreJournalNonAgregasiCallback,
+  // ✅ IMPROVED INFINITE SCROLL HOOK
+  const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
+      hasMore: hasMoreJournalNonAgregasi,
+      loading: isLoadMoreNonAgregasi || loadingGeneralJournalByEventPerDayInternal,
+      loadMore: handleLoadMoreJournalNonAgregasiCallback,
+      threshold: 1.0,
+      rootMargin: '100px',
+  })
+
+  
+  // handle load more general journal void
+  const loadMoreJournalVoidCallback = useCallback(() => {
+    if (statusFilter === 'VOID' && hasMoreJournalVoid && !isLoadMoreJournalVoid) {
+      dispatch(loadMoreGeneralJournalVoidInternal())
+    } 
+  }, [statusFilter, hasMoreJournalVoid, isLoadMoreJournalVoid, dispatch])
+
+  const { ref: loadMoreJournalVoidRef } = useInfiniteScroll({
+    hasMore: hasMoreJournalVoid,
+    loading: isLoadMoreJournalVoid,
+    loadMore: loadMoreJournalVoidCallback,
     threshold: 1.0,
     rootMargin: '100px',
-})
-
+  })
 
   // Get status icon and color
   const getStatusConfig = (status) => {
@@ -267,23 +302,6 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
         return { icon: AlertTriangle, color: 'text-gray-600', bgColor: 'bg-gray-100', label: 'Unknown' };
     }
   };
-
-  // Filter data
-  // const activeJournalData = eventFilter === 'Non Agregasi' ? journalDataAgregasi : journalDataNonAgregasi;
-  const filteredDataNonAgregasi = useMemo(() => {
-    return journalDataNonAgregasi.filter(entry => {
-      const matchStatus = !statusFilter || entry.accounts.some(acc => acc.action === statusFilter);
-      const matchSearch = !searchTerm || 
-        entry.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.transaction_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.accounts.some(acc => 
-          acc.account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          acc.account_code.includes(searchTerm)
-        );
-  
-      return matchStatus && matchSearch;
-    });
-  }, [journalDataNonAgregasi, statusFilter, searchTerm]);
   
   
   // Calculate totals
@@ -438,6 +456,15 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
     setIsDateRangeInvalid(false); // Reset validasi saat endDate diubah
   };
 
+  const isMissingDate = startDate === '' || endDate === '';
+  const shouldShowInfoToday =
+  isMissingDate &&
+  (
+    (eventFilter === 'Agregasi' && journalDataAgregasi.length > 0) ||
+    (eventFilter === 'Non Agregasi' && journalDataNonAgregasi.length > 0) ||
+    (statusFilter === 'VOID' && journalDataVoid.length > 0)
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">        
 
@@ -468,7 +495,7 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
         <div className="bg-white rounded-lg shadow-sm mb-4">
           {/* Filter Section */}
           <div className="p-4 border-b border-gray-100">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div className="flex  justify-between flex-col lg:flex-row lg:items-center gap-4">
               {/* Date Filter */}
               <div className='relative'>
 
@@ -506,47 +533,35 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
               </div>
 
               {/* Status Filter */}
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-32"
-                >
-                  <option value="FINALIZE">Finalize</option>
-                  <option value="DRAF">Draf</option>
-                  <option value="VOID">Void</option>
-                </select>
-              </div>
-
-              {/* Event Filter */}
-              { statusFilter === 'FINALIZE' &&  (
+              <div className='flex space-x-2'>
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Event</label>
+                  <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Status</label>
                   <select
-                    value={eventFilter}
-                    onChange={(e) => dispatch(setEventFilter(e.target.value))}
-                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-36"
+                    value={statusFilter}
+                    onChange={(e) => dispatch(setStatusFilter(e.target.value))}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-32"
                   >
-                    {uniqueEvents.map(event => (
-                      <option key={event} value={event}>{event}</option>
-                    ))}
+                    <option value="FINALIZE">Finalize</option>
+                    <option value="DRAF">Draf</option>
+                    <option value="VOID">Void</option>
                   </select>
                 </div>
-              )}
 
-              {/* Search */}
-              <div className="flex-1 min-w-64">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Cari berdasarkan event, transaction ID, atau akun..."
-                    value={searchTerm}
-                    onChange={(e) => dispatch(setSearchTerm(e.target.value))}
-                    className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                  />
-                </div>
+                {/* Event Filter */}
+                { statusFilter === 'FINALIZE' &&  (
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Event</label>
+                    <select
+                      value={eventFilter}
+                      onChange={(e) => dispatch(setEventFilter(e.target.value))}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent w-36"
+                    >
+                      {uniqueEvents.map(event => (
+                        <option key={event} value={event}>{event}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -589,8 +604,7 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
           )}
         </div>
 
-        { ((statusFilter === 'DRAF' && journalDataDraf.length > 0) || (eventFilter === 'Agregasi' && journalDataAgregasi.length > 0) || 
-          (eventFilter === 'Non Agregasi' &&journalDataNonAgregasi.length > 0)) && (
+        { shouldShowInfoToday &&  (
           <div className="text-sm text-red-800 rounded mb-3">
               Menampilkan data untuk <strong>hari ini</strong>
           </div>
@@ -606,44 +620,78 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
           ) : (
             <>
               {  isDataEmpty ? (
-                <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                    <FileText className="h-10 w-10 text-gray-500" />
+                <div className="relative px-4 py-6 bg-white min-h-[50vh] rounded-lg shadow-xl border border-gray-100 overflow-hidden">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-5 pointer-events-none">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gray-800 rounded-full translate-x-12 -translate-y-12"></div>
+                    <div className="absolute bottom-0 left-0 w-20 h-20 bg-gray-800 rounded-full -translate-x-8 translate-y-8"></div>
+                  </div>
+
+                  {/* Floating Dots */}
+                  <div className="absolute top-6 left-6 w-2 h-2 bg-gray-300 rounded-full animate-ping"></div>
+                  <div className="absolute top-12 right-10 w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-10 left-14 w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
+
+                  {/* Main Content */}
+                  <div className="relative z-10 text-center flex flex-col items-center gap-6">
+                    {/* Icon */}
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-lg group hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <BookText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-800 group-hover:text-gray-700 transition-colors duration-300" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-800 rounded-full opacity-20 animate-pulse"></div>
+                      {/* Decorative Rings */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 border border-gray-200 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-32 h-32 sm:w-36 sm:h-36 border border-gray-100 rounded-full animate-pulse animation-delay-700"></div>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {startDate === endDate && startDate === new Date().toISOString().split('T')[0]
-                        ? "Belum Ada Jurnal Hari Ini"
-                        : "Tidak Ada Data Jurnal"}
-                    </h3>
-                    <div className="max-w-md mx-auto space-y-2">
-                    <p className="text-gray-600 leading-relaxed">
-                        {startDate === endDate && startDate === new Date().toISOString().split('T')[0]
-                        ? "Anda belum memiliki catatan jurnal untuk hari ini. Mulai dengan membuat entry jurnal pertama Anda."
-                        : statusFilter 
-                            ? `Tidak ada entry journal dengan status "${statusFilter}" yang sesuai dengan filter yang dipilih.`
-                            : "Tidak ada entry journal yang sesuai dengan kriteria pencarian Anda."}
+
+                    {/* Title */}
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">
+                      Tidak Ada Jurnal Umum
+                    </h2>
+
+                    {/* Description */}
+                    <p className="text-gray-600 text-base text-md leading-relaxed max-w-md sm:max-w-lg">
+                      Belum ada jurnal yang tercatat untuk periode ini. Silakan tambahkan jurnal baru atau periksa filter tanggal.
                     </p>
-                
-                    {startDate === endDate && startDate === new Date().toISOString().split('T')[0] && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                        <div className="flex items-start space-x-3">
-                            <div className="bg-blue-100 rounded-full p-1">
-                            <Clock className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="text-left">
-                            <p className="text-sm font-medium text-blue-800">Tips Jurnal Harian</p>
-                            <p className="text-sm text-blue-700 mt-1">
-                                Catat setiap transaksi bisnis Anda secara real-time untuk laporan keuangan yang akurat.
-                            </p>
-                            </div>
-                        </div>
-                        </div>
-                    )}
-                    </div>
-                    <button onClick={() => navigate('/internal/admin/general-journal/form')} className="mt-6 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 mx-auto transition-colors shadow-sm">
-                    <Plus className="h-4 w-4" />
-                    <span>Buat Entry Pertama</span>
+
+                    {/* CTA Button */}
+                    <button className="group relative bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl transition duration-300 transform hover:scale-105 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                        <span>Tambah Jurnal</span>
+                      </div>
+                      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
                     </button>
+
+                    {/* Footer text */}
+                    <p className="text-gray-600 text-base text-sm">
+                      Atau periksa kembali periode atau status jurnal yang dipilih
+                    </p>
+                  </div>
+
+                  {/* Soft Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-50/20 via-transparent to-gray-100/20 pointer-events-none"></div>
+
+                  {/* Custom Animation */}
+                  <style jsx>{`
+                    @keyframes shimmer {
+                      0% {
+                        transform: translateX(-100%) skewX(-12deg);
+                      }
+                      100% {
+                        transform: translateX(200%) skewX(-12deg);
+                      }
+                    }
+                    .animate-shimmer {
+                      animation: shimmer 1.5s ease-in-out;
+                    }
+                    .animation-delay-700 {
+                      animation-delay: 700ms;
+                    }
+                  `}</style>
                 </div>
               ) : (
                 <>
@@ -814,30 +862,51 @@ const { ref: loadMoreGeneralJournalNonAgregasiRef } = useInfiniteScroll({
                         </div>
                       ))}
 
-                      { eventFilter === 'Non Agregasi' && (
-                          <div
-                            ref={loadMoreGeneralJournalNonAgregasiRef}
-                            className="w-full h-10 flex items-center justify-center"
-                          >
-                            { isLoadMoreNonAgregasi && (
-                              <div className="flex items-center gap-2 py-2">
-                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
-                                <span className="text-sm text-gray-500">Loading more data...</span>
-                              </div>
-                            )}
-                            {!hasMoreJournalNonAgregasi && journalDataNonAgregasi.length > 0 && (
-                              <div className="py-2 text-sm text-gray-500">
-                                No more data to load
-                              </div>
-                            )}
-                          </div>
-                        )}
+                      {eventFilter === 'Non Agregasi' && (
+                        <div
+                          ref={loadMoreGeneralJournalNonAgregasiRef}
+                          className="w-full h-10 flex items-center justify-center px-2 sm:px-4"
+                        >
+                          {isLoadMoreNonAgregasi && (
+                            <div className="flex items-center gap-2 py-2">
+                              <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                              <span className="text-sm text-gray-500 whitespace-nowrap">Loading more data...</span>
+                            </div>
+                          )}
+                          {!hasMoreJournalNonAgregasi && journalDataNonAgregasi.length > 0 && (
+                            <div className="py-2 text-sm text-gray-500 text-center">
+                              No more data to load
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                      </>
                   )) : (statusFilter === 'DRAF' ?  (
                     <DrafVoidDataComponent drafData={journalDataDraf}  typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
                   ) : (
                     statusFilter === 'VOID' && (
-                    <DrafVoidDataComponent drafData={journalDataVoid} typeComponent={"VOID"}/>
+                      <>
+                        <DrafVoidDataComponent drafData={journalDataVoid} typeComponent={"VOID"}/>
+                        {journalDataVoid.length > 0 && (
+                          <div
+                            ref={loadMoreJournalVoidRef}
+                            className="w-full h-10 flex items-center justify-center px-2 sm:px-4"
+                          >
+                            {isLoadMoreJournalVoid && (
+                              <div className="flex items-center gap-2 py-2">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                                <span className="text-sm text-gray-500 whitespace-nowrap">Loading more data...</span>
+                              </div>
+                            )}
+                            {!hasMoreJournalVoid && journalDataVoid.length > 0 && (
+                              <div className="py-2 text-sm text-gray-500 text-center">
+                                No more data to load
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
                     )
                   )) }
                 </>

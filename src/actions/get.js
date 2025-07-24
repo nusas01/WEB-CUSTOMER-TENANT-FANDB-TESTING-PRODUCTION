@@ -786,36 +786,55 @@ export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, pag
 }
 
 const {fetchSuccessGeneralJournalVoidInternal, fetchErrorGeneralJournalVoidInternal, setLoadingGeneralJournalVoidInternal} = getGeneralJournalVoidInternalSlice.actions 
-export const fetchGeneralJournalVoidInternal = (startDate, endDate) => {
-    return async (dispatch, getState) => {
-      const { statusExpiredToken } = getState().statusExpiredTokenState;
-      if (statusExpiredToken) return; 
+export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, isLoadMore = false) => {
+  return async (dispatch, getState) => {
+    const { statusExpiredToken } = getState().statusExpiredTokenState;
+    if (statusExpiredToken) return;
 
-      dispatch(setLoadingGeneralJournalVoidInternal(true))
-      try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_VOID_INTERNAL_URL}`, {
-          withCredentials: true,
-          headers: {
-            'API_KEY': process.env.REACT_APP_API_KEY
-          },
-          params: {
-            start_date: startDate,
-            end_date: endDate
-          }
-        })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
-        dispatch(fetchSuccessGeneralJournalVoidInternal(response?.data))
-      } catch (error) {
-        if (error.response?.data?.code === "TOKEN_EXPIRED") {
-            dispatch(setStatusExpiredToken(true))
-        }
+    const currentState = getState().persisted.getGeneralJournalVoidInternal;
 
-        dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error))
-      } finally {
-        dispatch(setLoadingGeneralJournalVoidInternal(false))
-      }
+    if (currentState.isLoadMore && isLoadMore) {
+      console.log("Already loading more, skipping request");
+      return;
     }
-}
+
+    if (currentState.loadingGeneralJournalVoidInternal && !isLoadMore) {
+      console.log("Already loading initial data, skipping request");
+      return;
+    }
+
+    dispatch(setLoadingGeneralJournalVoidInternal({ loading: true, isLoadMore }));
+
+    try {
+      const response = await axiosInstance.get(`${process.env.REACT_APP_GET_GENERAL_JOURNAL_VOID_INTERNAL_URL}`, {
+        withCredentials: true,
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY,
+        },
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          page: page,
+        },
+      });
+
+      console.log("Fetch response (Void):", response.data);
+
+      dispatch(fetchSuccessGeneralJournalVoidInternal({
+        data: response?.data?.data || [],
+        page: page,
+        hasMore: response?.data?.hasMore || false,
+      }));
+    } catch (error) {
+      console.error("Fetch error (Void):", error);
+      if (error.response?.data?.code === "TOKEN_EXPIRED") {
+        dispatch(setStatusExpiredToken(true));
+      }
+      dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error || "Unknown error"));
+    }
+  };
+};
+
 
 const {fetchSuccessGeneralJournalDrafInternal, fetchErrorGeneralJournalDrafInternal, setLoadingGeneralJournalDrafInternal} = getGeneralJournalDrafInternalSlice.actions
 export const fetchGeneralJournalDrafInternal = () => {

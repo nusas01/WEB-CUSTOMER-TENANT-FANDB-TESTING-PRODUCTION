@@ -4,6 +4,7 @@ import {
     fetchOrdersFinishedInternal,
     fetchSearchOrderInternal,
     fetchGeneralJournalByEventPerDayInternal,
+    fetchGeneralJournalVoidInternal,
  } from "../actions/get";
 
 const initialOrderTypeState = {
@@ -264,6 +265,39 @@ export const loadMoreGeneralJournalNonAgregasi = () => {
         ))
     }
 }
+
+export const loadMoreGeneralJournalVoidInternal = () => {
+  return async (dispatch, getState) => {
+    const state = getState().persisted;
+    const { getGeneralJournalVoidInternal, filterGeneralJournalInternal } = state;
+
+    if (
+      !getGeneralJournalVoidInternal?.hasMore ||
+      getGeneralJournalVoidInternal?.isLoadMore ||
+      getGeneralJournalVoidInternal?.loadingGeneralJournalVoidInternal
+    ) {
+      console.log("Cannot load more - conditions not met", {
+        hasMore: getGeneralJournalVoidInternal?.hasMore,
+        isLoadMore: getGeneralJournalVoidInternal?.isLoadMore,
+        loading: getGeneralJournalVoidInternal?.loadingGeneralJournalVoidInternal,
+      });
+      return;
+    }
+
+    const nextPage = (getGeneralJournalVoidInternal?.page || 1) + 1;
+    console.log("Loading more data (Void) for page:", nextPage);
+
+    return dispatch(
+      fetchGeneralJournalVoidInternal(
+        filterGeneralJournalInternal.startDate,
+        filterGeneralJournalInternal.endDate,
+        nextPage,
+        true // isLoadMore
+      )
+    );
+  };
+};
+
 
 
 

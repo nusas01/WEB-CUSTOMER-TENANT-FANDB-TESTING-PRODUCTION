@@ -869,27 +869,59 @@ export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
 })
 
 const initialGeneralJournalVoidInternalState = {
-    dataGeneralJournalVoidInternal: [],
-    errorGeneralJournalVoidIntenal: null,
-    loadingGeneralJournalVoidInternal: false,
-} 
+  dataGeneralJournalVoidInternal: [],
+  errorGeneralJournalVoidIntenal: null,
+  loadingGeneralJournalVoidInternal: false,
+  page: 1,
+  hasMore: true,
+  isLoadMore: false,
+};
+
 export const getGeneralJournalVoidInternalSlice = createSlice({
-    name: "dataGeneralJournalVoid",
-    initialState: initialGeneralJournalVoidInternalState,
-    reducers: {
-        setLoadingGeneralJournalVoidInternal: (state, action) => {
-            state.loadingGeneralJournalVoidInternal = action.payload
-        },
-        fetchSuccessGeneralJournalVoidInternal: (state, action) => {
-            state.dataGeneralJournalVoidInternal = action.payload || []
-            state.errorGeneralJournalVoidIntenal = null
-        },
-        fetchErrorGeneralJournalVoidInternal: (state, action) => {
-           state.errorGeneralJournalVoidIntenal = action.payload
-           state.dataGeneralJournalVoidInternal = []
-        },
-    }
-})
+  name: "dataGeneralJournalVoid",
+  initialState: initialGeneralJournalVoidInternalState,
+  reducers: {
+    setLoadingGeneralJournalVoidInternal: (state, action) => {
+      if (state.page === 1 && !action.payload.isLoadMore) {
+        state.loadingGeneralJournalVoidInternal = action.payload.loading;
+      } else {
+        state.isLoadMore = action.payload.loading;
+      }
+    },
+    fetchSuccessGeneralJournalVoidInternal: (state, action) => {
+      const { data, page, hasMore } = action.payload;
+
+      if (page === 1) {
+        state.dataGeneralJournalVoidInternal = data || [];
+      } else {
+        state.dataGeneralJournalVoidInternal = [
+          ...state.dataGeneralJournalVoidInternal,
+          ...(data || []),
+        ];
+      }
+
+      state.page = page;
+      state.hasMore = hasMore;
+      state.loadingGeneralJournalVoidInternal = false;
+      state.isLoadMore = false;
+      state.errorGeneralJournalVoidIntenal = null;
+    },
+    fetchErrorGeneralJournalVoidInternal: (state, action) => {
+      state.errorGeneralJournalVoidIntenal = action.payload;
+      state.loadingGeneralJournalVoidInternal = false;
+      state.isLoadMore = false;
+    },
+    resetGeneralJournalVoidInternal: (state) => {
+      state.dataGeneralJournalVoidInternal = [];
+      state.errorGeneralJournalVoidIntenal = null;
+      state.loadingGeneralJournalVoidInternal = false;
+      state.page = 1;
+      state.hasMore = true;
+      state.isLoadMore = false;
+    },
+  },
+});
+
 
 
 const initialGeneralJournalDrafInternalState = {
