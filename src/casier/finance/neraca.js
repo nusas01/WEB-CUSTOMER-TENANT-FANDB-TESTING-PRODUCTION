@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Calendar, 
   TrendingUp, 
@@ -11,12 +11,15 @@ import {
   ChevronUp,
   FileText,
   Database,
-  AlertCircle
+  AlertCircle,
+  Maximize,
+  Minimize,
+  Menu,
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
-import {formatCurrency} from '../../helper/helper';
+import {formatCurrency, useFullscreen, useElementHeight} from '../../helper/helper';
 import { useDispatch, useSelector } from 'react-redux';
-import { filterDateNeracaInternalSlice } from '../../reducers/reducers'
+import { filterDateNeracaInternalSlice, navbarInternalSlice } from '../../reducers/reducers'
 import { ErrorAlert } from '../../component/alert';
 import { SpinnerRelative } from '../../helper/spinner';
 import {getNeracaInternalSlice} from '../../reducers/get'
@@ -28,8 +31,15 @@ export default function NeracaDashboard() {
   const [activeMenu, setActiveMenu] = useState("neraca")
 
   const {resetErrorNeracaInternal} = getNeracaInternalSlice.actions 
-  const { dataNeracaInternal, errorNeracaIntenal, loadingNeracaInternal } = useSelector((state) => state.persisted.getNeracaInternal)
+  const {errorNeracaIntenal, loadingNeracaInternal} = useSelector((state) => state.persisted.getNeracaInternal)
   
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+
+  // handle sidebar and elemant header yang responsice
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
    useEffect(() => {
     if (errorNeracaIntenal) {
       setErrorAlert(true)
@@ -44,26 +54,37 @@ export default function NeracaDashboard() {
   }, [errorNeracaIntenal])
 
   return (
-      <div className="flex">
-          <div className='w-1/10 min-w-[250px]'>
-              <Sidebar activeMenu={activeMenu}/>
+      <div className="flex relative">
+        {/* Sidebar - Fixed width */}
+        {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+          <div className="w-1/10 z-50 min-w-[290px]">
+              <Sidebar 
+              activeMenu={activeMenu}
+              />
           </div>
+        )}
 
-         { errorAlert && (
-            <ErrorAlert 
-              message="Terjadi kesalahan pada sistem saat mengambil data neraca. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi." 
-              onClose={() => setErrorAlert(false)}
+        { errorAlert && (
+          <ErrorAlert 
+            message="Terjadi kesalahan pada sistem saat mengambil data neraca. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi." 
+            onClose={() => setErrorAlert(false)}
+          />
+        )}
+
+        <div
+          ref={contentRef}
+          className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+        >
+            <NeracaComponent
+            isFullScreen={isFullScreen}
+            fullscreenchange={toggleFullScreen} 
             />
-         )}
-
-          <div className='flex-1'>
-              <NeracaComponent />
-          </div>
-      </div>
+        </div>
+    </div>
   )
 }
 
-const NeracaComponent = () => {
+const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const [dateRangeError, setDateRangeError] = useState("");
@@ -72,6 +93,12 @@ const NeracaComponent = () => {
     liabilitas: false,
     ekuitas: false
   });
+
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
   
   // data neraca from state
   const {resetErrorNeracaInternal} = getNeracaInternalSlice.actions 
@@ -80,8 +107,6 @@ const NeracaComponent = () => {
   useEffect(() => {
     setSpinner(loadingNeracaInternal)
   }, [loadingNeracaInternal])
-
- 
 
   // filtered date 
   const { setStartDate, setEndDate } = filterDateNeracaInternalSlice.actions
@@ -200,7 +225,7 @@ const NeracaComponent = () => {
   // Summary Cards Component
   const SummaryCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Aset</p>
@@ -212,7 +237,7 @@ const NeracaComponent = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Liabilitas</p>
@@ -224,7 +249,7 @@ const NeracaComponent = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Ekuitas</p>
@@ -236,7 +261,7 @@ const NeracaComponent = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Net Cash Flow</p>
@@ -345,62 +370,86 @@ const NeracaComponent = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg shadow-lg">
-                <FileText className="w-7 h-7 text-white" />
+        <div
+          ref={headerRef}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          style={{
+            left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+            width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+            height: '64px'
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex justify-between">
+            {/* Kiri - Judul */}
+            <div className="flex gap-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                    Laporan Neraca
+                <h1 className="text-xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  Laporan Neraca
                 </h1>
-                <p className="text-gray-500 text-sm">Balance Sheet</p>
+                <p className="text-gray-500 text-xs">Balance Sheet</p>
               </div>
             </div>
-            
-            {/* Filter Tanggal */}
-            <div className="flex relative flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-xl">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-gray-800 rounded-lg">
-                  <Calendar className="w-4 h-4 text-white" />
+
+            {/* Kanan - Filter dan Tombol */}
+            <div className="flex gap-3">
+              <div className="flex gap-3 bg-gray-50  rounded-xl relative">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-gray-800 rounded-lg">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium">Periode:</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => dispatch(setStartDate(e.target.value))}
+                    className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
+                  />
                 </div>
-                <span className="text-sm text-gray-700 font-medium">Periode:</span>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => dispatch(setStartDate(e.target.value))}
-                  className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
-                />
-              </div>
-              <div className='absolute bottom-1'>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 font-medium">Sampai:</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => dispatch(setEndDate(e.target.value))}
+                    className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
+                  />
+                </div>
+                <div
+                  className="flex cursor-pointer items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium"
+                  onClick={() => handleFilterDate()}
+                >
+                  <Filter className="w-3 h-3" />
+                  Klik Filter
+                </div>
                 {dateRangeError && (
-                  <span className="text-xs text-red-500 ml-10">{dateRangeError}</span>
+                  <div className="absolute -bottom-4 left-10">
+                    <span className="text-xs text-red-500">{dateRangeError}</span>
+                  </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700 font-medium">Sampai:</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => dispatch(setEndDate(e.target.value))}
-                  className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
-                />
-              </div>
-              <div 
-              className="flex cursor-pointer items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-              onClick={() => handleFilterDate()}
-              >
-                <Filter className="w-4 h-4" />
-                Klik Filter
-              </div>
+
+              {/* Fullscreen & Mobile Menu Button */}
+              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                {isFullScreen ? <Minimize className="w-7 h-7 text-gray-600" /> : <Maximize className="w-7 h-7 text-gray-600" />}
+              </button>
+
+              {isMobileDeviceType && !isFullScreen && (
+                <button
+                  onClick={() => dispatch(setIsOpen(true))}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        <div>
+        <div style={{marginTop: headerHeight}}>
           {/* Summary Cards - Always show */}
           <SummaryCards />
 
@@ -443,7 +492,7 @@ const NeracaComponent = () => {
                   </div>
 
                   {/* Neraca Sections */}
-                  <div className="divide-y divide-gray-200 px-4 pt-10 pb-4">
+                  <div className="divide-y divide-gray-200 items-center min-h-[50vh] px-4 pt-10 pb-4">
                     {renderSection(
                       "ASET",
                       dataNeracaInternal?.aset || [],

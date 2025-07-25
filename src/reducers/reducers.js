@@ -299,6 +299,23 @@ export const loadMoreGeneralJournalVoidInternal = () => {
 };
 
 
+export const navbarInternalSlice = createSlice({
+  name: "navbarInternal",
+  initialState: {
+    isOpen: false,
+    isMobileDeviceType: false,
+  },
+  reducers: {
+    setIsOpen: (state, action) => {
+      state.isOpen = action.payload;
+    },
+    setIsMobileDeviceType: (state, action) => {
+       state.isMobileDeviceType = action.payload;
+    }
+  },
+});
+
+
 
 
 

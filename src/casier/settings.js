@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   User, 
   Mail, 
@@ -18,7 +18,10 @@ import {
   ToggleLeft,
   ToggleRight,
   AlertCircle,
-  QrCode
+  QrCode,
+  Maximize, 
+  Minimize,
+  Menu,
 } from 'lucide-react';
 import Sidebar  from '../component/sidebar';
 import { fetchDataEmployeeInternal } from '../actions/get'
@@ -51,13 +54,25 @@ import {
 } from '../reducers/get'
 import { format } from 'date-fns';
 import { validatePassword } from '../helper/validate'
-import { formatCurrency, EmptyState } from '../helper/helper'
+import { formatCurrency, EmptyState, useFullscreen, useElementHeight } from '../helper/helper'
 import { current } from '@reduxjs/toolkit';
+import { navbarInternalSlice } from "../reducers/reducers"
  
 export default function KasirSettings() {
+  const activeMenu = "settings"
   const dispatch = useDispatch()
   const [toast, setToast] = useState({ show: false, type: '', message: '' })
   const [spinnerFixed, setSpinnerFixed] = useState(false)
+
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+
+  
+
+  // handle sidebar and elemant header yang responsice
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
   // response get data employee
   const { resetErrorDataEmployeeInternal } = getDataEmployeeInternalSlice.actions
@@ -150,10 +165,15 @@ export default function KasirSettings() {
   }
 
   return (
-    <div className='flex'>
-      <div className='w-1/10 min-w-[250px]'>
-        <Sidebar activeMenu="settings"/>
-      </div>
+    <div className='flex relative'>
+      {/* Sidebar - Fixed width */}
+      {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+        <div className="w-1/10 z-50 min-w-[290px]">
+            <Sidebar 
+            activeMenu={activeMenu}
+            />
+        </div>
+      )}
 
       {spinnerFixed && (
         <SpinnerFixed/>
@@ -173,14 +193,20 @@ export default function KasirSettings() {
         </ToastPortal>
       )}
 
-      <div className='flex-1'>
-        <SettingsDashboard />
+      <div
+        ref={contentRef}
+        className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+      >
+        <SettingsDashboard 
+        isFullScreen={isFullScreen}
+        fullscreenchange={toggleFullScreen}
+        />
       </div>
     </div>
   )
 }
 
-const SettingsDashboard = () => {
+const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
 
   // call data payment method
@@ -403,11 +429,25 @@ const SettingsDashboard = () => {
     </button>
   );
 
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+        <div
+          ref={headerRef}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          style={{
+            left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+            width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+            height: '64px'
+          }}
+        >
             <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -418,6 +458,20 @@ const SettingsDashboard = () => {
                         <h1 className="text-xl font-bold text-gray-800">Settings</h1>
                         <p className="text-gray-600 text-xs">Sesuaikan preferensi dan kelola sistem Anda.</p>
                     </div>
+                </div>
+
+                <div>
+                  <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                    {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
+                  </button>
+                  { isMobileDeviceType && !isFullScreen && (
+                    <button 
+                      onClick={() => dispatch(setIsOpen(true))}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Menu className="w-5 h-5 text-gray-600" />
+                    </button>
+                  )}
                 </div>
             </div>
             </div>
@@ -433,7 +487,7 @@ const SettingsDashboard = () => {
           </div>
         )}
 
-        <div className="p-4">
+        <div className="p-4" style={{marginTop: headerHeight}}>
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="space-y-2 grid-cols-3 md-:grid-cols-1 lg:grid-cols-3">

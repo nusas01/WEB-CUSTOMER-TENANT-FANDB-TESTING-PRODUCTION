@@ -1,24 +1,64 @@
 import { useState, useEffect, use } from "react"
-import { ScanBarcode, Ticket, Wallet, Computer, Box, Settings, LogOut, ChartNoAxesCombined, ChevronDown, ChevronRight, Menu, X } from "lucide-react"
+import { 
+  ScanBarcode, 
+  Ticket, 
+  Wallet, 
+  Monitor, 
+  Box, 
+  Settings, 
+  LogOut, 
+  Database, 
+  BarChart3, 
+  ChevronRight, 
+  Menu, 
+  X,
+  Home,
+  ChevronDown,
+} from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { logoutInternal } from "../actions/get"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
+import {useDeviceDetection} from "../helper/helper"
+import {navbarInternalSlice} from "../reducers/reducers"
 
+const menuItems = [
+  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction' },
+  { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier' },
+  { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders' },
+  { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product' },
+  { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table' },
+  { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics' },
+  { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings' }
+];
+
+const financeSubItems = [
+  { title: "General Journal", path: '/internal/admin/general-journal', key: 'general-journal' },
+  { title: "Profit And Loss", path: '/internal/admin/profit-and-loss', key: 'profit-and-loss' },
+  { title: "Neraca", path: '/internal/admin/neraca', key: 'neraca' }
+];
 
 const Sidebar = ({activeMenu}) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const [isOpen, setIsOpen] = useState(false)
   const [spinner, setSpinner] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
   const [openFinance, setOpenFinance] = useState(false);
   const location = useLocation()
+  
+  useDeviceDetection();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const {isOpen, isMobileDeviceType} = useSelector((state) => state.persisted.navbarInternal)
 
   const handleNavigate = (value) => {
     navigate(value)
+
+    if (isMobileDeviceType) {
+      dispatch(setIsOpen(false))
+    }
   }
+
 
   useEffect(() => {
     if (location.pathname.includes('/internal/admin/general-journal')) {
@@ -63,127 +103,253 @@ const Sidebar = ({activeMenu}) => {
     }
   }, [error])
 
-  return (  
-    <>
-      {/* Mobile Navbar */}
-      <div className="md:hidden flex justify-between items-center p-4 bg-white shadow-md">
-        <h1 className="text-xl text-gray-900 font-bold">Kasir</h1>
-        <button onClick={() => setIsOpen(true)}>
-          <Menu className="w-6 h-6" />
-        </button>
+  const handleOverlayClick = () => {
+    setIsOpen(false);
+  };
+
+
+   // Render Desktop Sidebar
+  const renderDesktopSidebar = () => (
+    <div className="flex w-72 flex-col fixed inset-y-0 bg-white border-r border-gray-200 shadow-sm">
+      {/* Desktop Header */}
+      <div className="flex items-center px-4 py-2 border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl flex items-center justify-center shadow-sm">
+            <Home className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Kasir</h1>
+            <p className="text-xs text-gray-500">Admin Panel</p>
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar (Desktop) & Full-Screen Menu (Mobile) */}
-      <div
-        className={`fixed sms:relative z-10 top-0 left-0 h-screen bg-white shadow-xl shadow-gray-500/50 text-black  flex flex-col justify-between transition-transform duration-0 ${
-          isOpen ? "translate-y-0 md:hidden w-full" : "-translate-y-full  md:translate-y-0 w-64"
-        }`}
-      >
-        {/* Close Button (Mobile) */}
-        
-
-        {/* Sidebar Header */}
-        <div className={isOpen ? "py-5 px-4 md:hidden flex justify-between items-center border-b" : "px-4  py-3 flex  items-center border-b"}>
-            <div className="flex space-x-2 items-center">
-                <img src={require("../image/logo_kasir.png")} alt="Logo" className="w-10 h-11 rounded-full"/>
-                <h1 className="text-xl font-semibold">Kasir</h1>
-            </div>
-            {isOpen ? (
-                <button onClick={() => setIsOpen(false)}>
-                  <X className="w-6 h-6" />
-                </button>
-            ): ""}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-2 overflow-y-auto max-h-screen">
-          <ul className="space-y-2">
-            <div onClick={() => handleNavigate('/internal/admin/transaction')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Transaction' && 'bg-gray-200'}`}>
-                <NavItem Icon={ScanBarcode} title="Transactions" />
-                <ChevronRight/>
-            </div>
-            <div onClick={() => handleNavigate('/internal/admin/cashier')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Cashier' && 'bg-gray-200'}`}>
-                <NavItem Icon={Computer} title="Cashier" />
-                <ChevronRight/>
-            </div>
-            <div onClick={() => handleNavigate('/internal/admin/orders')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === 'Orders' && 'bg-gray-200'}`}>
-                <NavItem Icon={Ticket} title="Orders" />
-                <ChevronRight/>
-            </div>
-            <div onClick={() => handleNavigate('/internal/admin/products')} className={`flex items-center justify-between w-full rounded-lg hover:bg-gray-200 cursor-pointer ${activeMenu === "Product" && 'bg-gray-200'}`}>
-                <NavItem Icon={Box} title="Products" />
-                <ChevronRight/>
-            </div>
-            <div onClick={() => handleNavigate('/internal/admin/tables')} className={`flex py-3 justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "table" && 'bg-gray-200'}`}>
-                <div className="flex items-center ml-3 space-x-2">
-                  <svg  xmlns="http://www.w3.org/2000/svg"  width="26"  height="26"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-databricks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01" /></svg>
-                  <p>Tables</p>
-                </div>
-                  <ChevronRight/>
-            </div>
-            <div onClick={() => handleNavigate('/internal/admin/statistics')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "statistics" && 'bg-gray-200'}`}>
-                <NavItem Icon={ChartNoAxesCombined} title="Statistics"/>
-                <ChevronRight/>
-            </div>
+      {/* Desktop Navigation */}
+      <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        <div className="space-y-2">
+          {menuItems.map((item) => (
             <div
-              onClick={() => setOpenFinance(!openFinance)}
-              className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "finances" && 'bg-gray-200'}`}
+              key={item.key}
+              onClick={() => handleNavigate(item.path)}
+              className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+                activeMenu === item.key ? 'bg-gray-100 text-gray-950 shadow-sm' : 'text-gray-700'
+              }`}
             >
-              <NavItem Icon={Wallet} title="Finances" />
-                <ChevronRight/>
+              <NavItem 
+                Icon={item.Icon} 
+                title={item.title}
+                className="flex-1"
+              />
+              <ChevronRight className={`w-4 h-4 mr-3 transition-colors ${
+                activeMenu === item.key ? 'text-gray-950' : 'text-gray-400 group-hover:text-gray-600'
+              }`} />
             </div>
+          ))}
+
+          {/* Finance Section */}
+          <div className="mt-4">
+            <button
+              onClick={() => setOpenFinance(!openFinance)}
+              className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+                activeMenu === "finances" ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
+              }`}
+            >
+              <NavItem Icon={Wallet} title="Finances" className="flex-1" />
+              <div className="mr-3">
+                {openFinance ? (
+                  <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                )}
+              </div>
+            </button>
 
             {openFinance && (
-              <div className="ml-6 space-y-2 mt-2">
-                <div
-                  onClick={() => handleNavigate('/internal/admin/general-journal')}
-                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "general-journal" && 'bg-gray-100'}`}
-                >
-                  <span className="text-sm text-gray-800">General Journal</span>
-                </div>
-                <div
-                  onClick={() => handleNavigate('/internal/admin/profit-and-loss')}
-                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "profit-and-loss" && 'bg-gray-100'}`}
-                >
-                  <span className="text-sm text-gray-800">Profit And Loss</span>
-                </div>
-                <div
-                  onClick={() => handleNavigate('/internal/admin/neraca')}
-                  className={`flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 ${activeMenu === "neraca" && 'bg-gray-100'}`}
-                >
-                  <span className="text-sm text-gray-800">Neraca</span>
-                </div>
+              <div className="ml-8 mt-2 space-y-1">
+                {financeSubItems.map((subItem) => (
+                  <div
+                    key={subItem.key}
+                    onClick={() => handleNavigate(subItem.path)}
+                    className={`flex items-center cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors ${
+                      activeMenu === subItem.key 
+                        ? 'bg-gray-100 text-gray-950 font-medium' 
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-700'
+                    }`}
+                  >
+                    <span>{subItem.title}</span>
+                  </div>
+                ))}
               </div>
             )}
+          </div>
+        </div>
+      </nav>
 
-            <div onClick={() => handleNavigate('/internal/admin/settings')} className={`flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg ${activeMenu === "settings" && 'bg-gray-200'}`}>
-                <NavItem Icon={Settings} title="Settings" />
-                <ChevronRight/>
+      {/* Desktop Footer */}
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center space-x-3 py-2 px-4 rounded-xl bg-gray-900 hover:bg-gray-800 text-white transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  // Render Mobile/Tablet Header
+  const renderMobileHeader = () => (
+    <div className="flex justify-between items-center p-4 bg-white shadow-sm border-b border-gray-200 relative z-40">
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg flex items-center justify-center">
+          <Home className="w-4 h-4 text-white" />
+        </div>
+        <h1 className="text-xl font-bold text-gray-900">Kasir</h1>
+      </div>
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        <Menu className="w-6 h-6 text-gray-700" />
+      </button>
+    </div>
+  );
+
+  // Render Mobile/Tablet Sidebar
+  const renderMobileSidebar = () => (
+    <div
+      className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+        onClick={handleOverlayClick}
+      />
+      
+      {/* Sidebar Content */}
+      <div className="relative w-full h-full bg-white flex flex-col">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-50">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl flex items-center justify-center shadow-sm">
+              <Home className="w-5 h-5 text-white" />
             </div>
-          </ul>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Kasir</h1>
+              <p className="text-xs text-gray-500">Admin Panel</p>
+            </div>
+          </div>
+          <button
+            onClick={() => dispatch(setIsOpen(false))}
+            className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <X className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        <nav className="flex-1 px-6 py-6 overflow-y-auto">
+          <div className="space-y-3">
+            {menuItems.map((item) => (
+              <div
+                key={item.key}
+                onClick={() => handleNavigate(item.path)}
+                className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
+                  activeMenu === item.key 
+                    ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <NavItem 
+                  Icon={item.Icon} 
+                  title={item.title}
+                  className="flex-1 p-4"
+                />
+                <ChevronRight className={`w-4 h-4 mr-4 transition-colors ${
+                  activeMenu === item.key ? 'text-blue-500' : 'text-gray-400'
+                }`} />
+              </div>
+            ))}
+
+            {/* Finance Section Mobile */}
+            <div className="mt-6">
+              <button
+                onClick={() => setOpenFinance(!openFinance)}
+                className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
+                  activeMenu === "finances" 
+                    ? 'bg-blue-50 text-blue-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <NavItem Icon={Wallet} title="Finances" className="flex-1 p-4" />
+                <div className="mr-4">
+                  {openFinance ? (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  )}
+                </div>
+              </button>
+
+              {openFinance && (
+                <div className="ml-8 mt-3 space-y-2">
+                  {financeSubItems.map((subItem) => (
+                    <div
+                      key={subItem.key}
+                      onClick={() => handleNavigate(subItem.path)}
+                      className={`flex items-center cursor-pointer rounded-lg px-4 py-3 transition-colors ${
+                        activeMenu === subItem.key 
+                          ? 'bg-blue-50 text-blue-700 font-medium' 
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{subItem.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t space-y-2">
-            <div onClick={() => handleLogout()} className="rounded-lg bg-gray-800 hover:bg-gray-600 text-white">
-                <NavItem Icon={LogOut} title="Logout" />
-            </div>
+        {/* Mobile Footer */}
+        <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl bg-gray-900 hover:bg-gray-800 text-white transition-colors shadow-sm"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
+          </button>
         </div>
       </div>
+    </div>
+  );
 
-      { showAlertError && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-red-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
-              terjadi error di server kami
-          </div>
+  return (  
+    <>
+      {/* Conditional Rendering based on Device Type */}
+      {!isMobileDeviceType && renderDesktopSidebar()}
+      
+      {isMobileDeviceType && (
+        <>
+          {renderMobileHeader()}
+          {renderMobileSidebar()}
+        </>
       )}
 
-      {/* spinner */}
-      { spinner && (
-        <SpinnerFixed  colors={'fill-green-500'}/>
+      {/* Error Alert */}
+      {showAlertError && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-red-500 text-white p-4 rounded-xl text-center shadow-lg z-50 animate-bounce">
+          <p className="font-medium">Terjadi error di server kami</p>
+        </div>
       )}
 
-      {/* Overlay Background (Mobile) */}
-      {isOpen && <div className="fixed inset-0 bg-black/50 md:hidden" onClick={() => setIsOpen(false)} />}
+      {/* Loading Spinner */}
+      {spinner && <SpinnerFixed colors="fill-blue-500" />}
     </>
   );
 };

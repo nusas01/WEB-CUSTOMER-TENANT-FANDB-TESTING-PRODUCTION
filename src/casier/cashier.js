@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useRef, useState } from "react"
-import {Plus, Search, Eye, X, CheckCircle, Computer, Bell, Settings, RefreshCw} from "lucide-react"
+import {Plus, Search, Eye, X, CheckCircle, Computer, Menu, Settings, RefreshCw, Maximize, Minimize} from "lucide-react"
 import {
     fetchPaymentMethodsInternal, 
     fetchProductsCustomer,
@@ -20,6 +20,7 @@ import {
     getAllCreateTransactionInternalSlice,
     checkTransactionNonCashInternalSlice,
 } from "../reducers/get"
+import {  navbarInternalSlice } from "../reducers/reducers.js"
 import { useDispatch, useSelector } from "react-redux"
 import {SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import { id } from "date-fns/locale"
@@ -44,52 +45,90 @@ import ImagePaymentMethod from '../helper/imagePaymentMethod'
 import { CountDownRemoveData } from '../helper/countDown'
 import { paymentSuccessTransactionCashierSlice } from '../reducers/notif'
 import { useNavigate } from "react-router-dom"
+import { useFullscreen, useElementHeight } from "../helper/helper.js"
 
 export default function Cashier() {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const [activeMenu, setActiveMenu] = useState("Cashier")
     const cartRef = useRef(null)
 
-    return (
-        <div className="flex">
-            <div className="w-1/10 min-w-[250px]">
-                <Sidebar activeMenu={activeMenu}/>
-            </div>
+    // maxsimaz minimaz layar
+    const contentRef = useRef(null);
+    const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
-            <div className="flex-1">
+    // handle sidebar and elemant header yang responsice
+    const { ref: headerRef, height: headerHeight } = useElementHeight();
+    const { setIsOpen } = navbarInternalSlice.actions
+    const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
+    return (
+        <div className="flex relative">
+            {/* Sidebar - Fixed width */}
+            {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+              <div className="w-1/10 z-50 min-w-[290px]">
+                  <Sidebar 
+                  activeMenu={activeMenu}
+                  />
+              </div>
+            )}
+
+            <div
+                ref={contentRef}
+                className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+            >
                 {/* Header */}
-                <div className="bg-white shadow-sm border-b border-gray-200">
+                <div
+                ref={headerRef}
+                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+                style={{
+                    left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+                    width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+                    height: '64px'
+                }}
+                >
                     <div className="max-w-7xl mx-auto px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                            <Computer className="w-6 h-6 text-white" />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
+                                <Computer className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-gray-800">Cashier</h1>
+                                <p className="text-gray-600 text-xs">Kelola transaksi pelanggan dan proses pembayaran dengan mudah</p>
+                            </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                            <button onClick={() => toggleFullScreen()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                                {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
+                                <Settings className="w-5 h-5 text-gray-600" />
+                            </button>
+                            { isMobileDeviceType && !isFullScreen && (
+                                <button 
+                                onClick={() => dispatch(setIsOpen(true))}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                <Menu className="w-5 h-5 text-gray-600" />
+                                </button>
+                            )}
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-800">Cashier</h1>
-                            <p className="text-gray-600 text-xs">Kelola transaksi pelanggan dan proses pembayaran dengan mudah</p>
-                        </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Bell className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
-                            <Settings className="w-5 h-5 text-gray-600" />
-                        </button>
-                        </div>
-                    </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-6 p-5">
+                <div className="flex flex-col gap-6 max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
                     <div className="p-4 bg-white rounded-lg shadow-md">
                         <ComponentOrderCashier/>
                     </div>
                     
                     <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
                         <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
-                        <ComponentCartCashier cartRef={cartRef}/>
+                        <ComponentCartCashier 
+                        cartRef={cartRef}
+                        isFullScreen={isFullScreen}
+                        />
                     </div>
                 </div>
             </div>
@@ -97,7 +136,7 @@ export default function Cashier() {
     )
 } 
 
-const ComponentCartCashier = ({cartRef}) => {
+const ComponentCartCashier = ({cartRef, isFullScreen}) => {
     const [eventNotes, setEventNotes] = useState(0)
     const dispatch = useDispatch()
     const dropdownRef = useRef(null)
@@ -768,9 +807,10 @@ const ComponentCartCashier = ({cartRef}) => {
                 </button>
             </div>
 
-
             {/* add product modal */}
-            {openModeladdProduct && <ProductCashier onClose={() => setOpenModelAddProduct(false)} />}
+            <div className={`${isFullScreen ? 'h-screen overflow-y-auto' : ''}`}>
+                {openModeladdProduct && <ProductCashier onClose={() => setOpenModelAddProduct(false)} />}
+            </div>
         </div>
     )
 }

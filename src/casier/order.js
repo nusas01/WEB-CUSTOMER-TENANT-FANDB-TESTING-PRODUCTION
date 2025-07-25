@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Maximize, 
   Minimize,
+  Menu,
 } from 'lucide-react';
 import { 
   fetchOrdersInternal,
@@ -47,6 +48,7 @@ import {
   formatCurrency, 
   useInfiniteScroll,
   useFullscreen,
+  useElementHeight,
 } from "../helper/helper.js";
 import { 
   toProgressOrderInternal, 
@@ -56,6 +58,7 @@ import {
   filterOrderInternalSlice,
   loadMoreOrderFinished,
   loadMoreSearchOrderInternal,
+  navbarInternalSlice,
  } from "../reducers/reducers.js"
 import {DateFilterComponent} from '../helper/formatdate.js'
 import { set } from "date-fns";
@@ -69,6 +72,8 @@ export default function KasirOrders() {
   const contentRef = useRef(null);
   const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
+  // handle sidebar and elemant header yang responsice
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
   // handle response error when fetching orders
   const { resetErrorOrdersInternal } = getOrdersInternalSlice.actions
@@ -215,11 +220,14 @@ export default function KasirOrders() {
       )}
 
       {/* Sidebar - Fixed width */}
-      {!isFullScreen && (
-        <div className="w-1/10 min-w-[250px]">
-          <Sidebar activeMenu={activeMenu} />
+      {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+        <div className="w-1/10 z-50 min-w-[290px]">
+            <Sidebar 
+            activeMenu={activeMenu}
+            />
         </div>
       )}
+
 
        {/* Main Content */}
       <div
@@ -580,6 +588,12 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
     }
   }, [dataOrdersInternal, hasInitializedSearch, dataSearchOrder, statusFilter]);
 
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       { spinnerFixed && (
@@ -587,7 +601,15 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
       )}
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div
+        ref={headerRef}
+        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+        style={{
+          left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+          width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+          height: '64px'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -614,12 +636,20 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
+              { isMobileDeviceType && !isFullScreen && (
+                <button 
+                  onClick={() => dispatch(setIsOpen(true))}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
         {/* total revenue */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">

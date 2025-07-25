@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Bell, 
   Settings, 
@@ -11,7 +11,10 @@ import {
   RefreshCw,
   Smartphone,
   Clock,
-  BarChart3
+  BarChart3,
+  Maximize, 
+  Minimize,
+  Menu,
 } from 'lucide-react';
 import Sidebar from '../component/sidebar';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +39,8 @@ import { getTablesInternalSlice } from '../reducers/get'
 import handleDownloadQR  from '../helper/downloadQrTable'
 import { set } from 'date-fns';
 import { Toast } from '../component/alert';
+import { useFullscreen, useElementHeight } from '../helper/helper';
+import {navbarInternalSlice} from "../reducers/reducers"
 
 // QR Code Component (placeholder - in real app you'd use a QR library)
 const QRCodePlaceholder = ({ size = 120, tableNumber = null }) => (
@@ -53,6 +58,7 @@ const QRCodePlaceholder = ({ size = 120, tableNumber = null }) => (
 );
 
 export default function ModernKasirDashboard() {
+  const activeMenu ="table"
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [spinnerRelative, setSpinnerRelative] = useState(true)
@@ -61,6 +67,11 @@ export default function ModernKasirDashboard() {
   const [downloadingStates, setDownloadingStates] = useState({});
   const [toast, setToast] = useState(null);
   const origin = window.location.origin;
+
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+
 
   const handleDownloadQRWithLoading = async (tableNumber = null, takeAway = null, imageUrl = '') => {
     const downloadKey = takeAway ? 'takeaway' : `table-${tableNumber}`;
@@ -218,8 +229,16 @@ export default function ModernKasirDashboard() {
     setSpinnerFixed(loadingCreateQROrderTypeTakeAway)
   }, [loadingCreateQROrderTypeTakeAway])
 
+  
+  // handle navbar ketika ukuran table dan hp
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+
   return (
-    <>
+    <div>
       {toast && (
         <ToastPortal> 
           <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
@@ -233,10 +252,16 @@ export default function ModernKasirDashboard() {
         </ToastPortal>
         )}
 
-      <div className='flex'>
-        <div className='w-1/10 min-w-[250px]'>
-          <Sidebar activeMenu={"table"}/>
-        </div>
+      <div className='flex relative'>
+        {/* Sidebar - Fixed width */}
+          {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+            <div className="w-1/10 z-50 min-w-[290px]">
+                <Sidebar 
+                activeMenu={activeMenu}
+                />
+            </div>
+          )}
+
 
         { spinnerFixed && (
           <SpinnerFixed colors={"fill-gray-800"}/>
@@ -246,11 +271,21 @@ export default function ModernKasirDashboard() {
           <DeleteConfirmationModalTable submit={handleDeleteLastTable} onClose={() => setConfirmModel(false)}/>
         )}
 
-        <div className="min-h-screen bg-gray-50 flex-1">
-          {/* Toast Notification */}
-
+        {/* Main Content */}
+        <div
+          ref={contentRef}
+          className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+        >
           {/* Header */}
-          <div className="bg-white shadow-sm border-b border-gray-200">
+          <div
+            ref={headerRef}
+            className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+            style={{
+              left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+              width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+              height: '64px'
+            }}
+          >
               <div className="max-w-7xl mx-auto px-4 py-3">
               <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -263,18 +298,26 @@ export default function ModernKasirDashboard() {
                   </div>
                   </div>
                   <div className="flex items-center gap-3">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Bell className="w-5 h-5 text-gray-600" />
+                  <button onClick={() => toggleFullScreen()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                    {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
                   </button>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
                       <Settings className="w-5 h-5 text-gray-600" />
                   </button>
+                  { isMobileDeviceType && !isFullScreen && (
+                    <button 
+                      onClick={() => dispatch(setIsOpen(true))}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Menu className="w-5 h-5 text-gray-600" />
+                    </button>
+                  )}
                   </div>
               </div>
               </div>
           </div>
 
-          <div className="p-6 space-y-4">
+          <div className="flex flex-col gap-6 max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
              {/* Take Away Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center gap-3 mb-6">
@@ -479,6 +522,6 @@ export default function ModernKasirDashboard() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

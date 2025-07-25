@@ -150,8 +150,8 @@ function App() {
             <Route path="/internal/admin/products" element={<KasirProducts/>}/>
             <Route path="/internal/admin/tables" element={<KasirTables/>}/>
             <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
-            <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/>
-            <Route path="/internal/admin/order/details" element={<OrderDetails/>}/>
+            {/* <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/> */}
+            {/* <Route path="/internal/admin/order/details" element={<OrderDetails/>}/> */}
           </Route>
         </Routes>
 

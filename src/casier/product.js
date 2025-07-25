@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useState, forwardRef, useRef } from "react"
-import { Pencil, Trash, Search, Plus, Box, Bell, Settings, Package, Tag } from "lucide-react"
+import { Pencil, Trash, Search, Plus, Box, Menu, Settings, Package, Tag, Maximize, Minimize } from "lucide-react"
 import { 
   DeleteConfirmationModal,
   Toast,
@@ -8,6 +8,7 @@ import {
 } from "../component/alert"
 import { useSelector, useDispatch } from "react-redux"
 import { SpinnerRelative, SpinnerFixed } from "../helper/spinner"
+import { useFullscreen, useElementHeight } from "../helper/helper"
 import { useNavigate } from "react-router-dom"
 import { createProductInternalSlice, createCategoryInternalSlice } from "../reducers/post"
 import { updateInternalSlice } from "../reducers/put" 
@@ -17,6 +18,7 @@ import {
 import { dataTempUpdateProductSlice } from "../reducers/notif"
 import { availbaleProductlSlice } from "../reducers/patch"
 import { deleteProductInternalSlice } from "../reducers/post"
+import { navbarInternalSlice } from "../reducers/reducers"
 import { 
   fetchCategoryAndProductInternal,
   fetchCategoryInternal, 
@@ -200,8 +202,16 @@ export default function KasirProducts() {
         }   
     }, [errorDeleteProductInternal])
 
+    // handle full screen
+    // maxsimaz minimaz layar
+    const contentRef = useRef(null);
+    const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+
+    // handle navbar ketika ukuran table dan hp
+    const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
     return (
-        <div className="flex">
+        <div className="flex relative bg-gray-50">
             {/* Toast Notification */}
             {toast && (
                 <ToastPortal> 
@@ -217,20 +227,28 @@ export default function KasirProducts() {
             )}
 
             {/* Sidebar - Fixed width */}
-            <div className="w-1/10 min-w-[250px]">
-                <Sidebar 
-                activeMenu={activeMenu}
-                />
-            </div>
+            {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+              <div className="w-1/10 z-50 min-w-[290px]">
+                  <Sidebar 
+                  activeMenu={activeMenu}
+                  />
+              </div>
+            )}
 
-            <div className="flex-1">
-                <ProductsTable/>
+             <div
+              ref={contentRef}
+              className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+            >
+                <ProductsTable
+                isFullScreen={isFullScreen}
+                fullscreenchange={toggleFullScreen}
+                />
             </div>
         </div>
     )
 }
 
-function ProductsTable() {
+function ProductsTable({isFullScreen, fullscreenchange}) {
     const navigate = useNavigate()
     const panelRef = useRef()
     const [search, setSearch] = useState("");
@@ -359,22 +377,34 @@ function ProductsTable() {
     setProductIdDelete(null)
   }
 
-
   // handle search product
   const { searchProductByName } = getCategoryAndProductInternalSlice.actions
   useEffect(() => {
     dispatch(searchProductByName(search))
   }, [search, dispatch])
 
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
     return (
-        <div>
+        <div className="relative">
             { spinnerFixed && (
               <SpinnerFixed colors={'fill-gray-900'}/>
             )}
 
             {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 py-3">
+             <div
+                ref={headerRef}
+                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+                style={{
+                  left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+                  width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+                  height: '64px'
+                }}
+              >
+              <div className="max-w-7xl mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
@@ -386,12 +416,20 @@ function ProductsTable() {
                     </div>
                     </div>
                     <div className="flex items-center gap-3">
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <Bell className="w-5 h-5 text-gray-600" />
+                    <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                      {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
                     </button>
                     <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
                         <Settings className="w-5 h-5 text-gray-600" />
                     </button>
+                    { isMobileDeviceType && !isFullScreen && (
+                      <button 
+                        onClick={() => dispatch(setIsOpen(true))}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <Menu className="w-5 h-5 text-gray-600" />
+                      </button>
+                    )}
                     </div>
                 </div>
                 </div>
@@ -407,7 +445,7 @@ function ProductsTable() {
               colorsType={"internal"}/>
             )}
 
-            <div className="p-6 max-w-7xl mx-auto">
+            <div className="p-6 max-w-7xl mx-auto" style={{marginTop: headerHeight}}>
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 {/* Header Section */}
                 <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-8 py-6 border-b border-gray-100">
@@ -473,14 +511,14 @@ function ProductsTable() {
             </div>
             
             <div className="p-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-md  min-h-[70vh] shadow-lg p-6">
+              <div className="bg-white border-b border-gray-200 rounded-md  min-h-[70vh] shadow-lg p-6">
                 { !spinnerProduct ? (
                   <>
                     {dataCategoryAndProduct && dataCategoryAndProduct.length > 0 ? (
                       (Array.isArray(filteredProduct) && filteredProduct.length > 0 ? filteredProduct : dataCategoryAndProduct).map((category) => (
-                        <div key={category.id}>
+                        <div key={category.id} className="mb-4">
                           {/* Nama Kategori */}
-                          <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
+                          <div className="flex flex-wrap gap-4 items-center justify-between mb-4">
                             <p className="text-lg font-semibold">{category.name}</p>
                           </div>
 

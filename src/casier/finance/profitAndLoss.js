@@ -1,19 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar, TrendingUp, TrendingDown, DollarSign, FileText, Filter, AlertCircle, Database } from 'lucide-react';
-import { formatCurrency } from '../../helper/helper';
+import React, { useEffect, useState, useRef } from 'react';
+import { Calendar, TrendingUp, TrendingDown, Maximize, Menu, Minimize, DollarSign, FileText, Filter, AlertCircle, Database } from 'lucide-react';
+import { formatCurrency, useFullscreen, useElementHeight } from '../../helper/helper';
 import Sidebar from '../../component/sidebar';
 import { fetchLabaRugiInternal } from '../../actions/get'
 import { useDispatch, useSelector } from 'react-redux';
-import { filterDateLabaRugiInternalSlice } from '../../reducers/reducers'
+import { filterDateLabaRugiInternalSlice, navbarInternalSlice } from '../../reducers/reducers'
 import { ErrorAlert } from '../../component/alert';
 import { SpinnerRelative } from '../../helper/spinner';
 import { getLabaRugiInternalSlice } from '../../reducers/get'
 
-const ProfitAndLoss = () => {
+const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const [errorAlert, setErrorAlert] = useState(false)
   const [dateRangeError, setDateRangeError] = useState("");
+
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
   // data profit and loss from state 
   const { resetErrorLabaRugiInternal } = getLabaRugiInternalSlice.actions
@@ -125,7 +130,7 @@ const ProfitAndLoss = () => {
   // Summary Cards with Empty State
   const SummaryCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Pendapatan</p>
@@ -139,7 +144,7 @@ const ProfitAndLoss = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Laba Kotor</p>
@@ -153,7 +158,7 @@ const ProfitAndLoss = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Beban</p>
@@ -167,7 +172,7 @@ const ProfitAndLoss = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Laba Bersih</p>
@@ -194,25 +199,32 @@ const ProfitAndLoss = () => {
             onClose={() => setErrorAlert(false)}
           />
         )}
-
-        
+ 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg shadow-lg">
-                <FileText className="w-7 h-7 text-white" />
+        <div
+          ref={headerRef}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          style={{
+            left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+            width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+            height: '64px'
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <div className="w-10 h-10w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold text-gray-800">
                   Laporan Laba Rugi
                 </h1>
-                <p className="text-gray-500 text-sm">Profit & Loss Statement</p>
+                <p className="text-gray-600 text-xs">Profit & Loss Statement</p>
               </div>
             </div>
 
             {/* Filter Tanggal */}
-            <div className="flex relative flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-xl">
+            <div className="flex space-x-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-gray-800 rounded-lg">
                   <Calendar className="w-4 h-4 text-white" />
@@ -246,12 +258,24 @@ const ProfitAndLoss = () => {
                 <Filter className="w-4 h-4" />
                 klik Filter
               </div>
+
+              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
+                {isFullScreen ? <Minimize className="w-7 h-7 text-gray-600" /> : <Maximize className="w-7 h-7 text-gray-600" />}
+              </button>
+              { isMobileDeviceType && !isFullScreen && (
+                <button 
+                  onClick={() => dispatch(setIsOpen(true))}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
     
 
-        <div>
+        <div style={{marginTop: headerHeight}}>
           {/* Summary Cards - Always show */}
           <SummaryCards />
           
@@ -275,7 +299,7 @@ const ProfitAndLoss = () => {
                   
                   <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch bg-white">
                     {/* Pendapatan */}
-                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 h-full">
+                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
                           <div className="p-2 bg-green-100 text-green-600 rounded-lg">
@@ -307,7 +331,7 @@ const ProfitAndLoss = () => {
                     </div>
 
                     {/* HPP */}
-                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 h-full">
+                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
                           <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
@@ -337,7 +361,7 @@ const ProfitAndLoss = () => {
                     </div>
 
                     {/* Beban */}
-                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 h-full">
+                    <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
                         <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
                           <div className="p-2 bg-red-100 text-red-600 rounded-lg">
@@ -394,14 +418,32 @@ const ProfitAndLoss = () => {
 export default function ProfitLossStatement() {
   const [activeMenu, setActiveMenu] = useState("profit-and-loss")
   
-  return (
-    <div className="flex">
-      <div className="w-1/10 min-w-[250px]">
-        <Sidebar activeMenu={activeMenu}/>
-      </div>
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
-      <div className="flex-1">
-        <ProfitAndLoss/>
+  // handle sidebar and elemant header yang responsice
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
+  return (
+    <div className="flex relative">
+      {/* Sidebar - Fixed width */}
+      {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+        <div className="w-1/10 z-50 min-w-[290px]">
+            <Sidebar 
+            activeMenu={activeMenu}
+            />
+        </div>
+      )}
+
+      <div
+        ref={contentRef}
+        className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+      >
+        <ProfitAndLoss
+         isFullScreen={isFullScreen}
+         fullscreenchange={toggleFullScreen}
+        />
       </div>
     </div>
   )

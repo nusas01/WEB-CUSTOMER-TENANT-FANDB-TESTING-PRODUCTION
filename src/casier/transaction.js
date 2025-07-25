@@ -38,50 +38,55 @@ export default function KasirTransaction() {
   };
 
 
-    // maxsimaz minimaz layar
-    const contentRef = useRef(null);
-    const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
+  // maxsimaz minimaz layar
+  const contentRef = useRef(null);
+  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
-    return (
-         <div className="flex relative">
-            {/* Toast Portal */}
-            {toast.show && (
-                <ToastPortal>
-                <div className="fixed top-4 right-4 z-50">
-                    <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={handleToastClose}
-                    duration={3000}
-                    />
-                </div>
-                </ToastPortal>
-            )}
+  // handle navbar ketika ukuran table dan hp
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-            {/* Sidebar */}
-            {!isFullScreen && (
-                <div className="w-1/10 min-w-[250px]">
-                <Sidebar activeMenu={activeMenu} />
-                </div>
-            )}
+  return (
+        <div className="flex relative">
+          {/* Toast Portal */}
+          {toast.show && (
+              <ToastPortal>
+              <div className="fixed top-4 right-4 z-50">
+                  <Toast
+                  message={toast.message}
+                  type={toast.type}
+                  onClose={handleToastClose}
+                  duration={3000}
+                  />
+              </div>
+              </ToastPortal>
+          )}
 
-            {/* Main Content */}
-            <div
-                ref={contentRef}
-                className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
-            >
-                <TransactionTable
-                isFullScreen={isFullScreen}
-                fullscreenchange={toggleFullScreen}
+          {/* Sidebar */}
+          {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+            <div className="w-1/10 z-50 min-w-[290px]">
+                <Sidebar 
+                activeMenu={activeMenu}
                 />
             </div>
+          )}
 
-            {/* Full Screen Indicator */}
-            {isFullScreen && (
-                <div className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white px-3 py-1 rounded-lg text-sm">
-                Full Screen Mode - Press ESC to exit
-                </div>
-            )}
-            </div>
-    )
+          {/* Main Content */}
+          <div
+              ref={contentRef}
+              className={`flex-1 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+          >
+              <TransactionTable
+              isFullScreen={isFullScreen}
+              fullscreenchange={toggleFullScreen}
+              />
+          </div>
+
+          {/* Full Screen Indicator */}
+          {isFullScreen && (
+              <div className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white px-3 py-1 rounded-lg text-sm">
+              Full Screen Mode - Press ESC to exit
+              </div>
+          )}
+          </div>
+  )
 }

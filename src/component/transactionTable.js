@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { TrendingUp, Clock, Banknote, CreditCard, Minimize, Maximize, RefreshCw, Filter, Search, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
+import { TrendingUp, Clock, Banknote, CreditCard, Menu, Minimize, Maximize, RefreshCw, Filter, Search, History,  ScanBarcode, Bell, Settings, CalendarRange } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import FilterPanel from "./dateFilter"
 import { useDispatch, useSelector } from "react-redux"
@@ -19,6 +19,7 @@ import {
     buyTransactionCashOnGoingInternalSlice,
 
 } from "../reducers/patch"
+import { navbarInternalSlice } from "../reducers/reducers"
 import { 
     buyTransactionCashOnGoingInternal
 } from "../actions/patch"
@@ -36,7 +37,7 @@ import { formatDate } from "date-fns"
 import { CountDownRemoveData } from "../helper/countDown"
 import { da } from "date-fns/locale"
 import {ConfirmationModal, CashPaymentModal, ErrorAlert} from "./alert"
-import { useInfiniteScroll } from "../helper/helper"
+import { useInfiniteScroll, useElementHeight } from "../helper/helper"
 
 const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const panelRef = useRef(null)
@@ -545,11 +546,25 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   }
 
   console.log("data history search: ", dataSearchTransactionInternal)
+  
+  // handle sidebar dan element header yang responsive 
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
 
   return (
      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Modern Header */}
-      <div className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
+      <div
+        ref={headerRef}
+        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+        style={{
+          left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
+          width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
+          height: '64px'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -578,12 +593,20 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               >
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
+              { isMobileDeviceType && !isFullScreen && (
+                <button 
+                  onClick={() => dispatch(setIsOpen(true))}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
         {/* Enhanced Summary Cards */}
         <div className="mb-4">
           <div className="bg-white backdrop-blur-sm rounded-md shadow-xl border border-gray-200/50 p-4 hover:shadow-lg transition-all duration-300">
