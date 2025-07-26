@@ -25,3 +25,32 @@ export const deleteTableInternalSlice = createSlice({
         }
     }
 })
+
+
+const initialDeleteCategoryInternalState = {
+    successDeleteCategory: null,
+    errorDeleteCategory: null,
+    errorHasProductDeleteCategory: null,
+    loadingDeleteCategory: false
+}
+export const deleteCategoryInternalSlice = createSlice({
+    name: 'DeleteCategory',
+    initialState: initialDeleteCategoryInternalState,
+    reducers: {
+        setSuccessDeleteCategoryInternal: (state, action) => {
+            state.successDeleteCategory = action.payload
+        },
+        setErrorDeleteCategoryInternal: (state, action) => {
+            state.errorDeleteCategory = action.payload.error
+            state.errorHasProductDeleteCategory = action.payload.errorHasProduct
+        },
+        setLoadingDeleteCategoryInternal: (state, action) => {
+            state.loadingDeleteCategory = action.payload
+        },
+        resetDeleteCategoryInternal: (state) => {
+            state.successDeleteCategory = null
+            state.errorDeleteCategory = null
+            state.errorHasProductDeleteCategory = null
+        }
+    }
+})

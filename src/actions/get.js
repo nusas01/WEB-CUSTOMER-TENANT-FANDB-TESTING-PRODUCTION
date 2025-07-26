@@ -575,7 +575,7 @@ export const fetchCategoryInternal = () => {
 
       dispatch(setLoadingCategoryInternal(true))
       try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_CATEGORY_INTERNAL_URL}`, {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_DELETE_GET_CATEGORY_INTERNAL_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY

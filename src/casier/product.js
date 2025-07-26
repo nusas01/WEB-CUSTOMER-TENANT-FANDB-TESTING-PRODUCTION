@@ -1,6 +1,27 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useState, forwardRef, useRef } from "react"
-import { Pencil, Trash, Search, Plus, Box, Menu, Settings, Package, Tag, Maximize, Minimize } from "lucide-react"
+import { 
+  Pencil, 
+  Trash, 
+  FolderPlus, 
+  X, 
+  List, 
+  Trash2, 
+  Search, 
+  Plus, 
+  Box, 
+  Menu, 
+  Settings, 
+  Package, 
+  Tag, 
+  Maximize, 
+  Upload,
+  ImageIcon,
+  ChevronDown,
+  FileText,
+  Minimize,
+  DollarSign,
+} from "lucide-react"
 import { 
   DeleteConfirmationModal,
   Toast,
@@ -18,7 +39,10 @@ import {
 import { dataTempUpdateProductSlice } from "../reducers/notif"
 import { availbaleProductlSlice } from "../reducers/patch"
 import { deleteProductInternalSlice } from "../reducers/post"
-import { navbarInternalSlice } from "../reducers/reducers"
+import { 
+  navbarInternalSlice,
+  headerHiddenInternalSlice,
+} from "../reducers/reducers"
 import { 
   fetchCategoryAndProductInternal,
   fetchCategoryInternal, 
@@ -34,11 +58,14 @@ import {
 import {
   availableProductInternal
 } from "../actions/patch"
+import {deleteCategoryInternal} from "../actions/delete"
+import {
+  deleteCategoryInternalSlice, 
+} from "../reducers/delete"
 
 export default function KasirProducts() {
    const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Product")
-    const [spinnerFixed, setSpinnerFixed] = useState(false)
     const [toast, setToast] = useState(null);
 
     // handle response add product
@@ -46,64 +73,29 @@ export default function KasirProducts() {
     const { successCreateProductInternal, errorCreateProductInternal } = useSelector((state) => state.createProductInternalState)
     useEffect(() => {
         if (successCreateProductInternal) {
-            dispatch(resetCreateProductInternal())
-        }
-    }, [successCreateProductInternal, dispatch])
-
-    useEffect(() => {
-        if (errorCreateProductInternal) {
             setToast({
-                message: "there was an error on our server, we are fixing it",
-                type: 'error'
+                message: "Berhasil menambahkan product baru",
+                type: 'success'
             });
             
             const timeout = setTimeout(() => {
                 dispatch(resetCreateProductInternal())
-            }, 3000)
-
+            }, 2000)
+    
             return () => clearTimeout(timeout)
         }
-    }, [errorCreateProductInternal, dispatch])
+    }, [successCreateProductInternal])
 
     // handle error get category and product 
     const { errorCategoyAndProductIntenal } = useSelector((state) => state.persisted.getCategoryAndProductInternal)
-    useEffect(() => {
-      if (errorCategoyAndProductIntenal) {
-        setToast({
-            message: "there was an error on our server, we are fixing it",
-            type: 'error'
-        });
-        
-        const timeout = setTimeout(() => {
-          dispatch(resetCreateProductInternal())
-        }, 3000)
-
-        return () => clearTimeout(timeout)
-      }
-    }, [errorCategoyAndProductIntenal, dispatch])
 
     // handle response create category
     const { resetCreateCategoryInternal } = createCategoryInternalSlice.actions
     const { successCreateCategoryInternal, errorFieldCreateCategoryInternal, errorCreateCategoryInternal } = useSelector((state) => state.createCategoryInternalState)
     useEffect(() => {
-        if (errorCreateCategoryInternal) {
-            setToast({
-                message: "there was an error on our server, we are fixing it",
-                type: 'error'
-            });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetCreateCategoryInternal())
-            }, 3000)
-
-            return () => clearTimeout(timeout)
-        }
-    }, [errorCreateCategoryInternal])
-
-    useEffect(() => {
         if (successCreateCategoryInternal) {
             setToast({
-                message: "Berhasil Menambahkan Category",
+                message: "Berhasil Menambahkan Category Baru",
                 type: 'success'
             });
             
@@ -119,23 +111,6 @@ export default function KasirProducts() {
     const {resetDataTempUpdateProduct} = dataTempUpdateProductSlice.actions
     const {resetUpdateProductInternal} = updateInternalSlice.actions
     const {errorUpdateProductInternal, successUpdateProductInternal} = useSelector((state) => state.updateInternalState)
-    useEffect(() => {
-        if (errorUpdateProductInternal) {
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-            setToast({
-                message: "there was an error on our server, we are fixing it",
-                type: 'error'
-            });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetDataTempUpdateProduct())
-                dispatch(resetUpdateProductInternal())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
-        }
-    }, [errorUpdateProductInternal])
-
     useEffect(() => {
         if (successUpdateProductInternal) {
             setToast({
@@ -161,37 +136,14 @@ export default function KasirProducts() {
         }
     }, [successAvailableProduct])
 
-    useEffect(() => {
-        if(errorAvailableProduct) {
-             window.scrollTo({ top: 0, behavior: 'smooth' })
-            setToast({
-                message: "there was an error on our server, we are fixing it",
-                type: 'error'
-            });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetAvailableProduct())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
-        }
-    }, [errorAvailableProduct])
-
     // handle response delete product
     const { resetDeleteProductInternal } = deleteProductInternalSlice.actions
     const { errorDeleteProductInternal, successDeleteProductInternal } = useSelector((state) => state.deleteProductInternalState)
     useEffect(() => {
         if (successDeleteProductInternal) {
-            dispatch(resetDeleteProductInternal())
-        }
-    }, [successDeleteProductInternal])
-
-    useEffect(() => {
-        if (errorDeleteProductInternal) {
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-            setToast({
-                message: "there was an error on our server, we are fixing it",
-                type: 'error'
+           setToast({
+                message: "Berhasil Menghapus Produk",
+                type: 'success'
             });
             
             const timeout = setTimeout(() => {
@@ -199,8 +151,63 @@ export default function KasirProducts() {
             }, 2000)
 
             return () => clearTimeout(timeout)
+        }
+    }, [successDeleteProductInternal])
+
+    // handle response delete category
+    const { resetDeleteCategoryInternal } = deleteCategoryInternalSlice.actions
+    const { successDeleteCategory, errorDeleteCategory, errorHasProductDeleteCategory } = useSelector((state) => state.deleteCategoryInternalState) 
+    useEffect(() => {
+        if (successDeleteCategory) {
+            setToast({
+                message: "Berhasil menghapus category",
+                type: 'success'
+            });
+            
+            const timeout = setTimeout(() => {
+                dispatch(resetDeleteCategoryInternal())
+            }, 2000)
+
+            return () => clearTimeout(timeout)
+        }
+    }, [successDeleteCategory])
+
+    useEffect(() => {
+      if (errorHasProductDeleteCategory) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setToast({
+            message: errorHasProductDeleteCategory,
+            type: 'error'
+        });
+
+        const timeOut = setTimeout(() => {
+          dispatch(resetDeleteCategoryInternal())
+        }, 4000)
+
+        return () => clearTimeout(timeOut)
+      }
+    }, [errorHasProductDeleteCategory])
+
+    useEffect(() => {
+        if (errorDeleteProductInternal || errorDeleteCategory || errorAvailableProduct || errorUpdateProductInternal || errorCreateCategoryInternal || errorCategoyAndProductIntenal || errorCreateProductInternal) {
+            setToast({
+                message: "there was an error on our server, we are fixing it",
+                type: 'error'
+            });
+            
+            const timeout = setTimeout(() => {
+                dispatch(resetDeleteProductInternal())
+                dispatch(resetDeleteCategoryInternal())
+                dispatch(resetAvailableProduct())
+                dispatch(resetDataTempUpdateProduct())
+                dispatch(resetUpdateProductInternal())
+                dispatch(resetCreateCategoryInternal())
+                dispatch(resetCreateProductInternal())
+            }, 2000)
+
+            return () => clearTimeout(timeout)
         }   
-    }, [errorDeleteProductInternal])
+    }, [errorDeleteProductInternal, errorDeleteCategory, errorAvailableProduct, errorUpdateProductInternal, errorCreateCategoryInternal, errorCategoyAndProductIntenal, errorCreateProductInternal])
 
     // handle full screen
     // maxsimaz minimaz layar
@@ -215,7 +222,7 @@ export default function KasirProducts() {
             {/* Toast Notification */}
             {toast && (
                 <ToastPortal> 
-                  <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+                  <div className='fixed top-20 left-1/2 transform -translate-x-1/2 z-100'>
                     <Toast 
                         message={toast.message} 
                         type={toast.type} 
@@ -255,16 +262,21 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     const [addProduct, setAddProduct] = useState(false)
     const [addCategory, setAddCategory] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
-    const [spinnerFixed, setSpinnerFixed] = useState(false)
+    const [spinnerFixed, setSpinnerFixed] = useState(true)
     const [spinnerProduct, setSpinnerProduct ] = useState(false)
     const [modelConfirmDeleteProduct, setModelConfirmDeleteProduct] = useState(false)
     const [productIdDelete, setProductIdDelete] = useState(null)
     const dispatch = useDispatch()
 
+     // handle hidden header
+    const {setHeaderHidden} = headerHiddenInternalSlice.actions
+    const {isHidden} = useSelector((state) => state.headerHiddenInternalState)
+
      useEffect(() => {
         function handleClickOutside(event) {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
             setAddProduct(false)  
+            dispatch(setHeaderHidden(false))
             }
         }
 
@@ -308,6 +320,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
 
     useEffect(() => {
       setSpinnerFixed(loadingCreateProductInternal)
+      dispatch(setHeaderHidden(loadingCreateProductInternal))
     }, [loadingCreateProductInternal])
 
 
@@ -315,6 +328,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     const { loadingCreateCategoryInternal } = useSelector((state) => state.createCategoryInternalState)
     useEffect(() => {
       setSpinnerFixed(loadingCreateCategoryInternal)
+      dispatch(setHeaderHidden(loadingCreateCategoryInternal))
     }, [loadingCreateCategoryInternal])
 
 
@@ -323,6 +337,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     const {loadingUpdateProductInternal} = useSelector((state) => state.updateInternalState)
     useEffect(() => {
       setSpinnerFixed(loadingUpdateProductInternal)
+      dispatch(setHeaderHidden(loadingUpdateProductInternal))
     }, [loadingUpdateProductInternal])
 
 
@@ -374,6 +389,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     console.log("oyyy kenapa perr ini: ", productIdDelete)
     dispatch(DeleteProductInternal({id: productIdDelete}))
     setModelConfirmDeleteProduct(false)
+    dispatch(setHeaderHidden(false))
     setProductIdDelete(null)
   }
 
@@ -388,6 +404,26 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
   const { setIsOpen } = navbarInternalSlice.actions
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
+  // handle delete category
+  const { dataCategory } = useSelector((state) => state.persisted.getCategoryInternal)
+  useEffect(() => {
+    if (dataCategory.length === 0) {
+      dispatch(fetchCategoryInternal())
+    }
+  }, [])
+
+  console.log("data category ini adalah: ", dataCategory)
+
+  const { loadingDeleteCategory } = useSelector((state) => state.deleteCategoryInternalState)
+  const handleDeleteCategory = (id) => {
+    dispatch(deleteCategoryInternal(id))
+  }
+
+  useEffect(() => {
+    setSpinnerFixed(loadingDeleteCategory)
+    dispatch(setHeaderHidden(loadingDeleteCategory))
+  }, [loadingDeleteCategory])
+
     return (
         <div className="relative">
             { spinnerFixed && (
@@ -397,7 +433,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
             {/* Header */}
              <div
                 ref={headerRef}
-                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || (isHidden && !isMobileDeviceType) ? 'hidden' : ''}`}
                 style={{
                   left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
                   width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
@@ -436,13 +472,16 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
             </div>
 
             { modelConfirmDeleteProduct && (
-              <DeleteConfirmationModal 
-              onConfirm={handleDeleteProduct}
-              onCancel={() => {
-                setProductIdDelete(null)
-                setModelConfirmDeleteProduct(false)
-              }} 
-              colorsType={"internal"}/>
+              <div className="fixed">
+                <DeleteConfirmationModal 
+                onConfirm={handleDeleteProduct}
+                onCancel={() => {
+                  setProductIdDelete(null)
+                  setModelConfirmDeleteProduct(false)
+                  dispatch(setHeaderHidden(false))
+                }} 
+                colorsType={"internal"}/>
+              </div>
             )}
 
             <div className="p-6 max-w-7xl mx-auto" style={{marginTop: headerHeight}}>
@@ -491,7 +530,10 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                 <div className="px-8 py-4 bg-white">
                   <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
                     <button
-                      onClick={() => setAddCategory(true)}
+                      onClick={() => { 
+                        setAddCategory(true)
+                        dispatch(setHeaderHidden(true))
+                      }}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl"
                     >
                       <Plus size={18} />
@@ -499,7 +541,10 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                     </button>
                     
                     <button
-                      onClick={() => setAddProduct(true)}
+                      onClick={() => {
+                        setAddProduct(true)
+                        dispatch(setHeaderHidden(true))
+                      }}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-[#00A676] hover:bg-[#00825B] text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl z-10 relative"
                     >
                       <Plus size={18} />
@@ -562,7 +607,8 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
 
                                   
                                   <div
-                                    onClick={() => setSelectedProduct({ 
+                                    onClick={() => { 
+                                      setSelectedProduct({ 
                                       id: product.id,
                                       category_id: category.id, 
                                       category_name: category.name,
@@ -572,7 +618,9 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                                       hpp: product.hpp,
                                       image: product.image,
                                       available: product.available,
-                                    })}
+                                    })
+                                    dispatch(setHeaderHidden(true))
+                                  }}
                                     className="flex justify-center space-x-2 items-center py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700"
                                   >
                                     <Pencil width={15} height={15}/>
@@ -584,6 +632,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                                   onClick={() => {
                                     setProductIdDelete(product.id)
                                     setModelConfirmDeleteProduct(true)
+                                    dispatch(setHeaderHidden(true))
                                   }}
                                   className="flex justify-center space-x-2  items-center w-full mt-2 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-red-600"
                                 >
@@ -634,7 +683,10 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                                 </button>
                               )}
                               
-                              <button onClick={() => setAddProduct(true)}  className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                              <button onClick={() => { 
+                                setAddProduct(true) 
+                                dispatch(setHeaderHidden(true))}
+                              }  className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
                                 + Tambah Produk
                               </button>
                             </div>
@@ -655,43 +707,59 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
               </div>
             </div>
 
-
-
             {/* pop up product model */}
             { addProduct && (
+              <div className="fixed">
                 <AddProductModal 
-                onClose={() => setAddProduct(false)}
+                dataCategory={dataCategory}
+                onClose={() => {
+                  setAddProduct(false)
+                  dispatch(setHeaderHidden(false))
+                }}
                 onSubmit={(formData) => handleCreateProduct(formData)}
                 panelRef={panelRef}
                 />  
+              </div>
             )}
 
             {/* pop up category model */}
             { addCategory && (
+              <div className="fixed"> 
                 <AddCategoryModal 
-                onClose={() => setAddCategory(false)}
+                dataCategory={dataCategory}
+                handleDeleteCategory={handleDeleteCategory}
+                onClose={() => { 
+                  setAddCategory(false)
+                  dispatch(setHeaderHidden(false))
+                }}
                 onSubmit={(data) => dispatch(createCategoryInternal(data))}
                 />
+              </div>
             )}
 
             {/* pop up update product model */}
             {selectedProduct?.id && (
+              <div className="fixed">
                 <EditProductModal 
-                initialData={selectedProduct} onClose={() => setSelectedProduct(null)}/>
+                initialData={selectedProduct} 
+                onClose={() => {
+                  setSelectedProduct(null)
+                  dispatch(setHeaderHidden(false))
+                }}/>
+              </div>
             )}
 
         </div>
     )
 }
 
-
-const AddProductModal = forwardRef(({
+const AddProductModal = ({ 
+  dataCategory = [],
   onClose,
   onSubmit,
   title = "Tambah Produk Baru",
   submitText = "Simpan Produk",
 }) => {
-  const dispatch = useDispatch()
   const modalContentRef = useRef(null)
   const [spinneCategory, setSpinnerCategory] = useState(false)
   const [formData, setFormData] = useState({
@@ -707,294 +775,496 @@ const AddProductModal = forwardRef(({
     id: null, 
     name: '',
   })
-  console.log("dibawah ini adalah data formData: ", formData)
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
       setFormData((prev) => ({
         ...prev,
         image: file,
         previewImage: URL.createObjectURL(file),
       }))
+      // Clear image error when file is selected
+      if (errors.image) {
+        setErrors(prev => ({ ...prev, image: '' }))
+      }
     }
   }
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
   }
+
+  const handleChangeMoneyReceved = (e) => {
+    const raw = e.target.value.replace(/\./g, '');
+
+    if (!/^\d*$/.test(raw)) return;
+
+    const numericValue = parseInt(raw, 10) || 0;
+
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: numericValue,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: '' }))
+    }
+  };
 
   const handleChangeCategory = (id, name) => {
     setCategory({
       id: id, 
       name: name,
-
     })
     setFormData((prev) => ({
       ...prev, 
       category_id: id,
     }))
+    // Clear category error when selected
+    if (errors.category_id) {
+      setErrors(prev => ({ ...prev, category_id: '' }))
+    }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onClose()
-    onSubmit(formData)
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nama produk harus diisi'
+    }
+
+    if (!formData.category_id) {
+      newErrors.category_id = 'Kategori harus dipilih'
+    }
+
+    if (!formData.price || formData.price === 0) {
+      newErrors.price = 'Harga jual harus diisi'
+    }
+
+    if (!formData.hpp || formData.hpp === 0) {
+      newErrors.hpp = 'Harga pokok (HPP) harus diisi'
+    }
+
+    if (!formData.desc.trim()) {
+      newErrors.desc = 'Deskripsi produk harus diisi'
+    }
+
+    if (!formData.image) {
+      newErrors.image = 'Gambar produk harus diupload'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
- useEffect(() => {
+  const handleSubmit = () => {
+    if (validateForm()) {
+      onClose()
+      onSubmit(formData)
+    }
+  }
+
+  useEffect(() => {
     function handleClickOutside(event) {
       if (modalContentRef.current && !modalContentRef.current.contains(event.target)) {
         onClose()
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside)
-
-    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [onClose])
 
-
-  // get category
-  const { dataCategory, loadingCategoryInternal } = useSelector((state) => state.persisted.getCategoryInternal)
-
-  useEffect(() => {
-    if (!dataCategory || dataCategory.length <= 0) {
-      dispatch(fetchCategoryInternal())
-    }
-  }, [])
-
-  useEffect(() => {
-    setSpinnerCategory(loadingCategoryInternal)
-  }, [loadingCategoryInternal])
-
-
   return (
-    // This outer div is the backdrop, it should not have the ref for outside clicks
-    <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      {/* Apply the ref to the actual modal content box */}
-      <div ref={modalContentRef} className="bg-white rounded-xl mt-24 w-full max-w-md p-4 space-y-2 flex flex-col">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div ref={modalContentRef} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Package className="w-7 h-7 text-gray-600" />
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
           >
-            ✕
+            <X className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
           </button>
         </div>
 
-        {/* The form itself will now be the scrollable area */}
-        <form onSubmit={handleSubmit} className="space-y-2 pt-2  flex-grow">
-          {/* Gambar Produk */}
-          <div className="flex flex-col space-y-1">
-            <div className="flex items-center justify-center bg-gray-100 py-4 w-full relative">
-              <label className="flex flex-col items-center justify-center w-[50%] h-36 border-2 border-dashed border-gray-500 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                {formData.previewImage ? (
-                  <img src={formData.previewImage} alt="Preview" className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <span className="text-gray-500 text-sm">Upload image product</span>
-                )}
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Upload Gambar */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Gambar Produk <span className="text-red-500">*</span>
               </label>
+              <div className="flex items-center justify-center">
+                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${errors.image ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  {formData.previewImage ? (
+                    <div className="relative w-full h-full">
+                      <img 
+                        src={formData.previewImage} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover rounded-xl" 
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-gray-500">
+                      <ImageIcon className="w-12 h-12 mb-3 text-gray-400" />
+                      <span className="text-sm font-medium">Upload Gambar Produk</span>
+                      <span className="text-xs text-gray-400 mt-1">PNG, JPG hingga 10MB</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
             </div>
-          </div>
 
-          {/* Nama Produk */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Nama Produk</label>
-            <input
-              type="text"
-              value={formData.name}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="T-shirt for Men"
-              required
-              onChange={(e) => handleChange("name", e.target.value)}
-            />
-          </div>
-
-          {/* Harga Produk */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Harga Jual</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-              <input
-                type="number"
-                value={formData.price}
-                className="w-full pl-8 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="90000"
-                step="0.01"
-                required
-                onChange={(e) => handleChange("price", e.target.value)}
-              />
+            {/* Nama Produk */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Nama Produk <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.name}
+                  maxLength={50}
+                  className={`w-full px-4 py-3 border-2 ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  placeholder="Masukkan nama produk..."
+                  required
+                  onChange={(e) => handleChange("name", e.target.value)}
+                />
+                <Package className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
-          </div>
 
-          {/* Harga Pokok Penjualan */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Harga Pokok (HPP)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-              <input
-                type="number"
-                value={formData.hpp}
-                className="w-full pl-8 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="60000"
-                step="0.01"
-                required
-                onChange={(e) => handleChange("hpp", e.target.value)}
-              />
+            {/* Harga Jual */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Harga Jual <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  Rp
+                </span>
+                <input
+                  type="text"
+                  value={formData.price.toLocaleString("id-ID")}
+                  name="price"
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.price ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  placeholder="0"
+                  step="0.01"
+                  required
+                  onChange={handleChangeMoneyReceved}
+                />
+                <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
             </div>
-          </div>
 
-          {/* Dropdown Kategori */}
-          <div className="relative">
-            <label className="text-sm font-medium text-gray-700">Kategori</label>
-            <button
-              type="button"
-              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-              className="w-full px-4 py-2 border text-gray-700 rounded-lg text-left flex justify-between items-center hover:bg-gray-50"
-            >
-              {category.name || "Pilih Kategori"}
-              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {isCategoryDropdownOpen && (
-              <div className="absolute z-50 w-full min-h-10vh mt-1 bg-white border rounded-md shadow-lg">
-                { spinneCategory && (
-                  <SpinnerRelative/>
-                )}
-                { !dataCategory || dataCategory.length > 0 && (
-                  <div className="py-1">
-                    {dataCategory.map((kategori) => (
-                      <button
-                        key={kategori.id}
-                        type="button"
-                        onClick={() => {
-                          handleChangeCategory(kategori.id, kategori.name);
-                          setIsCategoryDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 ${
-                          category.id === kategori.id ? "font-medium bg-blue-50" : ""
-                        }`}
-                      >
-                        {kategori.name}
-                      </button>
-                    ))}
+            {/* HPP */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Harga Pokok (HPP) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  Rp
+                </span>
+                <input
+                  type="text"
+                  value={formData.hpp.toLocaleString("id-ID")}
+                  name="hpp"
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.hpp ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  placeholder="0"
+                  step="0.01"
+                  required
+                  onChange={handleChangeMoneyReceved}
+                />
+                <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.hpp && <p className="text-red-500 text-xs mt-1">{errors.hpp}</p>}
+            </div>
+
+            {/* Kategori Dropdown */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Kategori <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  className={`w-full px-4 py-3 bg-gray-50 ${errors.category_id ? 'border-red-300' : ''} border-gray-200 rounded-xl text-left flex justify-between items-center hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                >
+                  <span className={category.name ? "text-gray-900" : "text-gray-400"}>
+                    {category.name || "Pilih Kategori"}
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isCategoryDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl">
+                    {spinneCategory ? (
+                      <div className="p-4 text-center text-gray-500">Loading...</div>
+                    ) : (
+                      <div className="py-2 max-h-48 overflow-y-auto">
+                        {dataCategory.map((kategori) => (
+                          <button
+                            key={kategori.id}
+                            type="button"
+                            onClick={() => {
+                              handleChangeCategory(kategori.id, kategori.name)
+                              setIsCategoryDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-3 text-sm text-left hover:bg-gray-50 transition-colors ${
+                              category.id === kategori.id ? "bg-gray-100 font-semibold text-gray-900" : "text-gray-700"
+                            }`}
+                          >
+                            {kategori.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+              {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
+            </div>
+
+            {/* Deskripsi */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Deskripsi Produk <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <textarea
+                  value={formData.desc}
+                  className={`w-full px-4 py-3 border-2 ${errors.desc ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400 resize-none`}
+                  placeholder="Masukkan deskripsi produk..."
+                  required
+                  maxLength={100}
+                  rows={4}
+                  onChange={(e) => handleChange("desc", e.target.value)}
+                />
+                <FileText className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.desc && <p className="text-red-500 text-xs mt-1">{errors.desc}</p>}
+            </div>
           </div>
+        </div>
 
-          {/* Deskripsi Produk */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Deskripsi</label>
-            <textarea
-              value={formData.desc}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Deskripsi produk"
-              required
-              rows={3}
-              onChange={(e) => handleChange("desc", e.target.value)}
-            />
-          </div>
-
-
-          {/* Tombol Aksi */}
-          <div className="flex gap-3 pt-4">
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-100">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-medium"
             >
               Batal
             </button>
             <button
-              type="submit" // Ensure this button is inside the form or submits it
-              className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-600"
+              onClick={handleSubmit}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all font-medium shadow-lg hover:shadow-xl"
             >
               {submitText}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
-  );
-});
+  )
+}
 
+const AddCategoryModal = ({ dataCategory = [], handleDeleteCategory, onClose, onSubmit, onDelete }) => {
+  const [categoryName, setCategoryName] = useState('')
+  const [activeTab, setActiveTab] = useState('add') // 'add' or 'manage'
 
-
-const AddCategoryModal = ({ onClose, onSubmit }) => {
-    const [categoryName, setCategoryName] = useState('')
-  
-    const handleSubmit = (e) => {
-      e.preventDefault()
-      onSubmit({ category_name: categoryName })
+  const handleSubmit = () => {
+    if (categoryName.trim()) {
+      onSubmit({ category_name: categoryName.trim() })
+      setCategoryName('')
       onClose()
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl w-full max-w-md p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">Tambah Kategori Baru</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-  
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Input Nama Kategori */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Nama Kategori</label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all"
-                placeholder="Contoh: Fashion"
-                value={categoryName}
-                required
-                onChange={(e) => setCategoryName(e.target.value)}
-              />
+  }
+ 
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <FolderPlus className="w-7 h-7 text-gray-600" />
+            Kelola Kategori
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
+          >
+            <X className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-100">
+          <button
+            onClick={() => setActiveTab('add')}
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-colors relative ${
+              activeTab === 'add'
+                ? 'text-gray-600 bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Plus className="w-4 h-4" />
+              Tambah Kategori
             </div>
-  
-            {/* Tombol Aksi */}
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Simpan Kategori
-              </button>
+            {activeTab === 'add' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-600"></div>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('manage')}
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-colors relative ${
+              activeTab === 'manage'
+                ? 'text-gray-600 bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <List className="w-4 h-4" />
+              Kelola Kategori ({dataCategory.length})
             </div>
-          </form>
+            {activeTab === 'manage' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-600"></div>
+            )}
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {activeTab === 'add' ? (
+            /* Add Category Form */
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Nama Kategori Baru
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                    placeholder="Masukkan nama kategori..."
+                    value={categoryName}
+                    required
+                    onChange={(e) => setCategoryName(e.target.value)}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <FolderPlus className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-medium"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!categoryName.trim()}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Simpan Kategori
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Manage Categories */
+            <div className="space-y-4">
+              {dataCategory.length === 0 ? (
+                <div className="text-center py-12">
+                  <FolderPlus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">Belum ada kategori</p>
+                  <p className="text-gray-400 text-sm">Tambah kategori pertama Anda</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {dataCategory.map((category, index) => (
+                    <div
+                      key={category.id || index}
+                      className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <FolderPlus className="w-5 h-5 text-gray-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">
+                            {category.category_name || category.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            ID: {category.id || index}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleDeleteCategory(category.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        title="Hapus kategori"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="pt-4 border-t border-gray-100">
+                <button
+                  onClick={onClose}
+                  className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  const EditProductModal = ({
+const EditProductModal = ({
   onClose,
   onSubmit,
   initialData, 
@@ -1003,7 +1273,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
 }) => {
   const dispatch = useDispatch()
   const modalContentRef = useRef(null)
-  const [spinneCategory, setSpinnerCategory] = useState(false)
+  const [spinnerCategory, setSpinnerCategory] = useState(false)
 
   const [formData, setFormData] = useState({
     id: null,
@@ -1013,7 +1283,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
     desc: '',
     hpp: '',
     image: null,
-    available: initialData.available,
+    available: initialData?.available || true,
     previewImage: null,
   })
 
@@ -1022,7 +1292,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
     name: '',
   })
 
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (initialData) {
@@ -1035,7 +1305,7 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
         hpp: initialData.hpp || '',
         image: initialData.image || null,
         available: initialData.available,
-      });
+      })
 
       setCategory({
         id: initialData.category_id || null,
@@ -1051,17 +1321,43 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
         ...prev,
         image: file,
       }))
+      // Clear image error when file is selected
+      if (errors.image) {
+        setErrors(prev => ({ ...prev, image: '' }))
+      }
     }
   }
-  console.log("oyyyyyyyyyyyyyyyy: ", formData)
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
   }
 
   const handleChangeCategory = (id, name) => {
     setCategory({ id, name })
     setFormData((prev) => ({ ...prev, category_id: id }))
   }
+
+  const handleChangeMoneyReceived = (e) => {
+    const raw = e.target.value.replace(/\./g, '');
+
+    if (!/^\d*$/.test(raw)) return;
+
+    const numericValue = parseInt(raw, 10) || 0;
+
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: numericValue,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: '' }))
+    }
+  };
 
   const { dataCategory, loadingCategoryInternal } = useSelector((state) => state.persisted.getCategoryInternal);
 
@@ -1075,6 +1371,45 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
     setSpinnerCategory(loadingCategoryInternal)
   }, [loadingCategoryInternal])
 
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nama produk harus diisi'
+    }
+
+    if (!formData.price || formData.price === 0) {
+      newErrors.price = 'Harga jual harus diisi'
+    }
+
+    if (!formData.hpp || formData.hpp === 0) {
+      newErrors.hpp = 'Harga pokok (HPP) harus diisi'
+    }
+
+    if (!formData.desc.trim()) {
+      newErrors.desc = 'Deskripsi produk harus diisi'
+    }
+
+    if (!formData.image) {
+      newErrors.image = 'Gambar produk harus ada'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  // handle Update product
+  const {addDataTempUpdateProduct} = dataTempUpdateProductSlice.actions
+ 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (validateForm()) {
+      dispatch(UpdateProductInternal(formData))
+      dispatch(addDataTempUpdateProduct(formData))
+      onClose()
+    }
+  }
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (modalContentRef.current && !modalContentRef.current.contains(event.target)) {
@@ -1087,153 +1422,174 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
     }
   }, [onClose])
 
-
-  // handle Update product
-  const {addDataTempUpdateProduct} = dataTempUpdateProductSlice.actions
- 
-   const handleSubmit = (e) => {
-    e.preventDefault()
-    dispatch(UpdateProductInternal(formData))
-    dispatch(addDataTempUpdateProduct(formData))
-    onClose()
-  }
-
-
   return (
-    <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div ref={modalContentRef} className="bg-white rounded-xl mt-24 w-full max-w-md p-4 space-y-2 flex flex-col">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
-          </div>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div ref={modalContentRef} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Package className="w-7 h-7 text-gray-600" />
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
+          >
+            <X className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
+          </button>
+        </div>
 
-          <form onSubmit={(e) => handleSubmit(e)} className="space-y-2 pt-2 flex-grow">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Upload Gambar */}
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center justify-center bg-gray-100 py-4 w-full relative">
-                <label className="flex flex-col items-center justify-center w-[50%] h-36 border-2 border-dashed border-gray-500 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Gambar Produk <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-center justify-center">
+                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${errors.image ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                  />
+                  <div className="relative w-full h-full">
                     <img 
-                    src={
-                      formData.image instanceof File
-                        ? URL.createObjectURL(formData.image) 
-                        : `/image/${formData.image}`         
-                    }
-                    alt="Preview" 
-                    className="w-full h-full object-cover rounded-lg" 
+                      src={
+                        formData.image instanceof File
+                          ? URL.createObjectURL(formData.image) 
+                          : `/image/${formData.image}`         
+                      }
+                      alt="Preview" 
+                      className="w-full h-full object-cover rounded-xl" 
                     />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                      <Upload className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
                 </label>
               </div>
+              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
             </div>
 
             {/* Nama Produk */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Nama Produk</label>
-              <input
-                type="text"
-                value={formData.name}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                required
-                onChange={(e) => handleChange("name", e.target.value)}
-              />
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Nama Produk <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.name}
+                  maxLength={50}
+                  className={`w-full px-4 py-3 border-2 ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                  required
+                  onChange={(e) => handleChange("name", e.target.value)}
+                />
+                <Package className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
 
             {/* Harga Jual */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Harga Jual</label>
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Harga Jual <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  Rp
+                </span>
                 <input
-                  type="number"
-                  value={formData.price}
-                  className="w-full pl-8 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  type="text"
+                  value={formData.price.toLocaleString("id-ID")}
+                  name="price"
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.price ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                   step="0.01"
                   required
-                  onChange={(e) => handleChange("price", e.target.value)}
+                  onChange={handleChangeMoneyReceived}
                 />
+                <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
+              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
             </div>
 
             {/* HPP */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Harga Pokok (HPP)</label>
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Harga Pokok (HPP) <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  Rp
+                </span>
                 <input
-                  type="number"
-                  value={formData.hpp}
-                  className="w-full pl-8 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  type="text"
+                  name="hpp"
+                  value={formData.hpp.toLocaleString("id-ID")}
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.hpp ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                   step="0.01"
                   required
-                  onChange={(e) => handleChange("hpp", e.target.value)}
+                  onChange={handleChangeMoneyReceived}
                 />
+                <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
+              {errors.hpp && <p className="text-red-500 text-xs mt-1">{errors.hpp}</p>}
             </div>
 
-            {/* Kategori */}
-            <div className="relative">
-              <label className="text-sm font-medium text-gray-700">Kategori</label>
-              <button
-                type="button"
-                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                className="w-full px-4 py-2 border text-gray-700 rounded-lg text-left flex justify-between items-center hover:bg-gray-50"
-              >
-                {category.name || "Pilih Kategori"}
-                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {isCategoryDropdownOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg">
-                  {spinneCategory && <SpinnerRelative />}
-                  {!dataCategory || dataCategory.length > 0 && (
-                    <div className="py-1">
-                      {dataCategory.map((kategori) => (
-                        <button
-                          key={kategori.id}
-                          type="button"
-                          onClick={() => {
-                            handleChangeCategory(kategori.id, kategori.name);
-                            setIsCategoryDropdownOpen(false);
-                          }}
-                          className={`w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 ${
-                            category.id === kategori.id ? "font-medium bg-blue-50" : ""
-                          }`}
-                        >
-                          {kategori.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+            {/* Kategori Dropdown */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Kategori <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  disabled
+                  className={`w-full cursor-not-allowed bg-gray-50 px-4 py-3 border-2 ${errors.category_id ? 'border-red-300' : 'border-gray-200'} rounded-xl text-left flex justify-between items-center hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                >
+                  <span className={category.name ? 'text-gray-900' : 'text-gray-500'}>
+                    {category.name || "Pilih Kategori"}
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-gray-400`} />
+                </button>
+              </div>
+              {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
             </div>
 
             {/* Deskripsi */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Deskripsi</label>
-              <textarea
-                value={formData.desc}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                required
-                rows={3}
-                onChange={(e) => handleChange("desc", e.target.value)}
-              />
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">
+                Deskripsi Produk <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <textarea
+                  value={formData.desc}
+                  className={`w-full px-4 py-3 border-2 ${errors.desc ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all resize-none`}
+                  required
+                  rows={4}
+                  maxLength={100}
+                  onChange={(e) => handleChange("desc", e.target.value)}
+                />
+                <FileText className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
+              </div>
+              {errors.desc && <p className="text-red-500 text-xs mt-1">{errors.desc}</p>}
             </div>
 
-            {/* Tombol Aksi */}
+            {/* Footer */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-medium"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-600"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all font-medium shadow-lg hover:shadow-xl"
               >
                 {submitText}
               </button>
@@ -1241,6 +1597,6 @@ const AddCategoryModal = ({ onClose, onSubmit }) => {
           </form>
         </div>
       </div>
-    </>
+    </div>
   )
 }

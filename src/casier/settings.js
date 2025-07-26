@@ -441,7 +441,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
         {/* Header */}
         <div
           ref={headerRef}
-          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) ? 'hidden' : ''}`}
           style={{
             left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
             width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),

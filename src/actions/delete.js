@@ -1,6 +1,12 @@
 import axios from "axios"
-import {deleteTableInternalSlice} from '../reducers/delete'
-import {getTablesInternalSlice} from '../reducers/get'
+import {
+    deleteTableInternalSlice, 
+    deleteCategoryInternalSlice
+} from '../reducers/delete'
+import {
+    getTablesInternalSlice,
+    getCategoryInternalSlice,
+} from '../reducers/get'
 import {
     statusExpiredTokenSlice
 } from "../reducers/expToken.js"
@@ -31,5 +37,38 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
         dispatch(setErrorDeleteTableInternal(error.response?.data?.error));
     } finally {
         dispatch(setLoadingDeleteTableInternal(false))
+    }
+};
+
+const {deleteCategoryById} = getCategoryInternalSlice.actions
+const {setSuccessDeleteCategoryInternal, setErrorDeleteCategoryInternal, setLoadingDeleteCategoryInternal} = deleteCategoryInternalSlice.actions
+export const deleteCategoryInternal = (id) => async (dispatch) => {
+    const config = {
+        headers: {
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+        params: {
+            id: id,
+        }
+    }
+    dispatch(setLoadingDeleteCategoryInternal(true))
+    try {
+        const response = await axios.delete(`${process.env.REACT_APP_DELETE_GET_CATEGORY_INTERNAL_URL}`, config);
+        if (response.status === 200) {
+            dispatch(setSuccessDeleteCategoryInternal(response?.data.success));
+            dispatch(deleteCategoryById(id))
+        }
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        dispatch(setErrorDeleteCategoryInternal({
+            error: error.response?.data?.error,
+            errorHasProduct: error.response?.data?.errorHasProduct,
+        }));
+    } finally {
+        dispatch(setLoadingDeleteCategoryInternal(false))
     }
 };

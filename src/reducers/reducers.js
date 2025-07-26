@@ -316,6 +316,17 @@ export const navbarInternalSlice = createSlice({
 });
 
 
+export const headerHiddenInternalSlice = createSlice({
+  name: "headerHidderInternal",
+  initialState: {
+    isHidden: false,
+  },
+  reducers: {
+    setHeaderHidden: (state, action) => {
+      state.isOpen = action.payload;
+    }
+  },
+});
 
 
 

@@ -558,47 +558,68 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
       {/* Modern Header */}
       <div
         ref={headerRef}
-        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) ? 'hidden' : ''}`}
         style={{
           left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
           width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
           height: '64px'
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 py-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
-                <ScanBarcode className="w-6 h-6 text-white" />
+        <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+            {/* Left - Logo & Info */}
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <ScanBarcode className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">Transactions Management</h1>
-                <p className="text-gray-600 text-xs">Kelola transaksi masuk dan pantau status pembayaran</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">
+                  Transactions Management
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 truncate hidden xs:block">
+                  Kelola transaksi masuk dan pantau status pembayaran
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button 
-              onClick={() => handleRefreshTransaction()}
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-100"
+            
+            {/* Right - Action Buttons */}
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+              <button
+                onClick={() => handleRefreshTransaction()}
+                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-2 py-1.5 sm:px-3 sm:py-2 lg:px-6 lg:py-2 rounded-lg sm:rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-1 sm:space-x-2 hover:scale-100 touch-manipulation"
+                aria-label="Refresh transactions"
               >
-                <RefreshCw className="h-4 w-4" />
-                <span>Refresh</span>
+                <RefreshCw className="h-4 w-4 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm hidden xs:inline">Refresh</span>
               </button>
-              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 hover:scale-105 rounded-lg transition-colors">
-               {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
-              </button>
+              
               <button 
-                className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105" 
+                onClick={() => fullscreenchange()} 
+                className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+                aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullScreen ? (
+                  <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                ) : (
+                  <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                )}
+              </button>
+              
+              <button
+                className="p-1.5 sm:p-2 lg:p-3 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 touch-manipulation"
                 onClick={() => navigate('/internal/admin/settings')}
+                aria-label="Settings"
               >
-                <Settings className="w-5 h-5 text-gray-600" />
+                <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
               </button>
-              { isMobileDeviceType && !isFullScreen && (
-                <button 
+              
+              {isMobileDeviceType && !isFullScreen && (
+                <button
                   onClick={() => dispatch(setIsOpen(true))}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                  aria-label="Open menu"
                 >
-                  <Menu className="w-5 h-5 text-gray-600" />
+                  <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
                 </button>
               )}
             </div>
@@ -741,9 +762,9 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                   className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
               />
             </div>
-            <div className="absolute text-gray-600 text-xs">
+            {/* <div className="absolute text-gray-600 text-xs">
                 Jika tidak auto result, input Id dan klik search Transaction
-            </div>
+            </div> */}
           </div>
 
           {/* Search Button */}
@@ -915,12 +936,14 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Loading Spinner */}
         {spinner && (
-          <SpinnerFixed colors={'border-gray-900'} />
+          <div className="fixed">
+            <SpinnerFixed colors={'border-gray-900'} />
+          </div>
         )}
 
         {/* Success Modals */}
         {(allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
-          <div ref={panelRef}>
+          <div ref={panelRef} className="fixed">
             <ConfirmationModal 
               onClose={handleCloseConfirmationModalSuccess} 
               title={"Success!"}  
@@ -936,7 +959,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Pending Modal */}
         {allertPendingCheckTransactionNonCash && (
-          <div ref={panelRef}>
+          <div ref={panelRef} className="fixed">
             <ConfirmationModal
               onClose={handleCloseConfirmationModalError}
               title={"Pending"}
@@ -948,7 +971,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Error Modal */}
         {allertErrorBuyTransactionCash && (
-          <div ref={panelRef}>
+          <div ref={panelRef} className="fixed">
             <ConfirmationModal
               onClose={handleCloseConfirmationModalError}
               title={"Gagal!"}
@@ -960,16 +983,18 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         
         {/* Cash Payment Modal */}
         {dataPaymentCash.open && ( 
-          <CashPaymentModal 
-            ref={panelRef} 
-            data={{
-              transaction_id: dataPaymentCash.transaction_id,
-              amount_price: dataPaymentCash.amount_price,
-            }} 
-            setData={setDataPaymentCash}
-            onClose={() => setDataPaymentCash({ open: false, transactionId: null, amountPrice: 0 })}
-            onBayar={handleBuyTransaction}
-          />
+          <div className="fixed">
+            <CashPaymentModal 
+              ref={panelRef} 
+              data={{
+                transaction_id: dataPaymentCash.transaction_id,
+                amount_price: dataPaymentCash.amount_price,
+              }} 
+              setData={setDataPaymentCash}
+              onClose={() => setDataPaymentCash({ open: false, transactionId: null, amountPrice: 0 })}
+              onBayar={handleBuyTransaction}
+            />
+          </div>
         )}
       </div>
     </div>

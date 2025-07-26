@@ -12,6 +12,7 @@ import {
   dataDrafToVoidInternalSlice,
   filterOrderInternalSlice,
   navbarInternalSlice,
+  headerHiddenInternalSlice,
 } from './reducers'
 import { 
   getProductsCustomerSlice, 
@@ -86,7 +87,8 @@ import {
   dataTempUpdateProductSlice,
 } from './notif'
 import {
-  deleteTableInternalSlice
+  deleteTableInternalSlice,
+  deleteCategoryInternalSlice,
 } from './delete'
 
 
@@ -173,6 +175,8 @@ const nonPersistedReducers = {
   searchOrderInternalState: searchOrderInternalSlice.reducer,
   getSearchTransactionInternalState: getSearchTransactionInternalSlice.reducer, 
   createQROrderTypeTakeAwayState: createQROrderTypeTakeAwaySlice.reducer,
+  deleteCategoryInternalState: deleteCategoryInternalSlice.reducer,
+  headerHiddenInternalState: headerHiddenInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
 import { useEffect, useRef, useState } from "react"
-import {Plus, Search, Eye, X, CheckCircle, Computer, Menu, Settings, RefreshCw, Maximize, Minimize} from "lucide-react"
+import {Plus, Search, Eye, X, CheckCircle, Menu, Settings, RefreshCw, Maximize, Minimize, Monitor} from "lucide-react"
 import {
     fetchPaymentMethodsInternal, 
     fetchProductsCustomer,
@@ -20,7 +20,7 @@ import {
     getAllCreateTransactionInternalSlice,
     checkTransactionNonCashInternalSlice,
 } from "../reducers/get"
-import {  navbarInternalSlice } from "../reducers/reducers.js"
+import {  navbarInternalSlice, headerHiddenInternalSlice } from "../reducers/reducers.js"
 import { useDispatch, useSelector } from "react-redux"
 import {SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import { id } from "date-fns/locale"
@@ -53,6 +53,9 @@ export default function Cashier() {
     const [activeMenu, setActiveMenu] = useState("Cashier")
     const cartRef = useRef(null)
 
+    // handle hidden header
+    const {isHidden} = useSelector((state) => state.headerHiddenInternalState)
+
     // maxsimaz minimaz layar
     const contentRef = useRef(null);
     const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
@@ -80,39 +83,61 @@ export default function Cashier() {
                 {/* Header */}
                 <div
                 ref={headerRef}
-                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+                className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || (isHidden && !isMobileDeviceType) ? 'hidden' : ''}`}
                 style={{
                     left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
                     width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
                     height: '64px'
                 }}
                 >
-                    <div className="max-w-7xl mx-auto px-4 py-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                                <Computer className="w-6 h-6 text-white" />
+                    <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+                        <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+                            {/* Left - Logo & Info */}
+                            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                                <Monitor className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">
+                                    Cashier
+                                </h1>
+                                <p className="text-xs sm:text-sm text-gray-600 truncate hidden xs:block">
+                                    Kelola transaksi pelanggan dan proses pembayaran dengan mudah
+                                </p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-gray-800">Cashier</h1>
-                                <p className="text-gray-600 text-xs">Kelola transaksi pelanggan dan proses pembayaran dengan mudah</p>
-                            </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                            <button onClick={() => toggleFullScreen()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-                                {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
-                            </button>
-                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
-                                <Settings className="w-5 h-5 text-gray-600" />
-                            </button>
-                            { isMobileDeviceType && !isFullScreen && (
-                                <button 
-                                onClick={() => dispatch(setIsOpen(true))}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            
+                            {/* Right - Action Buttons */}
+                            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+                                <button
+                                onClick={() => toggleFullScreen()}
+                                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-all hover:scale-105 touch-manipulation"
+                                aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
                                 >
-                                <Menu className="w-5 h-5 text-gray-600" />
+                                {isFullScreen ? (
+                                    <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                                ) : (
+                                    <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                                )}
                                 </button>
-                            )}
+                                
+                                <button
+                                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                                onClick={() => navigate('/internal/admin/settings')}
+                                aria-label="Settings"
+                                >
+                                <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                                </button>
+                                
+                                {isMobileDeviceType && !isFullScreen && (
+                                <button
+                                    onClick={() => dispatch(setIsOpen(true))}
+                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                                    aria-label="Open menu"
+                                >
+                                    <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                                </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -164,6 +189,9 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
       money_received: 0, // jika payment method cash 
     })
 
+    // handle hidden header
+    const {setHeaderHidden} = headerHiddenInternalSlice.actions 
+
     // handle get payment method 
     const {dataPaymentMethodInternal, taxRateInternal, loadingPaymentMethodsInternal, paymentMethodCash} = useSelector((state) => state.persisted.paymentMethodsInternal)
     useEffect(() => {
@@ -189,6 +217,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setOpenPaymentMethod(false)
                 setIsModalOpenDetailResponse(false)
+                dispatch(setHeaderHidden(false))
                 handleCloseNotifPaymentNonCashSuccess()
                 closeModalDetailResponse()
             }
@@ -346,6 +375,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
     const { resetCreateTransactionInternal } = createTransactionInternalSlice.actions
     useEffect(() => {
         setSpinnerFixed(loadingCreateTransactionInternal)
+        dispatch(setHeaderHidden(loadingCreateTransactionInternal))
     }, [loadingCreateTransactionInternal])
 
     useEffect(() => {
@@ -411,6 +441,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
         if (successCreateTransactionInternal) {
             setSelectedTransaction(dataSuccessCreateTransactionInternal)
             setIsModalOpenDetailResponse(true)
+            dispatch(setHeaderHidden(true))
             handleClearCashier()
         }
     }, [successCreateTransactionInternal])
@@ -460,6 +491,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
 
     const closeModalDetailResponse = () => {
         setIsModalOpenDetailResponse(false)
+        dispatch(setHeaderHidden(false))
         setSelectedTransaction(null)
         dispatch(resetCreateTransactionInternal())
     }
@@ -488,51 +520,61 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
 
                 {/* payment cash non active */}
                 {  paymentUnavailable && (
-                    <CashPaymentUnavailableModal
-                    onClose={() => setPaymentUnavailable(false)}
-                    colorsType="internal"
-                    fetchData={fetchPaymentMethodsInternal}
-                    resetChart={handleClearCashNonActive}
-                    />
+                    <div className="fixed">
+                        <CashPaymentUnavailableModal
+                        onClose={() => setPaymentUnavailable(false)}
+                        colorsType="internal"
+                        fetchData={fetchPaymentMethodsInternal}
+                        resetChart={handleClearCashNonActive}
+                        />
+                    </div>
                 )}
 
                 {/* product unavailable */}
                 { productUnavailable && (
-                    <ProductUnavailableModal 
-                    onClose={() => setProductUnavailable(false)} 
-                    colorsType={"internal"}
-                    fetchData={fetchProductsCustomer}
-                    resetData={handleClearCashier}
-                    />
+                    <div className="fixed">
+                        <ProductUnavailableModal 
+                        onClose={() => setProductUnavailable(false)} 
+                        colorsType={"internal"}
+                        fetchData={fetchProductsCustomer}
+                        resetData={handleClearCashier}
+                        />
+                    </div>
                 )}
 
                 {/* invalid amount price */}
                 { invalidAmountPrice && (
-                    <InvalidAmountModal 
-                    onClose={() => setInvalidAmountPrice(false)} 
-                    colorsType={"internal"}
-                    fetchData={fetchPaymentMethodsInternal}
-                    resetChart={handleClearCashier} 
-                    />
+                    <div className="fixed">
+                        <InvalidAmountModal 
+                        onClose={() => setInvalidAmountPrice(false)} 
+                        colorsType={"internal"}
+                        fetchData={fetchPaymentMethodsInternal}
+                        resetChart={handleClearCashier} 
+                        />
+                    </div>
                 )}
 
                 {modelNotifPaymentNonCashSuccess && (
-                    <PaymentSuccessNonCashCashier 
-                    data={dataTransactionCashierSuccess} 
-                    onClose={handleCloseNotifPaymentNonCashSuccess} 
-                    message="Transaksi berhasil!" 
-                    subMessage={"Pembayaran berhasil! customer berhasil membayar."}
-                    ref={dropdownRef}
-                    />
+                    <div className="fixed">
+                        <PaymentSuccessNonCashCashier 
+                        data={dataTransactionCashierSuccess} 
+                        onClose={handleCloseNotifPaymentNonCashSuccess} 
+                        message="Transaksi berhasil!" 
+                        subMessage={"Pembayaran berhasil! customer berhasil membayar."}
+                        ref={dropdownRef}
+                        />
+                    </div>
                 )}
                 
                 {/* model setalah create transaction dengan method tidak cash */}
-                <PaymentDetailsModal
-                    isOpen={isModalOpenDetailResponse}
-                    transaction={selectedTransaction}
-                    onClose={closeModalDetailResponse}
-                    modalRef={dropdownRef}
-                />
+                <div className={`${isModalOpenDetailResponse ? 'fixed' : 'hidden'}`}>
+                    <PaymentDetailsModal
+                        isOpen={isModalOpenDetailResponse}
+                        transaction={selectedTransaction}
+                        onClose={closeModalDetailResponse}
+                        modalRef={dropdownRef}
+                    />
+                </div>
 
                 {/* spinner */}
                 { spinnerFixed && (
@@ -542,7 +584,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                 {/* alertError */}
                 {toast && (
                     <ToastPortal> 
-                        <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+                        <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
                         <Toast 
                         message={toast.message} 
                         type={toast.type} 
@@ -768,7 +810,6 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                 />
                 {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
             </div>
-
 
             {/*handle kembalian*/}
             {dataCart.channel_code === 'CASH' && ( // Only show if payment method is CASH
@@ -1050,14 +1091,19 @@ const ComponentOrderCashier = () => {
     useEffect(() => {
         if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
             dispatch(removeGetAllCreateTransactionById(checkTransactionNonCashId))
-            setAllertSuccessCheckTransactionNonCash(true)
-
+            // setAllertSuccessCheckTransactionNonCash(true)
+            dispatch(resetCheckTransactionNonCash())
         } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
             setAllertPendingCheckTransactionNonCash(true)
         }
     }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
 
-
+    // useEffect(() => {
+    //     if (allertSuccessCheckTransactionNonCash) {
+    //         dispatch(resetCheckTransactionNonCash())
+    //         setAllertSuccessCheckTransactionNonCash(false)
+    //     }
+    // }, [allertSuccessCheckTransactionNonCash])
 
     useEffect(() => {
         setLoadingFixed(loadingCheckTransactionNonCash)
@@ -1072,7 +1118,7 @@ const ComponentOrderCashier = () => {
 
     return (
         <div className="h-[40vh] w-full">
-            { allertSuccessCheckTransactionNonCash && (
+            {/* { allertSuccessCheckTransactionNonCash && (
                 <div ref={modelRef}>
                     <ConfirmationModal 
                         onClose={handleCloseModelConfirmation} 
@@ -1081,7 +1127,7 @@ const ComponentOrderCashier = () => {
                         type={"success"}
                     />
                 </div>
-            )}
+            )} */}
 
              { allertPendingCheckTransactionNonCash && (
                 <div ref={modelRef}>
@@ -1209,12 +1255,14 @@ const ComponentOrderCashier = () => {
                     </div>
 
                     {/* Payment Reference Modal */}
-                    <PaymentDetailsModal
-                        isOpen={isModalOpen}
-                        transaction={selectedTransaction}
-                        onClose={closeModal}
-                        modalRef={modelRef}
-                    />
+                    <div className={`${isModalOpen ? 'fixed' : 'hidden'}`}>
+                        <PaymentDetailsModal
+                            isOpen={isModalOpen}
+                            transaction={selectedTransaction}
+                            onClose={closeModal}
+                            modalRef={modelRef}
+                        />
+                    </div>
                 </>
             ) }
         </div>

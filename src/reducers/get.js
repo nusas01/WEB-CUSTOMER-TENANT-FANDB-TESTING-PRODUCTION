@@ -608,6 +608,10 @@ export const getCategoryInternalSlice = createSlice({
             state.errorCategoyIntenal = action.payload
             state.dataCategory = []
         },
+        deleteCategoryById: (state, action) => {
+            const idToDelete = action.payload;
+            state.dataCategory = state.dataCategory.filter(category => category.id !== idToDelete);
+        },
     }
 })
 
@@ -689,16 +693,41 @@ export const getCategoryAndProductInternalSlice = createSlice({
             console.log("Reducer deleteProductById dijalankan dengan id:", productId);
 
             for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
-                const products = state.dataCategoryAndProduct[i].product;
+                const category = state.dataCategoryAndProduct[i];
+                const products = category.product;
 
                 const productIndex = products.findIndex((prod) => prod.id === productId);
 
                 if (productIndex !== -1) {
                     products.splice(productIndex, 1);
+                    state.amountProduct--; // update jumlah produk
+
+                    // Jika produk dalam kategori ini kosong setelah penghapusan, hapus kategorinya
+                    if (products.length === 0) {
+                        state.dataCategoryAndProduct.splice(i, 1);
+                        state.amountCategory--; // update jumlah kategori
+                    }
                     break;
                 }
             }
-        }, 
+
+            // Jika `filteredProduct` aktif juga, update di sana
+            for (let i = 0; i < state.filteredProduct.length; i++) {
+                const category = state.filteredProduct[i];
+                const products = category.product;
+                const productIndex = products.findIndex((prod) => prod.id === productId);
+
+                if (productIndex !== -1) {
+                    products.splice(productIndex, 1);
+
+                    // Jika setelah dihapus kategori jadi kosong, hapus dari filteredProduct juga
+                    if (products.length === 0) {
+                        state.filteredProduct.splice(i, 1);
+                    }
+                    break;
+                }
+            }
+        },
         searchProductByName: (state, action) => {
             const keyword = action.payload.toLowerCase();
 
@@ -921,7 +950,6 @@ export const getGeneralJournalVoidInternalSlice = createSlice({
     },
   },
 });
-
 
 
 const initialGeneralJournalDrafInternalState = {
