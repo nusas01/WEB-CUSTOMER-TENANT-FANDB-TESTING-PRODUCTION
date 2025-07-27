@@ -62,7 +62,6 @@ export default function KasirSettings() {
   const activeMenu = "settings"
   const dispatch = useDispatch()
   const [toast, setToast] = useState({ show: false, type: '', message: '' })
-  const [spinnerFixed, setSpinnerFixed] = useState(false)
 
   // maxsimaz minimaz layar
   const contentRef = useRef(null);
@@ -89,18 +88,6 @@ export default function KasirSettings() {
   // response update payment methods
   const { resetUpdatePaymentMethodsInternal } = updatePaymentMethodsInternalSlice.actions
   const {successUpdatePaymentMethods, errorUpdatePaymentMethods, loadingUpdatePaymentMethods } = useSelector((state) => state.updatePaymentMethodsInternalState)
-
-  useEffect(() => {
-    setSpinnerFixed(loadingUpdatePaymentMethods)
-  }, [loadingUpdatePaymentMethods])
-
-  useEffect(() => {
-    setSpinnerFixed(loadingUpdateDataEmployee)
-  }, [loadingUpdateDataEmployee])
-
-  useEffect(() => {
-    setSpinnerFixed(loadingChangePassword)
-  }, [loadingChangePassword])
 
   useEffect(() => {
     if (successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods) {
@@ -175,23 +162,19 @@ export default function KasirSettings() {
         </div>
       )}
 
-      {spinnerFixed && (
-        <SpinnerFixed/>
-      )}
-
       {/* Toast Portal */}
       {toast.show && (
         <ToastPortal>
-          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
             <Toast
-              message={toast.message}
-              type={toast.type}
+              message={"server internal server error"}
+              type={"error"}
               onClose={handleToastClose}
               duration={3000}
             />
           </div>
         </ToastPortal>
-      )}
+      )} 
 
       <div
         ref={contentRef}
@@ -208,6 +191,7 @@ export default function KasirSettings() {
 
 const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
+  const [spinnerFixed, setSpinnerFixed] = useState(false)
 
   // call data payment method
   const [paymentSettings, setPaymentSettings] = useState(null);
@@ -366,7 +350,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // handle change password
   const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
-  const { errorValidatePassword, errorValidateNewPassword } = useSelector((state) => state.changePasswordInternalState)
+  const { errorValidatePassword, errorValidateNewPassword,  loadingChangePassword } = useSelector((state) => state.changePasswordInternalState)
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -414,6 +398,28 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     console.log("dispatch executed");
   };
 
+  // handle loading update data employee
+  const { loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+  // response loading update payment methods
+  const { loadingUpdatePaymentMethods } = useSelector((state) => state.updatePaymentMethodsInternalState)
+
+  useEffect(() => {
+    setSpinnerFixed(loadingUpdatePaymentMethods)
+  }, [loadingUpdatePaymentMethods])
+
+  useEffect(() => {
+    setSpinnerFixed(loadingUpdateDataEmployee)
+  }, [loadingUpdateDataEmployee])
+
+  useEffect(() => {
+    setSpinnerFixed(loadingChangePassword)
+  }, [loadingChangePassword])
+  
+  // handle sidebar and elemant header yang responsice
+  const { ref: headerRef, height: headerHeight } = useElementHeight();
+  const { setIsOpen } = navbarInternalSlice.actions
+  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
+
 
   const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     <button
@@ -429,52 +435,59 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     </button>
   );
 
-  // handle sidebar and elemant header yang responsice
-  const { ref: headerRef, height: headerHeight } = useElementHeight();
-  const { setIsOpen } = navbarInternalSlice.actions
-  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
-
-
   return (
     <div className="min-h-screen bg-gray-50">
+
+      { spinnerFixed && (
+        <SpinnerFixed colors={"fill-gray-900"}/>
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div
           ref={headerRef}
-          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) ? 'hidden' : ''}`}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || spinnerFixed ? 'hidden' : ''}`}
           style={{
             left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
             width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
             height: '64px'
           }}
         >
-            <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                        <Settings className="w-6 h-6 text-white" />
+          <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+            <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <Settings className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-800">Settings</h1>
-                        <p className="text-gray-600 text-xs">Sesuaikan preferensi dan kelola sistem Anda.</p>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">Settings</h1>
                     </div>
                 </div>
 
-                <div>
-                  <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-                    {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
+                <div className='flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0'>
+                  <button 
+                  onClick={() => fullscreenchange()} 
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+                  aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  >
+                    {isFullScreen ? (
+                      <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                    ) : (
+                      <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                    )}
                   </button>
                   { isMobileDeviceType && !isFullScreen && (
                     <button 
                       onClick={() => dispatch(setIsOpen(true))}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                      aria-label="Open menu"
                     >
-                      <Menu className="w-5 h-5 text-gray-600" />
+                      <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
                     </button>
                   )}
                 </div>
             </div>
-            </div>
+          </div>
         </div>
 
         {/* Success Message */}

@@ -17,6 +17,7 @@ import {
   BookText,
   Maximize,
   Minimize,
+  Settings,
   Menu,
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
@@ -26,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {voidGeneralJournalInternal} from '../../actions/put'
 import {voidGeneralJournalInternalSlice} from '../../reducers/put'
-import{VoidJournalConfirmationModal, ErrorAlert} from '../../component/alert'
+import{VoidJournalConfirmationModal, Toast, ToastPortal} from '../../component/alert'
 import {
   filterGeneralJournalInternalSlice, 
   dataDrafToVoidInternalSlice,
@@ -37,7 +38,7 @@ import {
 import {
   getGeneralJournalByEventPerDayInternalSlice
 } from '../../reducers/get.js'
-import { SpinnerRelative } from '../../helper/spinner';
+import { SpinnerRelative, SpinnerFixed } from '../../helper/spinner';
 import {
   fetchGeneralJournalByEventAllInternal, 
   fetchGeneralJournalByEventPerDayInternal, 
@@ -47,10 +48,13 @@ import {
 import {formatCurrency, useInfiniteScroll, useFullscreen, useElementHeight} from '../../helper/helper'
 import {DateFilterComponent,validateDateRange} from '../../helper/formatdate';
 import { set } from 'date-fns';
+
  
 export default function GeneralJournalDashboard() {
     const [activeMenu, setActiveMenu] = useState("general-journal")
     const dispatch = useDispatch()
+    const [toast, setToast] = useState(null);
+    const [spinnerFixed, setSpinnerFixed] = useState(false)
 
     // maxsimaz minimaz layar
     const contentRef = useRef(null);
@@ -59,34 +63,38 @@ export default function GeneralJournalDashboard() {
     // handle sidebar and elemant header yang responsice
     const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-
     // handle response error journal draf to 
-    const [errorAllertVoid, setErrorAlertVoid] = useState(false)
     const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
     const {errorVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
 
     useEffect(() => {
       if (errorVoidGeneralJournal) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setErrorAlertVoid(true);
-    
-        const timeOut = setTimeout(() => {
-          setErrorAlertVoid(false);
+        setToast({
+          message: "There was an error on the internal server, we are fixing it.",
+          type: 'error'
+        });
+         
+        const timer = setTimeout(() => {
           dispatch(resetVoidGeneralJournal());
-        }, 3000); 
-    
-        return () => clearTimeout(timeOut);
+        }, 3000)
+
+        return () => clearTimeout(timer)
       }
     }, [errorVoidGeneralJournal]);
 
     return (
       <div className="flex relative">
-        {errorAllertVoid && (
-
-          <ErrorAlert 
-          message={"There was an error on the internal server, we are fixing it."}
-          onClose={() => setErrorAlertVoid(false)}
-          />
+        {toast && (
+          <ToastPortal> 
+            <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+              <Toast 
+              message={toast.message} 
+              type={toast.type} 
+              onClose={() => setToast(null)} 
+              duration={3000}
+              />
+            </div>
+          </ToastPortal>
         )}
 
         {/* Sidebar - Fixed width */}
@@ -116,6 +124,12 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [spinnerRelative, setSpinnerRelative] = useState(false)
+  const [spinnerFixed, setSpinnerFixed] = useState(false)
+
+  const {loadingVoidGeneraljournal} = useSelector((state) => state.voidGeneralJournalInternalState)
+  useEffect(() => {
+    setSpinnerFixed(loadingVoidGeneraljournal)
+  }, [loadingVoidGeneraljournal])
 
   // data general journal status finisize 
   const {resetGeneralJournalEventPerDayPagination} = getGeneralJournalByEventPerDayInternalSlice.actions
@@ -497,50 +511,70 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
   return (
     <div className="min-h-screen bg-gray-50">        
 
-        { modelConfirmVoid && (
-          <VoidJournalConfirmationModal onConfirm={handeSubmitVoid} onCancel={handleCloseConfirmModelVoid} journalName={'Void'}/>
-        )}
+      { spinnerFixed && (
+        <SpinnerFixed colors={"fill-gray-900"}/>
+      )}
+    
+      { modelConfirmVoid && (
+        <VoidJournalConfirmationModal onConfirm={handeSubmitVoid} onCancel={handleCloseConfirmModelVoid} journalName={'Void'}/>
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div
           ref={headerRef}
-          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || modelConfirmVoid || spinnerFixed ? 'hidden' : ''}`}
           style={{
             left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
             width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
             height: '64px'
           }}
         >
-          <div className="max-w-7xl mx-auto px-4 py-2.5 flex justify-between">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-10 h-10w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg">
-                <FileText className="h-6 w-6 text-white" />
+        <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <FileText className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">Journal Umum</h1>
-                <p className="text-gray-600 text-xs">Kelola catatan jurnal akuntansi</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">Journal Umum</h1>
               </div>
             </div>
 
-            <div className='flex space-x-3'>
-              <button onClick={() => navigate('/internal/admin/general-journal/form')} className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-                <Plus className="h-3 w-3" />
-                <span>Tambah Entry</span>
+            <div className='flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0'>
+              <button 
+              onClick={() => fullscreenchange()} 
+              className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+              aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+               {isFullScreen ? (
+                  <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                ) : (
+                  <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                )}
               </button>
-              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-               {isFullScreen ? <Minimize className="w-7 h-7 text-gray-600" /> : <Maximize className="w-7 h-7 text-gray-600" />}
+
+              <button
+                className="p-1.5 sm:p-2 lg:p-3 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 touch-manipulation"
+                onClick={() => navigate('/internal/admin/settings')}
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
               </button>
+
               { isMobileDeviceType && !isFullScreen && (
                 <button 
                   onClick={() => dispatch(setIsOpen(true))}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                  aria-label="Open menu"
                 >
-                  <Menu className="w-5 h-5 text-gray-600" />
+                  <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
                 </button>
               )}
             </div>
           </div>
         </div>
+      </div>
 
         <div className='p-4' style={{marginTop: headerHeight}}>
           {/* Filters & Stats Combined */}
@@ -614,6 +648,12 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                       </select>
                     </div>
                   )}
+                  <button onClick={() => navigate('/internal/admin/general-journal/form')} 
+                  className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Tambah Entry</span>
+                  </button>
                 </div>
               </div>
             </div>

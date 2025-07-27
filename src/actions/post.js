@@ -137,12 +137,13 @@ export const loginCustomer = (data) => async (dispatch) => {
 const { successCreateTransactionCustomer, errorCreateTransactionCustomer, setLoadingCreateTransactionCustomer } = createTransactionCustomerSlice.actions;
 export const createTransactionCustomer = (data) => async (dispatch) => {
     const state = store.getState().persisted.orderType
+    console.log("store create transaction customer: ", state)
     const configJson = {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
-            ...(state.orderTakeAway === "true"
-            ? {"order_type_take_away": true} 
+            ...(state.orderTakeAway === true
+            ? {"order_type_take_away": "true"} 
             : {"table_id": state.tableId})
         },
         withCredentials: true,
@@ -162,6 +163,7 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
             errorProductUnavailable: error?.response?.data?.errorProductUnavailable,
             errorAmountPrice: error.response?.data?.errorAmountPrice,
             errorCashNonActive: error.response?.data?.errorCashNonActive,
+            errorTable: error.response?.data?.errorTable,
             statusCode: error?.response?.status,
         }
         dispatch(errorCreateTransactionCustomer(message))

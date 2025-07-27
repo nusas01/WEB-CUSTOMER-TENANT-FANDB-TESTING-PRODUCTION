@@ -137,6 +137,7 @@ const initialCreateTransactionCustomer = {
     statusCode: null,
     error: null,
     errorProductUnavailable: null,
+    errorTable: null,
     errorAmountPrice: null,
     errorCashNonActive: null,
     loading: false,
@@ -153,6 +154,7 @@ export const createTransactionCustomerSlice = createSlice({
             state.error = action.payload.error
             state.errorProductUnavailable = action.payload.errorProductUnavailable
             state.errorAmountPrice = action.payload.errorAmountPrice
+            state.errorTable = action.payload.errorTable
             state.statusCode = action.payload.statusCode
             state.errorCashNonActive = action.payload.errorCashNonActive
         }, 
@@ -164,6 +166,7 @@ export const createTransactionCustomerSlice = createSlice({
             state.errorProductUnavailable = null
             state.errorAmountPrice = null
             state.statusCode = null
+            state.errorTable = null
             state.error = null
             state.errorCashNonActive = null
         }

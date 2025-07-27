@@ -104,7 +104,7 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
 }
 
 
-const {setSuccessVoidGeneralJournal, setErrorVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
+const {setSuccessVoidGeneralJournal, setErrorVoidGeneralJournal, setLoadingVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
 export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
     const config = {
         headers: {
@@ -114,6 +114,7 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         withCredentials: true,
     }
     console.log("data draf to void: ", data)
+    dispatch(setLoadingVoidGeneralJournal(true))
     try {
         const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
         dispatch(setSuccessVoidGeneralJournal(response.data?.success))
@@ -125,7 +126,9 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         }
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorVoidGeneralJournal(error.response?.data?.error));
-    } 
+    } finally {
+        dispatch(setLoadingVoidGeneralJournal(false))
+    }
 }
 
 const {setSuccessUpdatePaymentMethodsInternal, setErrorUpdatePaymentMethodsInteral, setLoadingUpdatePaymentMethodsInternal} = updatePaymentMethodsInternalSlice.actions

@@ -14,21 +14,23 @@ import {
   AlertCircle,
   Maximize,
   Minimize,
+  Settings,
   Menu,
 } from 'lucide-react';
 import Sidebar from '../../component/sidebar';
 import {formatCurrency, useFullscreen, useElementHeight} from '../../helper/helper';
 import { useDispatch, useSelector } from 'react-redux';
 import { filterDateNeracaInternalSlice, navbarInternalSlice } from '../../reducers/reducers'
-import { ErrorAlert } from '../../component/alert';
+import { Toast, ToastPortal } from '../../component/alert';
 import { SpinnerRelative } from '../../helper/spinner';
 import {getNeracaInternalSlice} from '../../reducers/get'
 import {fetchNeracaInternal} from '../../actions/get'
+import { useNavigate } from 'react-router-dom';
 
 export default function NeracaDashboard() {
   const dispatch = useDispatch()
-  const [errorAlert, setErrorAlert] = useState(false)
   const [activeMenu, setActiveMenu] = useState("neraca")
+  const [toast, setToast] = useState(null);
 
   const {resetErrorNeracaInternal} = getNeracaInternalSlice.actions 
   const {errorNeracaIntenal, loadingNeracaInternal} = useSelector((state) => state.persisted.getNeracaInternal)
@@ -42,14 +44,16 @@ export default function NeracaDashboard() {
 
    useEffect(() => {
     if (errorNeracaIntenal) {
-      setErrorAlert(true)
+      setToast({
+          message: "Terjadi kesalahan pada sistem saat mengambil data neraca. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi.",
+          type: 'error'
+        });
+         
+        const timer = setTimeout(() => {
+            dispatch(resetErrorNeracaInternal())
+        }, 3000)
 
-      const timer = setTimeout(() => {
-        dispatch(resetErrorNeracaInternal())
-        setErrorAlert(false)
-      }, 3000)
-
-      return () => clearTimeout(timer)
+        return () => clearTimeout(timer)
     }
   }, [errorNeracaIntenal])
 
@@ -64,11 +68,17 @@ export default function NeracaDashboard() {
           </div>
         )}
 
-        { errorAlert && (
-          <ErrorAlert 
-            message="Terjadi kesalahan pada sistem saat mengambil data neraca. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi." 
-            onClose={() => setErrorAlert(false)}
-          />
+        {toast && (
+          <ToastPortal> 
+            <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+              <Toast 
+              message={toast.message} 
+              type={toast.type} 
+              onClose={() => setToast(null)} 
+              duration={3000}
+              />
+            </div>
+          </ToastPortal>
         )}
 
         <div
@@ -85,6 +95,7 @@ export default function NeracaDashboard() {
 }
 
 const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
+  const navigate = useNavigate()
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const [dateRangeError, setDateRangeError] = useState("");
@@ -224,8 +235,8 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
 
   // Summary Cards Component
   const SummaryCards = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Aset</p>
@@ -237,7 +248,7 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Liabilitas</p>
@@ -249,7 +260,7 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Total Ekuitas</p>
@@ -261,7 +272,7 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg px-4 py-10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm font-medium">Net Cash Flow</p>
@@ -380,23 +391,60 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
             height: '64px'
           }}
         >
-          <div className="max-w-7xl mx-auto px-4 py-2.5 flex justify-between">
-            {/* Kiri - Judul */}
-            <div className="flex gap-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                  Laporan Neraca
-                </h1>
-                <p className="text-gray-500 text-xs">Balance Sheet</p>
+          <div className="h-full flex justify-between mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+            <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+              {/* Kiri - Judul */}
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+                <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                  <FileText className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">
+                    Laporan Neraca
+                  </h1>
+                </div>
               </div>
             </div>
 
-            {/* Kanan - Filter dan Tombol */}
-            <div className="flex gap-3">
-              <div className="flex gap-3 bg-gray-50  rounded-xl relative">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+              {/* Fullscreen & Mobile Menu Button */}
+              <button 
+              onClick={() => fullscreenchange()} 
+              className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+              aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullScreen ? (
+                  <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                ) : (
+                  <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                )}
+              </button>
+
+              <button
+                className="p-1.5 sm:p-2 lg:p-3 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 touch-manipulation"
+                onClick={() => navigate('/internal/admin/settings')}
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+              </button>
+
+              {isMobileDeviceType && !isFullScreen && (
+                <button
+                  onClick={() => dispatch(setIsOpen(true))}
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                  aria-label="Open menu"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className='space-y-4' style={{marginTop: headerHeight}}>
+          {/* filtering date */}
+          <div className='bg-white p-4 rounded-xl shadow-md border border-gray-200 overflow-hidden'>
+              <div className="flex gap-3 rounded-xl relative">
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-gray-800 rounded-lg">
                     <Calendar className="w-4 h-4 text-white" />
@@ -431,25 +479,8 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
                   </div>
                 )}
               </div>
-
-              {/* Fullscreen & Mobile Menu Button */}
-              <button onClick={() => fullscreenchange()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-                {isFullScreen ? <Minimize className="w-7 h-7 text-gray-600" /> : <Maximize className="w-7 h-7 text-gray-600" />}
-              </button>
-
-              {isMobileDeviceType && !isFullScreen && (
-                <button
-                  onClick={() => dispatch(setIsOpen(true))}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Menu className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-            </div>
           </div>
-        </div>
 
-        <div style={{marginTop: headerHeight}}>
           {/* Summary Cards - Always show */}
           <SummaryCards />
 
@@ -465,7 +496,7 @@ const NeracaComponent = ({isFullScreen, fullscreenchange}) => {
               {isDataEmpty ? (
                 <EmptyState />
               ) : (
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                   {/* Report Header */}
                   <div className="bg-white p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">

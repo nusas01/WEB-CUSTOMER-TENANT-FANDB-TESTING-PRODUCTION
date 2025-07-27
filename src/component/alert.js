@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Ban, X, RefreshCw, ShoppingCart, Banknote, CreditCard } from "lucide-react"
+import { CheckCircle, XCircle, Clock, AlertTriangle, QrCode, Users, AlertCircle, Ban, X, RefreshCw, ShoppingCart, Banknote, CreditCard } from "lucide-react"
 import { useRef } from "react"
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
 import { useDispatch } from "react-redux"
@@ -920,5 +920,92 @@ export const ToastPortal = ({ children }) => {
   }, []);
 
   return mounted ? createPortal(children, document.body) : null;
+};
+
+export const QRErrorModal = () => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-y-auto overflow-hidden animate-fade-in">
+        {/* Header with gradient */}
+        <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="flex items-center justify-center w-16 h-16 bg-opacity-20 rounded-full mb-4 mx-auto backdrop-blur-sm">
+              <AlertTriangle className="w-20 h-20 text-red" />
+            </div>
+            <h2 className="text-2xl font-bold text-center mb-2">QR Code Tidak Valid</h2>
+            <p className="text-red-100 text-center text-sm">Kode QR meja sudah tidak berlaku</p>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* QR Icon with animation */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center">
+                <QrCode className="w-10 h-10 text-gray-400" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">✕</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main message */}
+          <div className="text-center space-y-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Maaf, QR Code meja ini sudah tidak aktif
+            </h3>
+            <p className="text-gray-600 leading-relaxed">
+              QR Code yang Anda scan mungkin sudah kadaluarsa atau tidak valid. 
+              Hal ini bisa terjadi karena pergantian sesi atau pembaruan sistem.
+            </p>
+          </div>
+
+          {/* Action instruction */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border-2 border-[#00a650]">
+                  <Users className="w-5 h-5 text-[#00a650]" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 mb-1">Yang perlu Anda lakukan:</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Silakan hubungi <span className="font-semibold text-[#00a650]">staf</span> terdekat 
+                  untuk mendapatkan QR Code meja yang baru dan aktif.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <div className="text-center pt-2">
+            <p className="text-xs text-gray-500">
+              Terima kasih atas pengertian Anda
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
+    </div>
+  );
 };
 

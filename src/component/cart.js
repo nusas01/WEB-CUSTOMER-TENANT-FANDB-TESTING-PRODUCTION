@@ -22,6 +22,7 @@ import {
     ProductUnavailableModal, 
     InvalidAmountModal,
     CashPaymentUnavailableModal,
+    QRErrorModal,
 } from "./alert"
 import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
@@ -61,6 +62,8 @@ function Cart({ closeCart }) {
         phone_number_ewallet: null,
         product: []
     })
+
+    console.log("pajak yang harus dibayarkan: ", taxRate)
 
     const handleCloseModel = () => {
         setIsModelInputNumberEwallet(false)
@@ -157,7 +160,7 @@ function Cart({ closeCart }) {
             ...prev,
             product: mappedProducts,
         }))
-    }, [subTotal])
+    }, [subTotal, taxRate])
 
     console.log("data fee dan sub total: ", fee, subTotal)
 
@@ -257,7 +260,7 @@ function Cart({ closeCart }) {
     // handle create transaction
     const [productUnavailable, setProductUnavailable] = useState(false)
     const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
-    const {message, errorAmountPrice, error, loading, errorProductUnavailable, errorCashNonActive} = useSelector((state) => state.createTransactionCustomerState)
+    const {message, errorAmountPrice, error, loading, errorTable, errorProductUnavailable, errorCashNonActive} = useSelector((state) => state.createTransactionCustomerState)
     const {loading: loadingOnGoingTransaction} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
 
     useEffect(() => {
@@ -410,17 +413,28 @@ function Cart({ closeCart }) {
         {/* payment cash non active */}
         { paymentUnavailable && (
             <CashPaymentUnavailableModal
-            onClose={() => setPaymentUnavailable(false)}
+            onClose={() => {
+                setPaymentUnavailable(false)
+                dispatch(resetCreateTransactionCustomer())
+            }}
             colorsType="customer"
             fetchData={fetchPaymentMethodsCustomer}
             resetChart={handleResetDataCashNonActive}
             />
         )}
 
+        {/* invalid Qr table */}
+        { errorTable && (
+            <QRErrorModal/>
+        )}
+
         {/* product unavailable */}
         { productUnavailable && (
             <ProductUnavailableModal 
-            onClose={() => setProductUnavailable(false)} 
+            onClose={() => {
+                setProductUnavailable(false)
+                dispatch(resetCreateTransactionCustomer())
+            }} 
             colorsType={"customer"} 
             fetchData={fetchProductsCustomer}
             resetData={handleResetData}
@@ -429,7 +443,10 @@ function Cart({ closeCart }) {
 
         { invalidAmountPrice && (
             <InvalidAmountModal
-            onClose={() => setInvalidAmountPrice(false)}
+            onClose={() => {
+                setInvalidAmountPrice(false)
+                dispatch(resetCreateTransactionCustomer())
+            }}
             colorsType="customer"
             fetchData={fetchPaymentMethodsCustomer}
             resetChart={handleResetData}

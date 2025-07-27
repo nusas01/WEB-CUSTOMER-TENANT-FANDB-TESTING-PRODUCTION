@@ -169,6 +169,20 @@ export default function KasirStatistik() {
 
   const DateRangeFilter = ({ dateRange, setDateRange, label }) => (
     <div className="flex items-center space-x-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="flex items-center space-x-3 mt-4 md:mt-0">
+        <select
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
+        >
+          <option value="daily">Harian</option>
+          <option value="weekly">Mingguan</option>
+          <option value="monthly">Bulanan</option>
+        </select>
+        <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
+          <RefreshCw className="h-4 w-4" />
+        </button>
+      </div>
       <CalendarDays className="h-5 w-5 text-gray-600" />
       <div className="flex items-center space-x-2">
         <label className="text-sm font-medium text-gray-700">{label}:</label>
@@ -224,45 +238,43 @@ export default function KasirStatistik() {
                 height: '64px'
               }}
             >
-                <div className="max-w-7xl mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                          <ChartNoAxesCombined className="w-6 h-6 text-white" />
+                <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+                <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                          <ChartNoAxesCombined className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                       </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-800">Statistics</h1>
-                        <p className="text-gray-600 text-xs">Monitoring performa bisnis secara real-time</p>
+                      <div className="min-w-0 flex-1">
+                          <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">Statistics</h1>
+                      </div>
                     </div>
-                    </div>
-                    <div className="flex items-center space-x-3 mt-4 md:mt-0">
-                      <select
-                        value={selectedPeriod}
-                        onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
+
+                    <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+                      <button 
+                      onClick={() => toggleFullScreen()} 
+                      className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+                      aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
                       >
-                        <option value="daily">Harian</option>
-                        <option value="weekly">Mingguan</option>
-                        <option value="monthly">Bulanan</option>
-                      </select>
-                      <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
-                        <RefreshCw className="h-4 w-4" />
-                        <span>Refresh</span>
+                        {isFullScreen ? ( 
+                          <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                        ) : ( 
+                          <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                        )}
                       </button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => toggleFullScreen()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-                        {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
-                      </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
-                          <Settings className="w-5 h-5 text-gray-600" />
+                      <button 
+                      className="p-1.5 sm:p-2 lg:p-3 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 touch-manipulation" 
+                      onClick={() => navigate('/internal/admin/settings')}
+                      aria-label="Settings"
+                      >
+                          <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
                       </button>
                       { isMobileDeviceType && !isFullScreen && (
                         <button 
                           onClick={() => dispatch(setIsOpen(true))}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                          aria-label="Open menu"
                         >
-                          <Menu className="w-5 h-5 text-gray-600" />
+                          <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
                         </button>
                       )}
                     </div>

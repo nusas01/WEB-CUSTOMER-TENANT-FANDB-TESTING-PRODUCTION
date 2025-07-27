@@ -50,7 +50,7 @@ export default function KasirTransaction() {
           {/* Toast Portal */}
           {toast.show && (
               <ToastPortal>
-              <div className="fixed top-4 right-4 z-50">
+              <div className="fixed top-4 right-4 z-100">
                   <Toast
                   message={toast.message}
                   type={toast.type}

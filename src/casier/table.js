@@ -241,7 +241,7 @@ export default function ModernKasirDashboard() {
     <div>
       {toast && (
         <ToastPortal> 
-          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
             <Toast 
             message={toast.message} 
             type={toast.type} 
@@ -250,7 +250,7 @@ export default function ModernKasirDashboard() {
             />
           </div>
         </ToastPortal>
-        )}
+      )}
 
       <div className='flex relative'>
         {/* Sidebar - Fixed width */}
@@ -279,39 +279,53 @@ export default function ModernKasirDashboard() {
           {/* Header */}
           <div
             ref={headerRef}
-            className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType)  ? 'hidden' : ''}`}
+            className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || spinnerFixed || confirmModel ? 'hidden' : ''}`}
             style={{
               left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
               width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
               height: '64px'
             }}
           >
-              <div className="max-w-7xl mx-auto px-4 py-3">
-              <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
-                      <svg  xmlns="http://www.w3.org/2000/svg"  width="26"  height="26"  viewBox="0 0 24 24"  fill="none"  stroke="white"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-databricks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01" /></svg>
+            <div className="h-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+              <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <svg  xmlns="http://www.w3.org/2000/svg"  width="26"  height="26"  viewBox="0 0 24 24"  fill="none"  stroke="white"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-databricks"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01" /></svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">Tables</h1>
+                    </div>
                   </div>
-                  <div>
-                      <h1 className="text-xl font-bold text-gray-800">Tables</h1>
-                      <p className="text-gray-600 text-xs">Sistem manajemen meja untuk efisiensi operasional restoran Anda</p>
-                  </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                  <button onClick={() => toggleFullScreen()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors hover:scale-105">
-                    {isFullScreen ? <Minimize className="w-5 h-5 text-gray-600" /> : <Maximize className="w-5 h-5 text-gray-600" />}
-                  </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => navigate('/internal/admin/settings')}>
-                      <Settings className="w-5 h-5 text-gray-600" />
-                  </button>
-                  { isMobileDeviceType && !isFullScreen && (
-                    <button 
-                      onClick={() => dispatch(setIsOpen(true))}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+
+                  <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+                    <button
+                     onClick={() => toggleFullScreen()} 
+                     className="p-1.5 sm:p-2 hover:bg-gray-100 hover:scale-105 rounded-md sm:rounded-lg transition-all touch-manipulation"
+                     aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
                     >
-                      <Menu className="w-5 h-5 text-gray-600" />
+                      {isFullScreen ? ( 
+                        <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" /> 
+                      ) : (
+                        <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                      )}                      
                     </button>
-                  )}
+
+                    <button 
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
+                    onClick={() => navigate('/internal/admin/settings')}
+                    aria-label="Settings"
+                    >
+                    <Settings className="w-5 h-5 text-gray-600" />
+                    </button>
+                    { isMobileDeviceType && !isFullScreen && (
+                      <button 
+                        onClick={() => dispatch(setIsOpen(true))}
+                        className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
+                        aria-label="Open menu"
+                      >
+                        <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                      </button>
+                    )}
                   </div>
               </div>
               </div>

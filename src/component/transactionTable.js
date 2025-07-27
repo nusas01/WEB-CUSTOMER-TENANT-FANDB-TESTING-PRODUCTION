@@ -515,6 +515,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
     if (totalCountFilter === 0) {
       setTotalAmount(total);
+      setTotalCount(data.length);
     }
   }, [
     filteredData,
@@ -558,7 +559,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
       {/* Modern Header */}
       <div
         ref={headerRef}
-        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) ? 'hidden' : ''}`}
+        className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${(isOpen && isMobileDeviceType) || spinner  ? 'hidden' : ''}`}
         style={{
           left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
           width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
@@ -569,16 +570,13 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
           <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
             {/* Left - Logo & Info */}
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                <ScanBarcode className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <ScanBarcode className="w-5 h-5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white"/>
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-800 truncate">
                   Transactions Management
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 truncate hidden xs:block">
-                  Kelola transaksi masuk dan pantau status pembayaran
-                </p>
               </div>
             </div>
             
@@ -650,136 +648,260 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         </div>
 
         {/* Filter & Search */}
-        <div className="flex flex-wrap gap-4 mb-4 items-center bg-white p-4 rounded-md shadow-sm border border-gray-200/50  justify-between">
-          {/* Method Filter Buttons */}
-          <div className="flex items-center gap-3">
-            <button 
-              className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                filterTransaction === "methodCash" 
-                  ? "bg-gray-900 text-white shadow-lg scale-105" 
-                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
-              }`} 
-              onClick={handleMethodCashTransaction}
-            >
-              <Banknote className="w-4 h-4" />
-              Method Cash
-            </button>
+        <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200/50 mb-4">
+          {/* Mobile Layout */}
+          <div className="block lg:hidden space-y-4">
+            {/* Method Filter Buttons - Mobile */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  filterTransaction === "methodCash" 
+                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                }`} 
+                onClick={handleMethodCashTransaction}
+              >
+                <Banknote className="w-4 h-4" />
+                Method Cash
+              </button>
 
-            <button 
-              className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                filterTransaction === "methodNonCash" 
-                  ? "bg-gray-900 text-white shadow-lg scale-105" 
-                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
-              }`} 
-              onClick={handleMethodNonCashTransaction}
-            >
-              <CreditCard className="w-4 h-4" />
-              Method Non Cash
-            </button>
-          </div>
-
-          {/* Date Filter */}
-          <div className="relative">
-            <div
-              onClick={() => setDateFilter(true)}
-              className={`w-64 h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
-                filterTransaction === "methodFilterTransaction" 
-                  ? 'bg-gray-900 text-white shadow-lg' 
-                  : 'bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
-              }`}
-            >
-              <div className="flex justify-between w-full">
-                <div className="flex flex-col items-start">
-                  <span className={`text-sm font-medium ${
-                    filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
-                  }`}>{filters.startDate ? filters.startDate : 'dd/mm/yyyy'}</span>
-                  <span className={`text-xs ${
-                    filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
-                  }`}>12:00 AM</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className={`text-sm font-medium ${
-                    filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
-                  }`}>{ filters.endDate ? filters.endDate : 'dd/mm/yyyy'}</span>
-                  <span className={`text-xs ${
-                    filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
-                  }`}>12:00 PM</span>
-                </div>
-              </div>
-              <CalendarRange className={`ml-2 ${
-                filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'
-              }`} size={18} />
+              <button 
+                className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  filterTransaction === "methodNonCash" 
+                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                }`} 
+                onClick={handleMethodNonCashTransaction}
+              >
+                <CreditCard className="w-4 h-4" />
+                Method Non Cash
+              </button>
             </div>
-            
-            {dateFilter && (
-              <div className="absolute z-10" ref={panelRef}>
-                <FilterPanel
-                  filterMethod={filters.method}
-                  filterStatus={filters.status}
-                  startDate={filters.startDate}
-                  endDate={filters.endDate}
-                  dateError={filters.dateError}
-                  onMethodChange={handleMethodChange}
-                  onStatusChange={handleStatusChange}
-                  onStartDateChange={(value) => handleDateChange('startDate', value)}
-                  onEndDateChange={(value) => handleDateChange('endDate', value)}
-                  onClear={handleClear}
-                  onApply={handleApply}
-                  showMethodFilter={true}
-                  showStatusFilter={true}
-                  showDateFilter={true}
-                  showTimeFilter={true}
-                  validationErrors={validationErrors}
-                />
-              </div>
-            )}
-          </div>
 
-          {/* Status Filter */}
-          <div>
-            <div className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-              filterTransaction !== "methodFilterTransaction" 
-                ? "bg-gray-900 text-white shadow-lg scale-105" 
-                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
-            }`}>
-              <History className="w-4 h-4" />
-              On Going
-            </div>
-          </div>
-
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
+            {/* Date Filter - Mobile */}
             <div className="relative">
-              <Search
-                  className="absolute inset-y-0 left-4 my-auto text-gray-400"
-                  size={20}
-              />
-              <input
-                  type="text"
-                  placeholder="Search by id, email, username...."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
-              />
+              <div
+                onClick={() => setDateFilter(true)}
+                className={`w-full h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filterTransaction === "methodFilterTransaction" 
+                    ? 'bg-gray-900 text-white shadow-lg' 
+                    : 'bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                <div className="flex justify-between w-full">
+                  <div className="flex flex-col items-start">
+                    <span className={`text-sm font-medium ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                    }`}>{filters.startDate ? filters.startDate : 'dd/mm/yyyy'}</span>
+                    <span className={`text-xs ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                    }`}>12:00 AM</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-sm font-medium ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                    }`}>{ filters.endDate ? filters.endDate : 'dd/mm/yyyy'}</span>
+                    <span className={`text-xs ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                    }`}>12:00 PM</span>
+                  </div>
+                </div>
+                <CalendarRange className={`ml-2 ${
+                  filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'
+                }`} size={18} />
+              </div>
+              
+              {dateFilter && (
+                <div className="absolute z-10 left-0 right-0" ref={panelRef}>
+                  <FilterPanel
+                    filterMethod={filters.method}
+                    filterStatus={filters.status}
+                    startDate={filters.startDate}
+                    endDate={filters.endDate}
+                    dateError={filters.dateError}
+                    onMethodChange={handleMethodChange}
+                    onStatusChange={handleStatusChange}
+                    onStartDateChange={(value) => handleDateChange('startDate', value)}
+                    onEndDateChange={(value) => handleDateChange('endDate', value)}
+                    onClear={handleClear}
+                    onApply={handleApply}
+                    showMethodFilter={true}
+                    showStatusFilter={true}
+                    showDateFilter={true}
+                    showTimeFilter={true}
+                    validationErrors={validationErrors}
+                  />
+                </div>
+              )}
             </div>
-            {/* <div className="absolute text-gray-600 text-xs">
-                Jika tidak auto result, input Id dan klik search Transaction
-            </div> */}
+
+            {/* Status Filter - Mobile */}
+            <div>
+              <div className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                filterTransaction !== "methodFilterTransaction" 
+                  ? "bg-gray-900 text-white shadow-lg scale-105" 
+                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+              }`}>
+                <History className="w-4 h-4" />
+                On Going
+              </div>
+            </div>
+
+            {/* Search Input & Button - Mobile */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <div className="relative">
+                  <Search
+                      className="absolute inset-y-0 left-4 my-auto text-gray-400"
+                      size={20}
+                  />
+                  <input
+                      type="text"
+                      placeholder="Search by id, email, username...."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleSearch}
+                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 h-12 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 sm:w-auto w-full"
+              >
+                Search
+              </button>
+            </div>
           </div>
 
-          {/* Search Button */}
-          <div>
-            <button
-              onClick={handleSearch}
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-4 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
-            >
-              Search
-            </button>
+          {/* Desktop Layout */}
+          <div className="hidden lg:flex flex-wrap gap-4 items-center justify-between">
+            {/* Method Filter Buttons - Desktop */}
+            <div className="flex items-center gap-3">
+              <button 
+                className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  filterTransaction === "methodCash" 
+                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                }`} 
+                onClick={handleMethodCashTransaction}
+              >
+                <Banknote className="w-4 h-4" />
+                Method Cash
+              </button>
+
+              <button 
+                className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  filterTransaction === "methodNonCash" 
+                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
+                }`} 
+                onClick={handleMethodNonCashTransaction}
+              >
+                <CreditCard className="w-4 h-4" />
+                Method Non Cash
+              </button>
+            </div>
+
+            {/* Date Filter - Desktop */}
+            <div className="relative">
+              <div
+                onClick={() => setDateFilter(true)}
+                className={`w-64 h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filterTransaction === "methodFilterTransaction" 
+                    ? 'bg-gray-900 text-white shadow-lg' 
+                    : 'bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                <div className="flex justify-between w-full">
+                  <div className="flex flex-col items-start">
+                    <span className={`text-sm font-medium ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                    }`}>{filters.startDate ? filters.startDate : 'dd/mm/yyyy'}</span>
+                    <span className={`text-xs ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                    }`}>12:00 AM</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-sm font-medium ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-700'
+                    }`}>{ filters.endDate ? filters.endDate : 'dd/mm/yyyy'}</span>
+                    <span className={`text-xs ${
+                      filterTransaction === "methodFilterTransaction" ? 'text-gray-300' : 'text-gray-500'
+                    }`}>12:00 PM</span>
+                  </div>
+                </div>
+                <CalendarRange className={`ml-2 ${
+                  filterTransaction === "methodFilterTransaction" ? 'text-white' : 'text-gray-500'
+                }`} size={18} />
+              </div>
+              
+              {dateFilter && (
+                <div className="absolute z-10" ref={panelRef}>
+                  <FilterPanel
+                    filterMethod={filters.method}
+                    filterStatus={filters.status}
+                    startDate={filters.startDate}
+                    endDate={filters.endDate}
+                    dateError={filters.dateError}
+                    onMethodChange={handleMethodChange}
+                    onStatusChange={handleStatusChange}
+                    onStartDateChange={(value) => handleDateChange('startDate', value)}
+                    onEndDateChange={(value) => handleDateChange('endDate', value)}
+                    onClear={handleClear}
+                    onApply={handleApply}
+                    showMethodFilter={true}
+                    showStatusFilter={true}
+                    showDateFilter={true}
+                    showTimeFilter={true}
+                    validationErrors={validationErrors}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Status Filter - Desktop */}
+            <div>
+              <div className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                filterTransaction !== "methodFilterTransaction" 
+                  ? "bg-gray-900 text-white shadow-lg scale-105" 
+                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+              }`}>
+                <History className="w-4 h-4" />
+                On Going
+              </div>
+            </div>
+
+            {/* Search Input & Button - Desktop */}
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <div className="relative">
+                  <Search
+                      className="absolute inset-y-0 left-4 my-auto text-gray-400"
+                      size={20}
+                  />
+                  <input
+                      type="text"
+                      placeholder="Search by id, email, username...."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleSearch}
+                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-4 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Modern Transaction Table */}
-         <div className="bg-white rounded-md overflow-x-auto shadow-xl border border-gray-200/50 overflow-hidden h-[70vh] relative">
+        <div className="bg-white rounded-md overflow-x-auto shadow-xl border border-gray-200/50 overflow-hidden h-[70vh] relative">
           {spinnerRelatif && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
               <SpinnerRelative />
@@ -800,34 +922,20 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             )}
 
             <div className="max-h-[60vh] overflow-y-auto">
-              <table className="w-full">
-                {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || 
-                (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || 
-                (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") || 
-                (dataSearchTransactionInternal.length > 0) ? (
-                  <>
-                    <thead className="bg-white sticky z-5 top-0">
-                      <tr>
-                        {["Status", "Channel", "Account", "Amount", "DineIn/TakeAway", "Date"]
-                          .concat((filterTransaction === 'methodFilterTransaction' || dataSearchTransactionInternal.length > 0)  ? [] : ["Buy"])
-                          .map((header) => (
-                            <th 
-                              key={header} 
-                              className="py-4 px-6 text-left font-semibold text-sm text-gray-800 uppercase tracking-wider border-b border-gray-200"
-                            >
-                              {header}
-                            </th>
-                          ))
-                        }
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
+              {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || 
+              (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || 
+              (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") || 
+              (dataSearchTransactionInternal.length > 0) ? (
+                <>
+                  {/* Mobile Card Layout */}
+                  <div className="block lg:hidden">
+                    <div className="space-y-4">
                       {(dataSearchTransactionInternal.length > 0 ? dataSearchTransactionInternal : filteredData).map((t, index) => (
-                        <tr 
+                        <div 
                           key={`${t.id}-${index}`} 
-                          className="hover:bg-gray-50/50 transition-all duration-200 group"
+                          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200"
                         >
-                          <td className="hidden">
+                          <div className="hidden">
                             <CountDownRemoveData 
                               expiry={t?.expires_at} 
                               transactionId={t.id} 
@@ -835,89 +943,186 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                                 ? removeTransactionCashOnGoingInternalById 
                                 : removeTransactionNonCashOnGoingInternalById}
                             />
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
-                              {t.status_transaction}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="font-medium text-gray-900">{t.channel_code}</span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-gray-700">{t.username || t.email_order_from_cashier}</span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="font-bold text-gray-900">
+                          </div>
+                          
+                          {/* Status and Channel Row */}
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
+                                {t.status_transaction}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-500">Channel</div>
+                              <div className="font-medium text-gray-900">{t.channel_code}</div>
+                            </div>
+                          </div>
+
+                          {/* Account Info */}
+                          <div className="mb-3">
+                            <div className="text-sm text-gray-500 mb-1">Account</div>
+                            <div className="text-gray-700">{t.username || t.email_order_from_cashier}</div>
+                          </div>
+
+                          {/* Amount */}
+                          <div className="mb-3">
+                            <div className="text-sm text-gray-500 mb-1">Amount</div>
+                            <div className="font-bold text-gray-900 text-lg">
                               IDR {t.amount_price?.toLocaleString("id-ID")}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-gray-700">
-                              {t.table === 0 ? t.order_type : `Table ${t.table}`}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-gray-600">{FormatDate(t.created_at || t.date)}</span>
-                          </td>
+                            </div>
+                          </div>
+
+                          {/* DineIn/TakeAway and Date Row */}
+                          <div className="flex justify-between items-end mb-3">
+                            <div>
+                              <div className="text-sm text-gray-500 mb-1">DineIn/TakeAway</div>
+                              <div className="text-gray-700">
+                                {t.table === 0 ? t.order_type : `Table ${t.table}`}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-500 mb-1">Date</div>
+                              <div className="text-gray-600 text-sm">{FormatDate(t.created_at || t.date)}</div>
+                            </div>
+                          </div>
+
+                          {/* Action Button */}
                           {((filterTransaction === "methodCash" || filterTransaction === "methodNonCash") && dataSearchTransactionInternal.length === 0) && (
-                            <td className="py-4 px-6">
+                            <div className="pt-3 border-t border-gray-100">
                               <button 
                                 onClick={() => filterTransaction === "methodCash" 
                                   ? handleOpenModelPaymentCash(t.id, t.amount_price)
                                   : handleCheckTransactionNonCash(t.id)}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all duration-200 hover:scale-105 shadow-md"
+                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all duration-200 hover:scale-105 shadow-md"
                               >
                                 {filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
                               </button>
-                            </td>
+                            </div>
                           )}
-                        </tr>
+                        </div>
                       ))}
                       
-                      {/* Infinite Scroll Trigger Row - hanya untuk history transaction */}
+                      {/* Infinite Scroll Trigger for Mobile - hanya untuk history transaction */}
                       {filterTransaction === "methodFilterTransaction" && (
-                        <tr ref={loadMoreRef}>
-                          <td colSpan="7" className="p-0">
-                            <BottomLoadingIndicator 
-                              isVisible={loadingTransactionHistoryInternal && hasMore} 
-                            />
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </>
-                ) : (
-                  <tbody>
-                    <tr>
-                      <td colSpan="7">
-                        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-                          <div className="mb-8 relative">
-                            <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center shadow-lg">
-                              <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10"/>
-                              </svg>
-                            </div>
-                          </div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                            Tidak Ada Transaksi Ditemukan
-                          </h3>
-                          <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
-                            Coba sesuaikan filter pencarian Anda atau mulai buat transaksi pertama Anda.
-                          </p>
-                          <button 
-                            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 hover:scale-105 shadow-md"
-                            onClick={() => setDateFilter(true)}
-                          >
-                            <Filter className="w-4 h-4" />
-                            Ubah Filter
-                          </button>
+                        <div ref={loadMoreRef} className="p-4">
+                          <BottomLoadingIndicator 
+                            isVisible={loadingTransactionHistoryInternal && hasMore} 
+                          />
                         </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                )}
-              </table>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Desktop/Tablet Table Layout */}
+                  <div className="hidden lg:block">
+                    <table className="w-full">
+                      <thead className="bg-white sticky z-5 top-0">
+                        <tr>
+                          {["Status", "Channel", "Account", "Amount", "DineIn/TakeAway", "Date"]
+                            .concat((filterTransaction === 'methodFilterTransaction' || dataSearchTransactionInternal.length > 0)  ? [] : ["Buy"])
+                            .map((header) => (
+                              <th 
+                                key={header} 
+                                className="py-4 px-6 text-left font-semibold text-sm text-gray-800 uppercase tracking-wider border-b border-gray-200"
+                              >
+                                {header}
+                              </th>
+                            ))
+                          }
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {(dataSearchTransactionInternal.length > 0 ? dataSearchTransactionInternal : filteredData).map((t, index) => (
+                          <tr 
+                            key={`${t.id}-${index}`} 
+                            className="hover:bg-gray-50/50 transition-all duration-200 group"
+                          >
+                            <td className="hidden">
+                              <CountDownRemoveData 
+                                expiry={t?.expires_at} 
+                                transactionId={t.id} 
+                                remove={filterTransaction === "methodCash" 
+                                  ? removeTransactionCashOnGoingInternalById 
+                                  : removeTransactionNonCashOnGoingInternalById}
+                              />
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
+                                {t.status_transaction}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="font-medium text-gray-900">{t.channel_code}</span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="text-gray-700">{t.username || t.email_order_from_cashier}</span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="font-bold text-gray-900">
+                                IDR {t.amount_price?.toLocaleString("id-ID")}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="text-gray-700">
+                                {t.table === 0 ? t.order_type : `Table ${t.table}`}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="text-gray-600">{FormatDate(t.created_at || t.date)}</span>
+                            </td>
+                            {((filterTransaction === "methodCash" || filterTransaction === "methodNonCash") && dataSearchTransactionInternal.length === 0) && (
+                              <td className="py-4 px-6">
+                                <button 
+                                  onClick={() => filterTransaction === "methodCash" 
+                                    ? handleOpenModelPaymentCash(t.id, t.amount_price)
+                                    : handleCheckTransactionNonCash(t.id)}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all duration-200 hover:scale-105 shadow-md"
+                                >
+                                  {filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                        
+                        {/* Infinite Scroll Trigger Row - hanya untuk history transaction */}
+                        {filterTransaction === "methodFilterTransaction" && (
+                          <tr ref={loadMoreRef}>
+                            <td colSpan="7" className="p-0">
+                              <BottomLoadingIndicator 
+                                isVisible={loadingTransactionHistoryInternal && hasMore} 
+                              />
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
+                  <div className="mb-8 relative">
+                    <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center shadow-lg">
+                      <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    Tidak Ada Transaksi Ditemukan
+                  </h3>
+                  <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+                    Coba sesuaikan filter pencarian Anda atau mulai buat transaksi pertama Anda.
+                  </p>
+                  <button 
+                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 hover:scale-105 shadow-md"
+                    onClick={() => setDateFilter(true)}
+                  >
+                    <Filter className="w-4 h-4" />
+                    Ubah Filter
+                  </button>
+                </div>
+              )}
 
               {/* End of Data Indicator */}
               {filterTransaction === "methodFilterTransaction" && 
