@@ -144,12 +144,12 @@ export default function Cashier() {
                 </div>
 
                 <div className="flex flex-col gap-6 max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
-                    <div className="p-4 bg-white rounded-lg shadow-md">
+                    <div className="p-4 bg-white w-full rounded-lg shadow-md">
                         <ComponentOrderCashier/>
                     </div>
                     
                     <div ref={cartRef} className="p-4 bg-white rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Create Transaction</h2>
+                        <h2 className="text-xl w-full font-semibold mb-4 text-gray-800">Create Transaction</h2>
                         <ComponentCartCashier 
                         cartRef={cartRef}
                         isFullScreen={isFullScreen}

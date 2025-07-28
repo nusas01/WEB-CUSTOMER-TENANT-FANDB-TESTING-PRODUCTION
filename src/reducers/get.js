@@ -830,6 +830,7 @@ export const getGeneralJournalByEventAllInternalSlice = createSlice({
         },
     }
 })
+
 const initialGeneralJournalByEventPerDayInternalState = {
     dataGeneralJournalByEventPerDayInternal: [],
     errorGeneralJournalByEventPerDayIntenal: null,
@@ -841,7 +842,6 @@ const initialGeneralJournalByEventPerDayInternalState = {
     totalKredit: 0,
     totalDebet: 0,
 } 
-
 export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
     name: "dataGeneralJournalByEventPerDay",
     initialState: initialGeneralJournalByEventPerDayInternalState,
@@ -857,24 +857,20 @@ export const getGeneralJournalByEventPerDayInternalSlice = createSlice({
         fetchSuccessGeneralJournalByEventPerDayInternal: (state, action) => {
             const { data, hasMore, totalEntry, totalKredit, totalDebet, isLoadMore, page } = action.payload
 
-            if (isLoadMore) {
+            if (isLoadMore && page > 1) {
                 state.dataGeneralJournalByEventPerDayInternal = [
                     ...state.dataGeneralJournalByEventPerDayInternal,
                     ...(data || [])
                 ]
             } else {
                 state.dataGeneralJournalByEventPerDayInternal = data || []
+                state.totalKredit = totalKredit
+                state.totalDebet = totalDebet
+                state.totalEntry = totalEntry
             }
-
-            // ✅ Fix: Update page setelah berhasil fetch
-            if (page) {
-                state.page = page
-            }
-
+            
+            state.page = page
             state.hasMore = hasMore
-            state.totalEntry = totalEntry
-            state.totalKredit = totalKredit
-            state.totalDebet = totalDebet
             state.errorGeneralJournalByEventPerDayIntenal = null
             state.loadingGeneralJournalByEventPerDayInternal = false
             state.isLoadMore = false
@@ -1102,14 +1098,14 @@ export const searchOrderInternalSlice = createSlice({
 
         if (page === 1) {
             state.dataSearchOrder = data;
+            state.totalCount = totalCount;
+            state.totalRevenue = totalRevenue;
         } else {
             state.dataSearchOrder = [...state.dataSearchOrder, ...data];
         }
 
         state.page = page;
         state.hasMore = hasMore;
-        state.totalCount = totalCount;
-        state.totalRevenue = totalRevenue;
         state.errorSearchOrder = null;
         state.loadingSearchOrder = false;
         state.isLoadMore = false;

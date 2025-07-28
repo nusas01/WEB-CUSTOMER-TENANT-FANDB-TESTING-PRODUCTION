@@ -260,12 +260,19 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
       }
   }, [statusFilter, eventFilter])
 
+  const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
+    if (isFirstRender) {
+      setIsFirstRender(false);
+      return;
+    }
+
     if (startDate !== '' && endDate !== '') {
       if (statusFilter === 'FINALIZE') {
         if (eventFilter === 'Agregasi') {
             dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
         } else if (eventFilter === 'Non Agregasi') {
+          console.log("apakah ini yang dilakukan fetching: ")
             dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate, 1, false))
         }
       }
@@ -576,12 +583,12 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
         </div>
       </div>
 
-        <div className='p-4' style={{marginTop: headerHeight}}>
+        <div className='p-2 sm:p-4' style={{marginTop: headerHeight}}>
           {/* Filters & Stats Combined */}
           <div className="bg-white rounded-lg shadow-sm mb-4">
             {/* Filter Section */}
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex  justify-between flex-col lg:flex-row lg:items-center gap-4">
+            <div className="p-3 sm:p-4 border-b border-gray-100">
+              <div className="flex justify-between flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:gap-4">
                 {/* Date Filter */}
                 <div className='relative'>
 
@@ -648,11 +655,13 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                       </select>
                     </div>
                   )}
+
                   <button onClick={() => navigate('/internal/admin/general-journal/form')} 
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 transition-colors text-sm"
                   >
-                    <Plus className="h-3 w-3" />
-                    <span>Tambah Entry</span>
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Tambah Entry</span>
+                    <span className="sm:hidden">Tambah</span>
                   </button>
                 </div>
               </div>
@@ -697,69 +706,68 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
           </div>
 
           { shouldShowInfoToday &&  (
-            <div className="text-sm text-red-800 rounded mb-3">
+            <div className="text-xs sm:text-sm text-red-800 rounded mb-3 px-2 sm:px-0">
                 Menampilkan data untuk <strong>hari ini</strong>
             </div>
           )}
 
-
           {/* Journal Entries */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {spinnerRelative ? (
-              <div className="bg-white rounded-lg h-[70vh] shadow-sm p-12 flex items-center justify-center">
+              <div className="bg-white rounded-lg h-[70vh] shadow-sm p-6 sm:p-12 flex items-center justify-center">
                 <SpinnerRelative />
               </div>
             ) : (
               <>
                 {  isDataEmpty ? (
-                  <div className="relative -white rounded-lg shadow-xl border border-gray-100 overflow-hidden flex flex-col items-center justify-center min-h-[70vh] p-8 text-center">
+                  <div className="relative bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] p-4 sm:p-8 text-center">
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-5 pointer-events-none">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-gray-800 rounded-full translate-x-12 -translate-y-12"></div>
-                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-gray-800 rounded-full -translate-x-8 translate-y-8"></div>
+                      <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 bg-gray-800 rounded-full translate-x-8 sm:translate-x-12 -translate-y-8 sm:-translate-y-12"></div>
+                      <div className="absolute bottom-0 left-0 w-12 h-12 sm:w-20 sm:h-20 bg-gray-800 rounded-full -translate-x-6 sm:-translate-x-8 translate-y-6 sm:translate-y-8"></div>
                     </div>
 
                     {/* Floating Dots */}
-                    <div className="absolute top-6 left-6 w-2 h-2 bg-gray-300 rounded-full animate-ping"></div>
-                    <div className="absolute top-12 right-10 w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
-                    <div className="absolute bottom-10 left-14 w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
+                    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 w-2 h-2 bg-gray-300 rounded-full animate-ping"></div>
+                    <div className="absolute top-8 right-6 sm:top-12 sm:right-10 w-1 h-1 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div className="absolute bottom-6 left-8 sm:bottom-10 sm:left-14 w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
 
                     {/* Main Content */}
-                    <div className="relative z-10 text-center flex flex-col items-center gap-6">
+                    <div className="relative z-10 text-center flex flex-col items-center gap-4 sm:gap-6">
                       {/* Icon */}
-                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-lg group hover:shadow-xl transition-all duration-300 hover:scale-105">
-                        <BookText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-800 group-hover:text-gray-700 transition-colors duration-300" />
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-800 rounded-full opacity-20 animate-pulse"></div>
+                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg group hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <BookText className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-gray-800 group-hover:text-gray-700 transition-colors duration-300" />
+                        <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-gray-800 rounded-full opacity-20 animate-pulse"></div>
                         {/* Decorative Rings */}
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-24 h-24 sm:w-28 sm:h-28 border border-gray-200 rounded-full animate-pulse"></div>
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 border border-gray-200 rounded-full animate-pulse"></div>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-32 h-32 sm:w-36 sm:h-36 border border-gray-100 rounded-full animate-pulse animation-delay-700"></div>
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-36 lg:h-36 border border-gray-100 rounded-full animate-pulse animation-delay-700"></div>
                         </div>
                       </div>
 
                       {/* Title */}
-                      <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-800">
                         Tidak Ada Jurnal Umum
                       </h2>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-base text-md leading-relaxed max-w-md sm:max-w-lg">
+                      <p className="text-gray-600 text-sm sm:text-base leading-relaxed max-w-xs sm:max-w-md lg:max-w-lg px-2 sm:px-0">
                         Belum ada jurnal yang tercatat untuk periode ini. Silakan tambahkan jurnal baru atau periksa filter tanggal.
                       </p>
 
                       {/* CTA Button */}
-                      <button className="group relative bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-2xl transition duration-300 transform hover:scale-105 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50">
+                      <button className="group relative bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2.5 px-5 sm:py-3 sm:px-6 rounded-xl sm:rounded-2xl transition duration-300 transform hover:scale-105 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50">
                         <div className="flex items-center justify-center space-x-2">
-                          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                          <span>Tambah Jurnal</span>
+                          <Plus className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-90 transition-transform duration-300" />
+                          <span className="text-sm sm:text-base">Tambah Jurnal</span>
                         </div>
-                        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
+                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white to-transparent -skew-x-12 group-hover:animate-shimmer"></div>
                       </button>
 
                       {/* Footer text */}
-                      <p className="text-gray-600 text-base text-sm">
+                      <p className="text-gray-600 text-xs sm:text-sm px-2 sm:px-0">
                         Atau periksa kembali periode atau status jurnal yang dipilih
                       </p>
                     </div>
@@ -792,8 +800,8 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                         // Render data Agregasi
                         Object.entries(groupedDataAgregasi).map(([event, entries], index) => (
                           <div key={event} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                            <div className="bg-gray-800 flex justify-between px-6 py-4">
-                              <h4 className="text-lg font-semibold text-white capitalize">
+                            <div className="bg-gray-800 flex justify-between px-4 sm:px-6 py-3 sm:py-4">
+                              <h4 className="text-base sm:text-lg font-semibold text-white capitalize">
                                 {event.replace('_', ' ')}{' '}
                               </h4>
                             </div>
@@ -811,16 +819,16 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                                 });
                                 
                                 return (
-                                  <div key={entryIndex} className="p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                      <div className="flex items-center space-x-3">
-                                        <div className={`${statusConfig.bgColor} p-2 rounded-full`}>
-                                          <StatusIcon className={`h-4 w-4 ${statusConfig.color}`} />
+                                  <div key={entryIndex} className="p-3 sm:p-6">
+                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                      <div className="flex items-center space-x-2 sm:space-x-3">
+                                        <div className={`${statusConfig.bgColor} p-1.5 sm:p-2 rounded-full`}>
+                                          <StatusIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${statusConfig.color}`} />
                                         </div>
                                         <div>
-                                          <div className="flex items-center space-x-2">
-                                            <span className="font-medium text-gray-900">{entry.date}</span>
-                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                                          <div className="flex items-center space-x-1 sm:space-x-2">
+                                            <span className="font-medium text-gray-900 text-sm sm:text-base">{entry.date}</span>
+                                            <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
                                               {statusConfig.label}
                                             </span>
                                           </div>
@@ -832,25 +840,25 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                                       <table className="w-full">
                                         <thead>
                                           <tr className="border-b border-gray-200">
-                                            <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Kode Akun</th>
-                                            <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Nama Akun</th>
-                                            <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Debit</th>
-                                            <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Kredit</th>
+                                            <th className="text-left py-2 px-1 sm:px-3 text-xs sm:text-sm font-medium text-gray-700">Kode</th>
+                                            <th className="text-left py-2 px-1 sm:px-3 text-xs sm:text-sm font-medium text-gray-700">Nama Akun</th>
+                                            <th className="text-right py-2 px-1 sm:px-3 text-xs sm:text-sm font-medium text-gray-700">Debit</th>
+                                            <th className="text-right py-2 px-1 sm:px-3 text-xs sm:text-sm font-medium text-gray-700">Kredit</th>
                                           </tr>
                                         </thead>
                                         <tbody>
                                           {sortedAccounts.map((account, accIndex) => (
                                             <tr key={accIndex} className="border-b border-gray-100 last:border-b-0">
-                                              <td className="py-3 px-3 text-sm font-mono text-gray-600">{account.account_code}</td>
-                                              <td className="py-3 px-3 text-sm text-gray-900">{account.account_name}</td>
-                                              <td className="py-3 px-3 text-sm text-right font-medium">
+                                              <td className="py-2 px-1 sm:py-3 sm:px-3 text-xs sm:text-sm font-mono text-gray-600">{account.account_code}</td>
+                                              <td className="py-2 px-1 sm:py-3 sm:px-3 text-xs sm:text-sm text-gray-900 max-w-[120px] sm:max-w-none truncate sm:whitespace-normal">{account.account_name}</td>
+                                              <td className="py-2 px-1 sm:py-3 sm:px-3 text-xs sm:text-sm text-right font-medium">
                                                 {account.type === 'DEBIT' ? (
                                                   <span className="text-green-600">{formatCurrency(account.amount)}</span>
                                                 ) : (
                                                   <span className="text-gray-400">-</span>
                                                 )}
                                               </td>
-                                              <td className="py-3 px-3 text-sm text-right font-medium">
+                                              <td className="py-2 px-1 sm:py-3 sm:px-3 text-xs sm:text-sm text-right font-medium">
                                                 {account.type === 'KREDIT' ? (
                                                   <span className="text-blue-600">{formatCurrency(account.amount)}</span>
                                                 ) : (
@@ -957,7 +965,7 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                         {eventFilter === 'Non Agregasi' && (
                           <div
                             ref={loadMoreGeneralJournalNonAgregasiRef}
-                            className="w-full h-10 flex items-center justify-center px-2 sm:px-4"
+                            className="w-full h-10 flex items-center justify-center px-2"
                           >
                             {isLoadMoreNonAgregasi && (
                               <div className="flex items-center gap-2 py-2">
@@ -966,14 +974,15 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                               </div>
                             )}
                             {!hasMoreJournalNonAgregasi && journalDataNonAgregasi.length > 0 && (
-                              <div className="py-2 text-sm text-gray-500 text-center">
+                              <div
+                                className="text-sm text-gray-500 absolute bottom-2.5 left-1/2 -translate-x-1/2 py-2" // Perbaikan di sini
+                              >
                                 No more data to load
                               </div>
                             )}
                           </div>
                         )}
-
-                        </>
+                      </>
                     )) : (statusFilter === 'DRAF' ?  (
                       <DrafVoidDataComponent drafData={journalDataDraf}  typeComponent={"DRAF"} handleConfirmModelVoid={handleConfirmModelVoid}/>
                     ) : (

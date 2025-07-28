@@ -168,46 +168,61 @@ export default function KasirStatistik() {
   );
 
   const DateRangeFilter = ({ dateRange, setDateRange, label }) => (
-    <div className="flex items-center space-x-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <div className="flex items-center space-x-3 mt-4 md:mt-0">
-        <select
+  <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    
+    {/* Dropdown + Refresh Button */}
+    <div className="flex items-center space-x-3 mt-4 md:mt-0">
+      <select
           value={selectedPeriod}
           onChange={(e) => setSelectedPeriod(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
-        >
+      >
           <option value="daily">Harian</option>
           <option value="weekly">Mingguan</option>
           <option value="monthly">Bulanan</option>
-        </select>
+      </select>
         <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
           <RefreshCw className="h-4 w-4" />
-        </button>
+         </button>
       </div>
-      <CalendarDays className="h-5 w-5 text-gray-600" />
+
+    {/* Calendar Icon + Date Inputs */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 w-full">
+      {/* Label dan Icon */}
       <div className="flex items-center space-x-2">
+        <CalendarDays className="h-5 w-5 text-gray-600 block" />
         <label className="text-sm font-medium text-gray-700">{label}:</label>
+      </div>
+
+      {/* Input Date Range */}
+      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
         <input
           type="date"
           value={dateRange.start}
           onChange={(e) => handleDateRangeChange(setDateRange, 'start', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
         />
-        <span className="text-gray-500">-</span>
+        <span className="text-gray-500 hidden sm:inline">-</span>
         <input
           type="date"
           value={dateRange.end}
           onChange={(e) => handleDateRangeChange(setDateRange, 'end', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
         />
       </div>
-      {!validateDateRange(dateRange.start, dateRange.end) && (
-        <div className="flex items-center space-x-1 text-red-600">
-          <AlertCircle className="h-4 w-4" />
-          <span className="text-xs">Max 31 hari</span>
-        </div>
-      )}
     </div>
-  );
+
+
+    {/* Validation Error */}
+    {!validateDateRange(dateRange.start, dateRange.end) && (
+      <div className="flex items-center space-x-1 text-red-600 text-sm">
+        <AlertCircle className="h-4 w-4" />
+        <span className="text-xs">Max 31 hari</span>
+      </div>
+    )}
+  </div>
+);
+
 
   const maxOrders = Math.max(...peakHours.map(h => h.orders));
   const maxRevenue = Math.max(...weeklyData.map(d => d.revenue));
@@ -284,19 +299,25 @@ export default function KasirStatistik() {
 
             {/* Sales Statistics */}
             <div className="px-4 pt-4" style={{marginTop: headerHeight}}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col lg:flex-row lg:items-center mb-4"> {/* Changed */}
+              <div className="w-full lg:w-auto text-start"> {/* Added w-full and text-start */}
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                   <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
                     <BarChart3 className="h-6 w-6 text-white" />
                   </div>
                   Statistik Penjualan
                 </h2>
-                <DateRangeFilter 
-                  dateRange={salesDateRange} 
-                  setDateRange={setSalesDateRange} 
-                  label="Periode Penjualan"
+              </div>
+
+              {/* Ensure the DateRangeFilter also behaves correctly on small screens */}
+              <div className="mt-4 lg:mt-0 lg:ml-auto"> {/* Added margin top for spacing on small screens, and ml-auto for alignment on large */}
+                <DateRangeFilter
+                  dateRange={salesDateRange}
+                  setDateRange={setSalesDateRange}
+                  label="Periode"
                 />
               </div>
+            </div>
               <div>
                 <StatCard
                   title="Total Pendapatan"
@@ -337,13 +358,15 @@ export default function KasirStatistik() {
 
             {/* Channel Performance */}
             <div className="bg-white mx-4 my-8 rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
-                    <PieChart className="h-5 w-5 text-white" />
-                  </div>
-                  Performa Channel
-                </h3>
+              <div className="flex flex-col lg:flex-row lg:items-center mb-4">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                      <PieChart className="h-5 w-5 text-white" />
+                    </div>
+                    Performa Channel
+                  </h3>
+                </div>
                 <DateRangeFilter 
                   dateRange={channelDateRange} 
                   setDateRange={setChannelDateRange} 
@@ -379,13 +402,15 @@ export default function KasirStatistik() {
 
             {/* Top Products */}
             <div className="bg-white rounded-2xl mb-8 mx-4 shadow-sm border border-gray-100 p-4 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
-                    <Package className="h-5 w-5 text-white" />
-                  </div>
-                  Top Selling Products
-                </h3>
+              <div className="flex flex-col lg:flex-row lg:items-center mb-4">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    Top Selling Products
+                  </h3>
+                </div>
                 <DateRangeFilter 
                   dateRange={productsDateRange} 
                   setDateRange={setProductsDateRange} 
@@ -421,13 +446,15 @@ export default function KasirStatistik() {
 
             {/* Customer Statistics */}
             <div className="my-8 mx-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  Statistik Customer
-                </h2>
+              <div className="flex flex-col lg:flex-row lg:items-center mb-4">
+                <div className="mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    Statistik Customer
+                  </h2>
+                </div>
                 <DateRangeFilter 
                   dateRange={customerDateRange} 
                   setDateRange={setCustomerDateRange} 
@@ -505,13 +532,15 @@ export default function KasirStatistik() {
 
             {/* Time Statistics */}
             <div className="mb-8 px-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
-                    <Clock className="h-6 w-6 text-white" />
-                  </div>
-                  Statistik Waktu
-                </h2>
+              <div className="flex flex-col lg:flex-row lg:items-center mb-4">
+                <div className="mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-2 rounded-xl mr-3">
+                      <Clock className="h-6 w-6 text-white" />
+                    </div>
+                    Statistik Waktu
+                  </h2>
+                </div>
                 <DateRangeFilter 
                   dateRange={timeStatsDateRange} 
                   setDateRange={setTimeStatsDateRange} 

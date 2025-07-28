@@ -640,7 +640,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                     onClick={() => handleSubmitUpdateEmployee()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
-                    <Save size={18} />
                     Simpan Perubahan
                   </button>
                 </div>
@@ -719,7 +718,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                     onClick={() => handleSubmitChangePassword()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
-                    <Save size={18} />
                     Ganti Password
                   </button>
                 </div>
@@ -727,9 +725,9 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
             )}
 
             {activeTab === 'payment' && (
-              <div className="space-y-6">
+              <div className="space-y-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 {/* Tax Settings */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div>
                   <div className="flex items-center gap-3 mb-6">
                     <Percent className="text-gray-800" size={24} />
                     <h2 className="text-xl font-bold text-gray-800">Pengaturan Pajak</h2>
@@ -767,7 +765,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
 
                 {/* Cash Payment Toggle */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">                  
+                <div>                  
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex items-center justify-center text-gray-800">
                       <Wallet size={24} />
@@ -799,7 +797,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
 
                 {/* Virtual Account Fees */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div>
                   <div className="flex items-center gap-3 mb-6">
                     <Building className="text-gray-800" size={24} />
                     <h2 className="text-xl font-bold text-gray-800">Biaya Virtual Account</h2>
@@ -851,7 +849,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
 
                 {/* E-wallet Fees */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div>
                   <div className="flex items-center gap-3 mb-6">
                     <CreditCard className="text-gray-800" size={24} />
                     <h2 className="text-xl font-bold text-gray-800">Biaya E-wallet (%)</h2>
@@ -903,7 +901,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
 
                 {/* QRIS Fee */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div>
                   <div className="flex items-center gap-3 mb-6">
                     <QrCode className="text-gray-800" size={24} />
                     <h2 className="text-xl font-bold text-gray-800">Biaya QRIS (%)</h2>
@@ -950,7 +948,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                     onClick={() => handleSubmitUpdatePaymentMethods()}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
-                    <Save size={18} />
                     Simpan Pengaturan
                   </button>
                 </div>

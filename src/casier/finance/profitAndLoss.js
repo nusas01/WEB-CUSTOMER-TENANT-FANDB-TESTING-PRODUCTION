@@ -110,82 +110,95 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
      
   // Empty State Component
   const EmptyState = () => (
-    <div className="bg-white rounded-lg flex justify-center shadow-md p-12 text-center">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="p-6 bg-gray-100 rounded-full">
-            <Database className="w-12 h-12 text-gray-400" />
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="flex flex-col items-center justify-center py-16 px-8 text-center relative">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-8 left-8 w-20 h-20 bg-gray-400 rounded-full"></div>
+          <div className="absolute bottom-8 right-8 w-16 h-16 bg-gray-300 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-gray-200 rounded-full"></div>
+        </div>
+        
+        <div className="relative z-10 flex flex-col items-center space-y-6">
+          <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-lg">
+            <Database className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-gray-700">Tidak Ada Data</h3>
-            <p className="text-gray-500 max-w-md">
+          
+          <div className="space-y-3 max-w-md">
+            <h3 className="text-xl sm:text-2xl  text-gray-800">Tidak Ada Data Laporan</h3>
+            <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
               Tidak ada data laba rugi untuk periode yang dipilih. Silakan pilih rentang tanggal yang berbeda atau pastikan data sudah tersedia.
             </p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-blue-600" />
-            <span className="text-sm text-blue-700">
+          
+          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+            <div className="p-1 bg-blue-100 rounded-full">
+              <AlertCircle className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="text-sm font-medium text-blue-800">
               Periode: {new Date(startDate).toLocaleDateString('id-ID')} - {new Date(endDate).toLocaleDateString('id-ID')}
             </span>
           </div>
         </div>
+      </div>
     </div>
   );
 
   // Summary Cards with Empty State
   const SummaryCards = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="bg-white rounded-xl px-4 py-6 sm:py-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Total Pendapatan</p>
-            <p className="text-xl font-bold text-green-600">
+          <div className="flex-1">
+            <p className="text-gray-600 text-sm font-medium mb-2">Total Pendapatan</p>
+            <p className="text-lg font-bold sm:text-xl lg:text-2xl">
               {formatCurrency(dataLabaRugiInternal?.total_pendapatan || 0)}
             </p>
           </div>
-          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm">
-            <TrendingUp className="w-6 h-6 text-white" />
+          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-xl px-4 py-6 sm:py-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Laba Kotor</p>
-            <p className="text-xl font-bold text-blue-600">
+          <div className="flex-1">
+            <p className="text-gray-600 text-sm font-medium mb-2">Laba Kotor</p>
+            <p className="text-lg sm:text-xl font-bold lg:text-2xl">
               {formatCurrency(dataLabaRugiInternal?.laba_kotor || 0)}
             </p>
           </div>
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm">
-            <DollarSign className="w-6 h-6 text-white" />
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-xl px-4 py-6 sm:py-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Total Beban</p>
-            <p className="text-xl font-bold text-red-600">
+          <div className="flex-1">
+            <p className="text-gray-600 text-sm font-medium mb-2">Total Beban</p>
+            <p className="text-lg sm:text-xl font-bold lg:text-2xl">
               {formatCurrency(dataLabaRugiInternal?.total_beban || 0)}
             </p>
           </div>
-          <div className="p-3 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-sm">
-            <TrendingDown className="w-6 h-6 text-white" />
+          <div className="p-3 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg px-4 py-10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <div className="bg-white rounded-xl px-4 py-6 sm:py-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Laba Bersih</p>
-            <p className="text-xl font-bold text-amber-600">
+          <div className="flex-1">
+            <p className="text-gray-600 text-sm font-medium mb-2">Laba Bersih</p>
+            <p className="text-lg sm:text-xl font-bold lg:text-2xl">
               {formatCurrency(dataLabaRugiInternal?.laba_bersih || 0)}
             </p>
           </div>
-          <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-sm">
-            <TrendingUp className="w-6 h-6 text-white" />
+          <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
       </div>
@@ -194,7 +207,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
 
   console.log(dataLabaRugiInternal)
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-2 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Error Alert */}
         {toast && (
@@ -213,7 +226,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
         {/* Header */}
         <div
           ref={headerRef}
-          className={`fixed top-0 z-10 bg-white border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
+          className={`fixed top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 ${isOpen && isMobileDeviceType ? 'hidden' : ''}`}
           style={{
             left: (isFullScreen || isMobileDeviceType) ? '0' : '288px',
             width: isMobileDeviceType ? '100%' : (isFullScreen ? '100%' : 'calc(100% - 288px)'),
@@ -240,9 +253,9 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                 aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
                 >
                   {isFullScreen ? (
-                    <Minimize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                    <Minimize className="w-5 h-5  text-gray-600" />
                   ) : (
-                    <Maximize className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                    <Maximize className="w-5 h-5 text-gray-600" />
                   )}
                 </button>
                 <button
@@ -250,7 +263,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                   onClick={() => navigate('/internal/admin/settings')}
                   aria-label="Settings"
                 >
-                  <Settings className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                  <Settings className="w-5 h-5 text-gray-600" />
                 </button>
                 { isMobileDeviceType && !isFullScreen && (
                   <button 
@@ -258,61 +271,68 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                     className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-md sm:rounded-lg transition-colors touch-manipulation"
                     aria-label="Open menu"
                   >
-                    <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-gray-600" />
+                    <Menu className="w-5 h-5 text-gray-600" />
                   </button>
                 )}
               </div>
             </div>
-
           </div>
         </div>
     
 
-        <div className='space-y-4' style={{marginTop: headerHeight}}>
+        <div className='space-y-4 sm:space-y-6' style={{marginTop: headerHeight}}>
           {/* filtering  */}
-          <div className="bg-white p-4 rounded-lg shadow-md overflow-hidden">
-            <div className="flex space-x-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-gray-800 rounded-lg">
-                  <Calendar className="w-4 h-4 text-white" />
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 sm:items-end">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-sm">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium whitespace-nowrap">Periode:</span>
                 </div>
-                <span className="text-sm text-gray-700 font-medium">Periode:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => dispatch(setStartDate(e.target.value))}
-                  className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
+                  className="bg-white text-gray-800 px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all w-full sm:w-auto"
                 />
               </div>
-              <div className='absolute bottom-1'>
-                {dateRangeError && (
-                  <span className="text-xs text-red-500 ml-10">{dateRangeError}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700 font-medium">Sampai:</span>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="text-sm text-gray-700 font-medium whitespace-nowrap">Sampai:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => dispatch(setEndDate(e.target.value))}
-                  className="bg-white text-gray-800 px-3 py-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
+                  className="bg-white text-gray-800 px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all w-full sm:w-auto"
                 />
               </div>
-              <div 
-              className="flex cursor-pointer items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md font-medium"
-              onClick={() => handleFilterDate()}
+              
+              <button
+                className="flex cursor-pointer items-center justify-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white px-4 sm:px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg font-medium text-sm group w-full sm:w-auto"
+                onClick={() => handleFilterDate()}
               >
-                <Filter className="w-4 h-4" />
-                klik Filter
-              </div>
+                <Filter className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
+                <span>Filter Data</span>
+              </button>
             </div>
+            
+            {dateRangeError && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-red-600">{dateRangeError}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Summary Cards - Always show */}
           <SummaryCards />
           
           { spinner && (
-            <div className="bg-white flex justify-center h-[50vh] rounded-lg shadow-md p-12 text-center">
+            <div className="bg-white flex justify-center h-[50vh] rounded-xl shadow-lg border border-gray-100 p-12 text-center">
               <SpinnerRelative/>
             </div>
           )}
@@ -333,7 +353,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                     {/* Pendapatan */}
                     <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
-                        <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
+                        <h3 className="text-lg mb-6 flex items-center gap-3">
                           <div className="p-2 bg-green-100 text-green-600 rounded-lg">
                             <TrendingUp className="w-5 h-5" />
                           </div>
@@ -343,7 +363,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                           {dataLabaRugiInternal?.pendapatan?.map((item, index) => (
                             <div key={index} className="flex justify-between items-center p-4 bg-white rounded-xl hover:bg-gray-100">
                               <span className="font-medium">{item.account_name}</span>
-                              <span className="font-bold">{formatCurrency(item.total_kredit)}</span>
+                              <span>{formatCurrency(item.total_kredit)}</span>
                             </div>
                           )) || (
                             <div className="flex justify-center items-center p-4 bg-white rounded-xl">
@@ -355,7 +375,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                       <div className="mt-4">
                         <div className="flex justify-between items-center p-4 bg-gray-800 rounded-xl">
                           <span className="text-white font-bold">Total Pendapatan</span>
-                          <span className="text-white font-bold text-lg">
+                          <span className="text-white font-bold  text-lg">
                             {formatCurrency(dataLabaRugiInternal?.total_pendapatan || 0)}
                           </span>
                         </div>
@@ -365,7 +385,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                     {/* HPP */}
                     <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
-                        <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
+                        <h3 className="text-lg mb-6 flex items-center gap-3">
                           <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
                             <DollarSign className="w-5 h-5" />
                           </div>
@@ -376,7 +396,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                             <span className="font-medium">
                               {dataLabaRugiInternal?.hpp?.account_name || "Tidak ada data HPP"}
                             </span>
-                            <span className="font-bold">
+                            <span>
                               ({formatCurrency(dataLabaRugiInternal?.hpp?.total_Debet || 0)})
                             </span>
                           </div>
@@ -395,7 +415,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                     {/* Beban */}
                     <div className="flex flex-col justify-between bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-10 h-full">
                       <div>
-                        <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
+                        <h3 className="text-lg mb-6 flex items-center gap-3">
                           <div className="p-2 bg-red-100 text-red-600 rounded-lg">
                             <TrendingDown className="w-5 h-5" />
                           </div>
@@ -405,7 +425,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
                           {dataLabaRugiInternal?.beban?.map((item, index) => (
                             <div key={index} className="flex justify-between items-center p-4 bg-white rounded-xl hover:bg-gray-100">
                               <span className="font-medium">{item.account_name}</span>
-                              <span className="font-bold">({formatCurrency(item.total_Debet)})</span>
+                              <span>({formatCurrency(item.total_Debet)})</span>
                             </div>
                           )) || (
                             <div className="flex justify-center items-center p-4 bg-white rounded-xl">
