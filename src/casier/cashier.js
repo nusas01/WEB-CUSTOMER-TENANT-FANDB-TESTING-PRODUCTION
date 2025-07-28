@@ -595,85 +595,87 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                     </ToastPortal>
                 )}
         
-                {/* add product */}
-                <div
-                    onClick={() => setOpenModelAddProduct(true)}
-                    className="w-[15%] rounded-lg px-5 py-1 flex items-center justify-center space-x-2 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white transition-colors duration-200"
-                >
-                    <Plus size={20} />
-                    <p className="text-base">Product</p>
-                </div>
-
-                {/* Payment Method Dropdown */}
-                <div className="relative w-[25%]" ref={dropdownRef}>
-                    <button
-                        className="flex items-center justify-between w-full md:w-56 px-4 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
-                        onClick={() => setOpenPaymentMethod((prev) => !prev)}
+                <div className="flex w-full justify-between">
+                    {/* add product */}
+                    <div
+                        onClick={() => setOpenModelAddProduct(true)}
+                        className="rounded-lg px-5 py-1 flex items-center justify-center space-x-2 cursor-pointer bg-gray-800 hover:bg-gray-900 text-white transition-colors duration-200"
                     >
-                        <span>{dataCart.channel_code === '' ? 'Choose Payment Method' : dataCart.channel_code}</span>
-                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                        <Plus size={20} />
+                        <p className="text-base">Product</p>
+                    </div>
 
-                    {openPaymentMethod && (
-                        <div className="absolute right-0 z-10 w-full md:w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <div className="py-1">
-                                {!spinnerRelative && (
-                                    <>
-                                        {dataPaymentMethodInternal
-                                        .filter(method => method.type !== "EWALLET") 
-                                        .map((method) => {
-                                            const isSelected = method.name === dataCart.channel_code;
-                                            return (
+                    {/* Payment Method Dropdown */}
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            className="flex items-center justify-between w-full md:w-56 px-4 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
+                            onClick={() => setOpenPaymentMethod((prev) => !prev)}
+                        >
+                            <span>{dataCart.channel_code === '' ? 'Choose Payment Method' : dataCart.channel_code}</span>
+                            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {openPaymentMethod && (
+                            <div className="absolute right-0 z-10 w-full md:w-64 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div className="py-1">
+                                    {!spinnerRelative && (
+                                        <>
+                                            {dataPaymentMethodInternal
+                                            .filter(method => method.type !== "EWALLET") 
+                                            .map((method) => {
+                                                const isSelected = method.name === dataCart.channel_code;
+                                                return (
+                                                    <button
+                                                        key={method.id}
+                                                        className={`flex items-center w-full px-4 py-2 text-sm text-left ${isSelected ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
+                                                        onClick={() =>
+                                                            handleChoicePaymentMethod({
+                                                                id: method.id,
+                                                                paymentMethod: method.type,
+                                                                channelCode: method.name,
+                                                                fee: method.fee
+                                                            })
+                                                        }
+                                                    >
+                                                        <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
+                                                            <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                                                        </div>
+                                                        {method.name}
+                                                        {isSelected && (
+                                                            <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                            
+                                            { paymentMethodCash.status_payment && (
                                                 <button
-                                                    key={method.id}
-                                                    className={`flex items-center w-full px-4 py-2 text-sm text-left ${isSelected ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
-                                                    onClick={() =>
-                                                        handleChoicePaymentMethod({
-                                                            id: method.id,
-                                                            paymentMethod: method.type,
-                                                            channelCode: method.name,
-                                                            fee: method.fee
-                                                        })
-                                                    }
+                                                    onClick={() => handleChoicePaymentMethod({ paymentMethod: "CASH", channelCode: "CASH", fee: 0 })}
+                                                    className={`flex items-center w-full px-4 py-2 text-sm text-left ${dataCart.channel_code === 'CASH' ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
                                                 >
                                                     <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
                                                         <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
                                                     </div>
-                                                    {method.name}
-                                                    {isSelected && (
+                                                    CASH
+                                                    {dataCart.channel_code === 'CASH' && (
                                                         <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                                         </svg>
                                                     )}
                                                 </button>
-                                            );
-                                        })}
-                                        
-                                        { paymentMethodCash.status_payment && (
-                                            <button
-                                                onClick={() => handleChoicePaymentMethod({ paymentMethod: "CASH", channelCode: "CASH", fee: 0 })}
-                                                className={`flex items-center w-full px-4 py-2 text-sm text-left ${dataCart.channel_code === 'CASH' ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700'} hover:bg-gray-100 transition-colors duration-150`}
-                                            >
-                                                <div className="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full">
-                                                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                                                </div>
-                                                CASH
-                                                {dataCart.channel_code === 'CASH' && (
-                                                    <svg className="w-4 h-4 ml-auto text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                )}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
+                                            )}
+                                        </>
+                                    )}
 
-                                {spinnerRelative && <SpinnerRelative />}
+                                    {spinnerRelative && <SpinnerRelative />}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -921,7 +923,6 @@ const ProductCashier = ({onClose}) => {
                             {datas.length > 0 && datas.map((item) => (
                                 <div id={item.category_name} className="mb-8" key={item.category_name}>  
                                     <p className="text-2xl font-bold text-gray-700 mb-4">{item.category_name}</p>
-
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                                         {item.products.map((prd, idx) => {
                                             const cartItem = items.find((cart) => cart.id === prd.product_id);
@@ -970,7 +971,7 @@ const ProductCashier = ({onClose}) => {
 
                                                     {/* GAMBAR */}
                                                     <img
-                                                        className={`h-32 w-40 object-cover rounded-md mb-3 transition-all duration-200 ${
+                                                        className={`h-32 mx-auto w-40 object-cover rounded-md mb-3 transition-all duration-200 ${
                                                             !isAvailable ? 'grayscale brightness-75' : ''
                                                         }`}
                                                         src={`/image/${prd.image}`}

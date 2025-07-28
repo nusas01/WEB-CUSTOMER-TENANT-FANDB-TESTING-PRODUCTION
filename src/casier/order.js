@@ -5,7 +5,6 @@ import {
   CheckCircle, 
   Coffee, 
   Filter, 
-  Calendar,
   MapPin,
   User,
   Mail,
@@ -666,9 +665,9 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4" style={{marginTop: headerHeight}}>
         {/* total revenue */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 mb-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
@@ -681,7 +680,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
           </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -751,8 +750,8 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
         </div>
 
         {/* Filter */}
-        <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-sm border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-800 rounded-xl flex items-center justify-center">
                 <Filter className="w-5 h-5 text-white" />
@@ -761,20 +760,20 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
             </div>
             <button
               onClick={handleResetFilter}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow transition-all w-fit"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset Filters
+              <span className="text-sm">Reset Filters</span>
             </button>
           </div>
 
           {/* Filter Row */}
-          <div className="flex gap-4 justify-between items-end">
+          <div className="flex flex-col lg:flex-row gap-4 lg:justify-between lg:items-end">
             {/* Search Input */}
-            <div className="flex gap-2">
-              <div className="flex-1 min-w-[300px]">
+            <div className="flex flex-col sm:flex-row gap-2 flex-1">
+              <div className="flex-1 min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
-                <div className="relative flex-1 max-w-md">
+                <div className="relative">
                   <Search className="absolute inset-y-0 left-4 my-auto text-gray-400" size={20}/>
                   <input
                     type="text"
@@ -787,22 +786,21 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
               </div>
               {/* Search Button */}
-              <div>
-                <label className="invisible block">Search Button</label>
+              <div className="flex-shrink-0">
+                <label className="invisible block text-sm">Search Button</label>
                 <button
                   onClick={() => handleSearch()}
-                  className="flex items-center gap-2 px-2 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 mt-1 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl font-semibold shadow transition-all w-full sm:w-auto justify-center"
                 >
                   <Search className="w-4 h-4" />
-                  Search Orders
+                  <span className="text-sm">Search Orders</span>
                 </button>
               </div>
             </div>
 
-
             {/* Status Filter */}
-            <div className="flex gap-4">
-              <div className="min-w-[150px]">
+            <div className="flex flex-col sm:flex-row gap-4 lg:flex-shrink-0">
+              <div className="min-w-0 sm:min-w-[150px]">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status Filter</label>
                 <select
                   value={statusFilter}
@@ -818,7 +816,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
               {/* Start Date and endate */}
               { statusFilter === 'FINISHED' && (
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-2">
                   <DateFilterComponent 
                     startDate={startDate}
                     endDate={endDate}
@@ -826,11 +824,11 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                     setEndDate={setEndDate}
                     maxRangeDays={7}
                   />
-                  <div>
-                    <p className="invisible">apa ini</p>
+                  <div className="flex-shrink-0">
+                    <p className="invisible text-sm">apa ini</p>
                     <button 
                       onClick={handleFilterOrderFinished}
-                      className="px-7 mb-1 py-2.5 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center"
+                      className="px-7 py-2.5 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center w-full sm:w-auto"
                     >
                       <span>Filter</span>
                     </button>
@@ -857,121 +855,128 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
 
         {!spinnerRelative && (filteredOrders.length > 0 || dataOrdersFinishedInternal.length > 0) && (
-
             <>
               {((dataOrdersFinishedInternal.length > 0 && statusFilter === 'FINISHED' && !hasInitializedSearch) ? dataOrdersFinishedInternal : filteredOrders).map((order) => (
-                <div key={order.id} className="bg-white mb-2 rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  <div className="p-4">
+                <div key={order.id} className="bg-white mb-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden">
+                  <div className="p-3 sm:p-4 lg:p-6">
                     {/* Order Header */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
-                      <div className="flex items-center gap-4 mb-4 lg:mb-0">
-                        <div className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ${getStatusColor(order.order_status)}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 w-fit ${getStatusColor(order.order_status)}`}>
                           {getStatusIcon(order.order_status)}
                           {order.order_status}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Order</span>
-                          <span className="text-sm font-bold text-gray-800">#{order.id}</span>
+                          <span className="text-sm text-gray-500">Order</span>
+                          <span className="text-sm font-semibold text-gray-900">#{order.id}</span>
                         </div>
                       </div>
                       
-                      <div className="flex gap-3">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          <Eye className="w-4 h-4 text-gray-600" />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                          <Eye className="w-4 h-4 text-gray-400" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                        <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                          <MoreHorizontal className="w-4 h-4 text-gray-400" />
                         </button>
                         
                         {order.order_status === 'PROCESS' && (
                           <button
                             onClick={() => handleReceiveOrder(order.id)}
-                            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 flex items-center gap-2 font-semibold"
+                            className="px-3 sm:px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
                           >
                             <RefreshCw className="w-4 h-4" />
-                            Receive Order
+                            <span className="hidden sm:inline">Receive Order</span>
+                            <span className="sm:hidden">Receive</span>
                           </button>
                         )}
                         
                         {order.order_status === 'PROGRESS' && (
                           <button
                             onClick={() => handleFinishOrder(order)}
-                            className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 flex items-center gap-2 font-semibold"
+                            className="px-3 sm:px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium"
                           >
                             <CheckCircle className="w-4 h-4" />
-                            Finish Order
+                            <span className="hidden sm:inline">Finish Order</span>
+                            <span className="sm:hidden">Finish</span>
                           </button>
                         )}
                       </div>
                     </div>
 
-                    {/* Customer Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
+                    {/* Customer Info Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4 sm:mb-6">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                          <User className="w-6 h-6 text-gray-900" />
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Customer</p>
-                          <p className="font-bold text-gray-800">{order.username}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Email</p>
-                          <p className="font-bold text-gray-800 text-sm">{order.email}</p>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Customer</p>
+                          <p className="font-semibold text-gray-900 text-sm truncate">{order.username}</p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-white" />
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Mail className="w-6 h-6 text-gray-900" />
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Table</p>
-                          <p className="font-bold text-gray-800">{order.table}</p>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Email</p>
+                          <p className="font-semibold text-gray-900 text-sm truncate">{order.email}</p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
-                          <Clock className="w-5 h-5 text-white" />
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-6 h-6 text-gray-900" />
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold">Order Time</p>
-                          <p className="font-bold text-gray-800 text-sm">{formatDate(order.created_at)}</p>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Table</p>
+                          <p className="font-semibold text-gray-900 text-sm">{order.table}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Clock className="w-6 h-6 text-gray-900" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Order Time</p>
+                          <p className="font-semibold text-gray-900 text-sm">{formatDate(order.created_at)}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Order Items */}
-                    <div className="border-t border-gray-200 pt-6">
-                      <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-lg">
-                        <Coffee className="w-5 h-5" />
+                    <div className="border-t border-gray-100 pt-4">
+                      <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Coffee className="w-4 h-4" />
                         Order Items
                       </h4>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {order.order.map((item, index) => (
-                          <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gray-800`}>
-                                <Coffee className="w-6 h-6 text-white" />
+                          <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-900 flex-shrink-0">
+                                <Coffee className="w-5 h-5 text-white" />
                               </div>
-                              <div>
-                                <p className="font-bold text-gray-800">{item.product.name}</p>
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-semibold">{item.quantity}x</span> {formatCurrency(item.price)}
-                                  {item.notes && <span className="ml-2 px-2 py-1 bg-gray-200 rounded-lg text-xs font-semibold">{item.notes}</span>}
-                                </p>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-gray-900 text-sm truncate">{item.product.name}</p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">{item.quantity}x</span> {formatCurrency(item.price)}
+                                  </p>
+                                  {item.notes && (
+                                    <span className="px-2 py-0.5 bg-gray-200 rounded text-xs font-medium text-gray-700">
+                                      {item.notes}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-bold text-gray-800 text-lg">{formatCurrency(item.amount_price)}</p>
+                            <div className="text-right flex-shrink-0 ml-3">
+                              <p className="font-semibold text-gray-900">{formatCurrency(item.amount_price)}</p>
                             </div>
                           </div>
                         ))}
@@ -979,19 +984,19 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                     </div>
 
                     {/* Order Total */}
-                    <div className="border-t border-gray-200 pt-6 mt-6">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-xl bg-gray-800 text-white text-sm`}>
+                    <div className="border-t border-gray-100 pt-4 mt-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
                             {order.order_type}
                           </span>
-                          <span className="px-3 py-1 rounded-xl text-sm bg-gray-800 text-white">
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
                             {order.status_transaction}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600 font-semibold">Total Amount</p>
-                          <p className="text-2xl font-bold text-gray-800">{formatCurrency(order.amount_price)}</p>
+                        <div className="text-right w-full sm:w-auto">
+                          <p className="text-sm text-gray-500 font-medium">Total Amount</p>
+                          <p className="text-xl font-bold text-gray-900">{formatCurrency(order.amount_price)}</p>
                         </div>
                       </div>
                     </div>
@@ -999,19 +1004,19 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                 </div>
               ))}
 
-              { hasInitializedSearch && (
+              {hasInitializedSearch && (
                 <div 
                   ref={loadMoreSearchOrderRef} 
-                  className="w-full h-10 flex items-center justify-center"
+                  className="w-full py-4 flex items-center justify-center"
                 >
                   {isLoadMoreSearchOrder && (
                     <div className="flex items-center gap-2 py-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
                       <span className="text-sm text-gray-500">Loading more orders...</span>
                     </div>
                   )}
                   {!hasMoreSearchOrder && dataSearchOrder.length > 0 && (
-                    <div className="py-2 text-sm text-gray-500">
+                    <div className="py-2 text-sm text-gray-400 text-center">
                       No more orders to load
                     </div>
                   )}
@@ -1021,16 +1026,16 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
               {statusFilter === 'FINISHED' && !hasInitializedSearch && dataOrdersFinishedInternal.length > 0 && (
                 <div 
                   ref={loadMoreFinishedRef} 
-                  className="w-full h-10 flex items-center justify-center px-2 sm:px-4"
+                  className="w-full py-4 flex items-center justify-center"
                 >
                   {isLoadMoreOrderFinished && (
                     <div className="flex items-center gap-2 py-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-blue-500"></div>
-                      <span className="text-sm text-gray-500 whitespace-nowrap">Loading more orders...</span>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
+                      <span className="text-sm text-gray-500">Loading more orders...</span>
                     </div>
                   )}
                   {!hasMoreOrderFinished && (
-                    <div className="py-2 text-sm text-gray-500 text-center">
+                    <div className="py-2 text-sm text-gray-400 text-center">
                       No more orders to load
                     </div>
                   )}

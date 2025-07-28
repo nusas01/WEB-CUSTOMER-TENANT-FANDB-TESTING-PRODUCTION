@@ -170,3 +170,33 @@ export const useDeviceDetection = () => {
     };
   }, [dispatch, setIsMobileDeviceType]);
 };
+
+export const useOutsideClick = ({ref, callback, isActive = true}) => {
+    useEffect(() => {
+        if (!isActive) return;
+
+        function handleClickOutside(event) {
+            if (ref.current && !ref.current.contains(event.target)) {
+                callback();
+            }
+        }
+
+        function handleTouchOutside(event) {
+            if (ref.current && !ref.current.contains(event.target)) {
+                callback();
+            }
+        }
+
+        // Delay untuk mencegah immediate trigger
+        const timeoutId = setTimeout(() => {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("touchstart", handleTouchOutside, { passive: true });
+        }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleTouchOutside);
+        };
+    }, [ref, callback, isActive]);
+}

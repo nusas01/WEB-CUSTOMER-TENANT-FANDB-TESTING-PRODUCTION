@@ -383,10 +383,10 @@ export const transactionHistoryInternalSlice = createSlice({
     initialState: intitalTransactionHistoryState,
     reducers: {
         setLoadingTransactionHistoryInternal: (state, action) => {
-            if (state.page === 1) {
-                state.loadingTransactionHistoryInternal = action.payload
+            if (state.page === 1 && !action.payload.isLoadMore) {
+                state.loadingTransactionHistoryInternal = action.payload.loading;
             } else {
-                state.isLoadingMore = action.payload
+                state.hasMore = action.payload.loading;
             }
         },
         fetchSuccessTransactionHistoryInternal: (state, action) => {
@@ -419,6 +419,7 @@ export const transactionHistoryInternalSlice = createSlice({
         resetTransactionHitoryInternal: (state) => {  
             state.errorTransactionHistoryInternal = null
             state.dataTransactionHistoryInternal = []
+            state.loadingTransactionHistoryInternal = false
             state.page = 1
             state.hasMore = true
             state.totalCount = 0

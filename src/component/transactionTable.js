@@ -37,10 +37,10 @@ import { formatDate } from "date-fns"
 import { CountDownRemoveData } from "../helper/countDown"
 import { da } from "date-fns/locale"
 import {ConfirmationModal, CashPaymentModal, ErrorAlert} from "./alert"
-import { useInfiniteScroll, useElementHeight } from "../helper/helper"
+import { useInfiniteScroll, useElementHeight, useOutsideClick } from "../helper/helper"
 
 const TransactionTable = ({isFullScreen, fullscreenchange}) => {
-  const panelRef = useRef(null)
+  const modalBayarRef = useRef(null)
   const [search, setSearch] = useState("")
   const [dateFilter, setDateFilter] = useState(false)
   const navigate = useNavigate()
@@ -49,10 +49,8 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const [spinnerRelatif, setSpinnerRelatif] = useState(false)
-  const [isFetchedOnce, setIsFetchedOnce] = useState(false)
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-
 
    const [initialFetchDone, setInitialFetchDone] = useState({
     cash: false,
@@ -60,7 +58,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     history: false
   });
 
-  
 
     // get transaction cash on going
     const { removeTransactionCashOnGoingInternalById } = transactionCashOnGoingInternalSlice.actions
@@ -78,9 +75,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     }
   }, [dataTransactionCashInternal, loadingTransactionCashInternal, initialFetchDone.cash]);
   console.log("data transaction cash: ", dataTransactionCashInternal)
-
-
-
 
     // get transaction non cash on going
     const { removeTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
@@ -232,6 +226,38 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     rootMargin: '50px'
   });
 
+  // hook untuk infinite scroll mobile devaci
+  const observerRef = useRef(null);
+
+ useEffect(() => {
+   if (loadingTransactionHistoryInternal || !hasMore) return; 
+
+  const node = observerRef.current;
+
+  if (!node) return;
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      console.log("entry.isIntersecting:", entry.isIntersecting); // Debug log
+      if (entry.isIntersecting) {
+        loadMoreCallback();
+      }
+    },
+    {
+      root: null,               // ✅ gunakan viewport (window)
+      rootMargin: '100px',      // ✅ bisa disesuaikan, contoh: "100px" agar trigger sebelum sepenuhnya terlihat
+      threshold: 0.5,           // ✅ bisa 0.0 (sedikit terlihat), atau 1.0 (sepenuhnya terlihat)
+    }
+  );
+
+  observer.observe(node);
+
+  return () => {
+    observer.disconnect();
+  };
+}, [loadMoreCallback, loadingTransactionHistoryInternal, hasMore]);
+
+
     useEffect(() => {
         setSpinnerRelatif(loadingTransactionHistoryInternal)
     }, [loadingTransactionHistoryInternal])
@@ -358,8 +384,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         setValidationErrors({})
     }
 
-
-
     // handle button
      const handleMethodNonCashTransaction = () => {
         setFilterTransaction("methodNonCash")
@@ -441,45 +465,22 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
     const filteredData = getFilteredData()
 
-    // Handle click outside dateFilter panel
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (panelRef.current && !panelRef.current.contains(event.target)) {
-            setDateFilter(false)   
-            }
-        }
-
-        if (dateFilter) {
-            document.addEventListener("mousedown", handleClickOutside)
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [dateFilter])  
-
     // Handle click outside modal bayar
-    useEffect(() => {
-      function handleClickOutside(event) {
-          if (panelRef.current && !panelRef.current.contains(event.target)) {
-              setOpenModelBuyPaymentCash(false)
-              handleCloseConfirmationModalError()
-              handleCloseConfirmationModalSuccess()
-              setValidationErrors({})
-              setDataPaymentCash({
-                  transaction_id: null,
-                  amount_price: 0,
-                  money_received: 0,
-              })
-          }
-      }
-
-      document.addEventListener("mousedown", handleClickOutside)
-      
-      return () => {
-          document.removeEventListener("mousedown", handleClickOutside)
-      }
-  }, [])
+    useOutsideClick({
+        ref: modalBayarRef,
+        callback: () => {
+            setOpenModelBuyPaymentCash(false);
+            handleCloseConfirmationModalError();
+            handleCloseConfirmationModalSuccess();
+            setValidationErrors({});
+            setDataPaymentCash({
+                transaction_id: null,
+                amount_price: 0,
+                money_received: 0,
+            });
+        },
+        isActive: openModelBuyPaymentCash
+      });
 
 
   const handleCloseConfirmationModalError = () => {
@@ -652,11 +653,11 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
           {/* Mobile Layout */}
           <div className="block lg:hidden space-y-4">
             {/* Method Filter Buttons - Mobile */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex justify-between gap-3">
               <button 
-                className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodCash" 
-                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
                 }`} 
                 onClick={handleMethodCashTransaction}
@@ -666,9 +667,9 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               </button>
 
               <button 
-                className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodNonCash" 
-                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+                    ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
                 }`} 
                 onClick={handleMethodNonCashTransaction}
@@ -681,8 +682,8 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             {/* Date Filter - Mobile */}
             <div className="relative">
               <div
-                onClick={() => setDateFilter(true)}
-                className={`w-full h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
+                onClick={() => setDateFilter(prev => !prev)}
+                className={`w-full h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-100 ${
                   filterTransaction === "methodFilterTransaction" 
                     ? 'bg-gray-900 text-white shadow-lg' 
                     : 'bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -712,7 +713,9 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               </div>
               
               {dateFilter && (
-                <div className="absolute z-10 left-0 right-0" ref={panelRef}>
+                <div 
+                className="absolute z-10 left-0 right-0" 
+                >
                   <FilterPanel
                     filterMethod={filters.method}
                     filterStatus={filters.status}
@@ -739,8 +742,8 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             <div>
               <div className={`flex items-center justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                 filterTransaction !== "methodFilterTransaction" 
-                  ? "bg-gray-900 text-white shadow-lg scale-105" 
-                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
+                  ? "bg-gray-900 text-white shadow-lg scale-100" 
+                  : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-100"
               }`}>
                 <History className="w-4 h-4" />
                 On Going
@@ -748,7 +751,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             </div>
 
             {/* Search Input & Button - Mobile */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-3">
               <div className="relative flex-1">
                 <div className="relative">
                   <Search
@@ -760,14 +763,14 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                       placeholder="Search by id, email, username...."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                      className="w-full sm:w-[60%] pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
                   />
                 </div>
               </div>
 
               <button
                 onClick={handleSearch}
-                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 h-12 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 sm:w-auto w-full"
+                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 h-12 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-100"
               >
                 Search
               </button>
@@ -806,7 +809,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             {/* Date Filter - Desktop */}
             <div className="relative">
               <div
-                onClick={() => setDateFilter(true)}
+                onClick={() => setDateFilter(prev => !prev)}
                 className={`w-64 h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
                   filterTransaction === "methodFilterTransaction" 
                     ? 'bg-gray-900 text-white shadow-lg' 
@@ -837,7 +840,9 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               </div>
               
               {dateFilter && (
-                <div className="absolute z-10" ref={panelRef}>
+                <div 
+                className="absolute z-10" 
+                >
                   <FilterPanel
                     filterMethod={filters.method}
                     filterStatus={filters.status}
@@ -901,7 +906,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         </div>
 
         {/* Modern Transaction Table */}
-        <div className="bg-white rounded-md overflow-x-auto shadow-xl border border-gray-200/50 overflow-hidden h-[70vh] relative">
+        <div className="bg-white rounded-md overflow-x-auto shadow-xl border border-gray-200/50 overflow-hidden h-[100vh] relative">
           {spinnerRelatif && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
               <SpinnerRelative />
@@ -921,14 +926,14 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               </div>
             )}
 
-            <div className="max-h-[60vh] overflow-y-auto">
+            <div className="max-h-[90vh]">
               {(dataTransactionCashInternal?.length > 0 && filterTransaction === "methodCash") || 
               (dataTransactionNonCashInternal?.length > 0 && filterTransaction === "methodNonCash") || 
               (dataTransactionHistoryInternal?.length > 0 && filterTransaction === "methodFilterTransaction") || 
               (dataSearchTransactionInternal.length > 0) ? (
                 <>
                   {/* Mobile Card Layout */}
-                  <div className="block lg:hidden">
+                  <div className="block max-h-[84vh] overflow-y-auto">
                     <div className="space-y-4">
                       {(dataSearchTransactionInternal.length > 0 ? dataSearchTransactionInternal : filteredData).map((t, index) => (
                         <div 
@@ -1000,103 +1005,17 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                             </div>
                           )}
                         </div>
-                      ))}
-                      
-                      {/* Infinite Scroll Trigger for Mobile - hanya untuk history transaction */}
-                      {filterTransaction === "methodFilterTransaction" && (
-                        <div ref={loadMoreRef} className="p-4">
-                          <BottomLoadingIndicator 
-                            isVisible={loadingTransactionHistoryInternal && hasMore} 
-                          />
-                        </div>
-                      )}
+                      ))}    
                     </div>
-                  </div>
 
-                  {/* Desktop/Tablet Table Layout */}
-                  <div className="hidden lg:block">
-                    <table className="w-full">
-                      <thead className="bg-white sticky z-5 top-0">
-                        <tr>
-                          {["Status", "Channel", "Account", "Amount", "DineIn/TakeAway", "Date"]
-                            .concat((filterTransaction === 'methodFilterTransaction' || dataSearchTransactionInternal.length > 0)  ? [] : ["Buy"])
-                            .map((header) => (
-                              <th 
-                                key={header} 
-                                className="py-4 px-6 text-left font-semibold text-sm text-gray-800 uppercase tracking-wider border-b border-gray-200"
-                              >
-                                {header}
-                              </th>
-                            ))
-                          }
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {(dataSearchTransactionInternal.length > 0 ? dataSearchTransactionInternal : filteredData).map((t, index) => (
-                          <tr 
-                            key={`${t.id}-${index}`} 
-                            className="hover:bg-gray-50/50 transition-all duration-200 group"
-                          >
-                            <td className="hidden">
-                              <CountDownRemoveData 
-                                expiry={t?.expires_at} 
-                                transactionId={t.id} 
-                                remove={filterTransaction === "methodCash" 
-                                  ? removeTransactionCashOnGoingInternalById 
-                                  : removeTransactionNonCashOnGoingInternalById}
-                              />
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
-                                {t.status_transaction}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="font-medium text-gray-900">{t.channel_code}</span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="text-gray-700">{t.username || t.email_order_from_cashier}</span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="font-bold text-gray-900">
-                                IDR {t.amount_price?.toLocaleString("id-ID")}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="text-gray-700">
-                                {t.table === 0 ? t.order_type : `Table ${t.table}`}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6">
-                              <span className="text-gray-600">{FormatDate(t.created_at || t.date)}</span>
-                            </td>
-                            {((filterTransaction === "methodCash" || filterTransaction === "methodNonCash") && dataSearchTransactionInternal.length === 0) && (
-                              <td className="py-4 px-6">
-                                <button 
-                                  onClick={() => filterTransaction === "methodCash" 
-                                    ? handleOpenModelPaymentCash(t.id, t.amount_price)
-                                    : handleCheckTransactionNonCash(t.id)}
-                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-all duration-200 hover:scale-105 shadow-md"
-                                >
-                                  {filterTransaction === "methodCash" ? "Buy" : "Check Payment"}
-                                </button>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                        
-                        {/* Infinite Scroll Trigger Row - hanya untuk history transaction */}
-                        {filterTransaction === "methodFilterTransaction" && (
-                          <tr ref={loadMoreRef}>
-                            <td colSpan="7" className="p-0">
-                              <BottomLoadingIndicator 
-                                isVisible={loadingTransactionHistoryInternal && hasMore} 
-                              />
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                    {/* Infinite Scroll Trigger for Mobile - hanya untuk history transaction */}
+                    {filterTransaction === "methodFilterTransaction" && (
+                      <div ref={observerRef} className="p-4">
+                        <BottomLoadingIndicator 
+                          isVisible={loadingTransactionHistoryInternal && hasMore} 
+                        />
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -1126,8 +1045,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
               {/* End of Data Indicator */}
               {filterTransaction === "methodFilterTransaction" && 
-              !hasMore && 
-              dataTransactionHistoryInternal.length > 0 && (
+              !hasMore && dataTransactionHistoryInternal.length > 0 && (
                 <div className="flex justify-center items-center py-4 border-t border-gray-100">
                   <div className="flex items-center gap-2 text-gray-500">
                     <div className="w-4 h-4 rounded-full bg-gray-300"></div>
@@ -1148,7 +1066,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Success Modals */}
         {(allertSuccessBuyTransactionCash || allertSuccessCheckTransactionNonCash) && (
-          <div ref={panelRef} className="fixed">
+          <div ref={modalBayarRef} className="fixed">
             <ConfirmationModal 
               onClose={handleCloseConfirmationModalSuccess} 
               title={"Success!"}  
@@ -1164,7 +1082,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Pending Modal */}
         {allertPendingCheckTransactionNonCash && (
-          <div ref={panelRef} className="fixed">
+          <div ref={modalBayarRef} className="fixed">
             <ConfirmationModal
               onClose={handleCloseConfirmationModalError}
               title={"Pending"}
@@ -1176,7 +1094,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
         {/* Error Modal */}
         {allertErrorBuyTransactionCash && (
-          <div ref={panelRef} className="fixed">
+          <div ref={modalBayarRef} className="fixed">
             <ConfirmationModal
               onClose={handleCloseConfirmationModalError}
               title={"Gagal!"}
@@ -1190,7 +1108,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         {dataPaymentCash.open && ( 
           <div className="fixed">
             <CashPaymentModal 
-              ref={panelRef} 
+              ref={modalBayarRef} 
               data={{
                 transaction_id: dataPaymentCash.transaction_id,
                 amount_price: dataPaymentCash.amount_price,

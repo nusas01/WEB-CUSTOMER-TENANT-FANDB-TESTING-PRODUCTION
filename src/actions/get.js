@@ -415,8 +415,7 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
             return;
         }
 
-        dispatch(setLoadingTransactionHistoryInternal(true))
-        
+        dispatch(setLoadingTransactionHistoryInternal({loading: true, isLoadMore: isLoadMore}))
         try {
             const response = await axiosInstance.get(
                 `${process.env.REACT_APP_GET_TRANSACTION_HISTORY_INTERNAL_URL}`, 
@@ -462,9 +461,7 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
                 }
                 dispatch(fetchErrorTransactionHistoryInternal(errorData))
             }
-        } finally {
-            dispatch(setLoadingTransactionHistoryInternal(false))
-        }
+        } 
     }
 }
 

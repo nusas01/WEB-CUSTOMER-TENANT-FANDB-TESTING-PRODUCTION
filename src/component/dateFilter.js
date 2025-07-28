@@ -74,7 +74,7 @@ function FilterPanel({
   };
 
   return (
-    <div className="border border-gray-200 bg-white z-15 rounded-lg px-4 py-4 w-80 font-sans shadow-sm">
+    <div className="border border-gray-200 bg-white z-50 relative rounded-lg px-4 py-4 w-80 font-sans shadow-sm">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div
