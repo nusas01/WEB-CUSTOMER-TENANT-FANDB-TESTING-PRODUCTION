@@ -529,12 +529,8 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
   // handle refersh tansaction
   const handleRefreshTransaction = () => {
-    if (filterTransaction === 'methodCash') {
-      dispatch(fetchTransactionCashOnGoingInternal())
-    } 
-    if (filterTransaction === 'methodNonCash') {
-      dispatch(fetchTransactionNonCashOnGoingInternal())
-    }
+    dispatch(fetchTransactionCashOnGoingInternal())
+    dispatch(fetchTransactionNonCashOnGoingInternal())
     if (filterTransaction === 'methodFilterTransaction') {
       const data = {
           method: filters.method,
@@ -655,7 +651,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             {/* Method Filter Buttons - Mobile */}
             <div className="flex justify-between gap-3">
               <button 
-                className={`flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex relative overflow-visible items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodCash" 
                     ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -664,10 +660,19 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               >
                 <Banknote className="w-4 h-4" />
                 Method Cash
+            
+                <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                  text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                  ${filterTransaction === "methodCash"
+                    ? "bg-white text-gray-900"
+                    : "bg-red-500 text-white"
+                  }`}>
+                {dataTransactionCashInternal.length || 0}
+                </span>
               </button>
 
               <button 
-                className={`flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex  relative overflow-visible items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodNonCash" 
                     ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -676,6 +681,16 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               >
                 <CreditCard className="w-4 h-4" />
                 Method Non Cash
+
+                
+                <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                  text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                  ${filterTransaction === "methodNonCash"
+                    ? "bg-white text-gray-900"
+                    : "bg-red-500 text-white"
+                  }`}>
+                  {dataTransactionNonCashInternal.length || 0}
+                </span>
               </button>
             </div>
 
@@ -781,20 +796,32 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
           <div className="hidden lg:flex flex-wrap gap-4 items-center justify-between">
             {/* Method Filter Buttons - Desktop */}
             <div className="flex items-center gap-3">
-              <button 
-                className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  filterTransaction === "methodCash" 
-                    ? "bg-gray-900 text-white shadow-lg scale-105" 
+               <button 
+                className={`relative overflow-visible  flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200
+                  ${filterTransaction === "methodCash" 
+                    ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
-                }`} 
+                  }`}
                 onClick={handleMethodCashTransaction}
               >
                 <Banknote className="w-4 h-4" />
                 Method Cash
+
+                {/* Badge */}
+                {/* {dataTransactionCashInternal.length > 0 && ( */}
+                  <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                    text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                    ${filterTransaction === "methodCash"
+                      ? "bg-white text-gray-900"
+                      : "bg-red-500 text-white"
+                    }`}>
+                    {dataTransactionCashInternal.length}
+                  </span>
+                {/* )} */}
               </button>
 
               <button 
-                className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex relative overflow-visible items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodNonCash" 
                     ? "bg-gray-900 text-white shadow-lg scale-105" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -803,6 +830,17 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               >
                 <CreditCard className="w-4 h-4" />
                 Method Non Cash
+
+                {/* { dataTransactionNonCashInternal.length > 0 && ( */}
+                  <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                    text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                    ${filterTransaction === "methodNonCash"
+                      ? "bg-white text-gray-900"
+                      : "bg-red-500 text-white"
+                    }`}>
+                    {dataTransactionNonCashInternal.length || 0}
+                  </span>
+                {/* )} */}
               </button>
             </div>
 

@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { addItem, addItemCashier } from "../reducers/cartSlice";
 
 // type CUSTOMER, INTERNAL
-export const AddProductToCart = ({ onClose, id, name, harga, image, description, type }) => {
+export const AddProductToCart = ({ onClose, id, name, desc, harga, image, type }) => {
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const amountPrice = quantity * harga
@@ -54,10 +54,10 @@ export const AddProductToCart = ({ onClose, id, name, harga, image, description,
             
           </div>
             
-          <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+          <div style={{display: 'flex', flexDirection: 'column'}}>
               <h4 className="text-lg font-semibold text-gray-800">{name}</h4>
+              <p className="text-gray-600 mb-4">{desc}</p>
               <p className="text-gray-600">Rp {(harga).toLocaleString('id-ID')}</p>
-              <p className="text-gray-600">{description}</p>
           </div>
 
           {/* Quantity Selector */}

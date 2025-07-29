@@ -13,6 +13,7 @@ import {fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer} from "
 import { SpinnerRelative } from "../helper/spinner"
 import { buttonActivityCustomerSlice } from "../reducers/reducers"
 import { da } from "date-fns/locale"
+import { Clock, UtensilsCrossed, ChevronRight } from 'lucide-react';
 
 
 export default function Activity() {
@@ -106,26 +107,35 @@ export default function Activity() {
                     {buttonActive === 'history' && !spinner && (
                         Object.entries(dataTransactionHistory).length > 0 ? (
                             Object.entries(dataTransactionHistory).map(([date, transactions], actIndex) => (
-                                <div key={actIndex} className="mb-8">
-                                  <div className="flex items-center gap-3 mb-4">
-                                    <div className="h-px bg-gray-200 flex-1"></div>
-                                    <span className="text-sm font-medium text-gray-500">
-                                      {new Date(date).toDateString() === new Date().toDateString()
-                                        ? "Today"
-                                        : new Date(date).toLocaleDateString('en-ID', {
-                                            weekday: 'short',
-                                            day: 'numeric',
-                                            month: 'short',
-                                          })}
-                                    </span>
-                                    <div className="h-px bg-gray-200 flex-1"></div>
-                                  </div>
-                              
-                                  {transactions.map((trx, htrIndex) => (
-                                    <div
-                                      key={htrIndex}
-                                      onClick={() =>
-                                        handleDetail({
+                                <div key={actIndex} className="mb-10">
+                                    {/* Modern Date Separator */}
+                                    <div className="relative flex items-center justify-center mb-6">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                                    </div>
+                                    <div className="relative bg-white px-6 py-2">
+                                        <div className="flex items-center gap-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                                        <Clock className="w-4 h-4 text-gray-500" />
+                                        <span className="text-sm font-semibold text-gray-700">
+                                            {new Date(date).toDateString() === new Date().toDateString()
+                                            ? "Hari Ini"
+                                            : new Date(date).toLocaleDateString('id-ID', {
+                                                weekday: 'long',
+                                                day: 'numeric',
+                                                month: 'long',
+                                                })}
+                                        </span>
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    {/* Transaction Cards */}
+                                    <div className="space-y-3">
+                                    {transactions.map((trx, htrIndex) => (
+                                        <div
+                                        key={htrIndex}
+                                        onClick={() =>
+                                            handleDetail({
                                             id: trx.id,
                                             created_at: trx.created_at,
                                             items: trx.order,
@@ -137,39 +147,67 @@ export default function Activity() {
                                             channel_code: trx.channel_code,
                                             statusPembayaran: trx.order_status,
                                             notes: "lupa kasih notes",
-                                        })
-                                      } 
-                                      className="bg-white rounded-xl p-4  mb-3 shadow-sm hover:shadow-md transition-shadow
-                                                 border border-gray-100 cursor-pointer grid grid-cols-3 gap-4"
-                                    >
-                                      <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-medium text-gray-800">{trx.order_type}</span>
+                                            })
+                                        } 
+                                        className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300
+                                                    border border-gray-100 cursor-pointer transform hover:-translate-y-1 
+                                                    hover:border-gray-200 backdrop-blur-sm relative overflow-hidden"
+                                        >
+                                        {/* Subtle gradient overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        
+                                        <div className="relative grid grid-cols-12 gap-4 items-center">
+                                            {/* Left Section - Order Info */}
+                                            <div className="col-span-4 space-y-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div>
+                                                    <span className="font-semibold text-gray-800 text-base group-hover:text-gray-900 transition-colors">
+                                                        {trx.order_type}
+                                                    </span>
+                                                    <div className="flex items-center gap-1 mt-1">
+                                                        <span className="text-sm text-gray-500">{trx.quantity} items</span>
+                                                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                                                        <span className="text-sm text-gray-500">
+                                                        {new Date(trx.created_at).toLocaleTimeString('id-ID', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                        })}
+                                                        </span>
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Center Section - Amount */}
+                                            <div className="col-span-4 text-center">
+                                            <div className="space-y-1">
+                                                <span className="block text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                                Rp {trx.amount_price.toLocaleString('id-ID')}
+                                                </span>
+                                                <div className="w-16 h-0.5 bg-gradient-to-r from-blue-200 to-purple-200 mx-auto rounded-full"></div>
+                                            </div>
+                                            </div>
+
+                                            {/* Right Section - Status & Arrow */}
+                                            <div className="col-span-4 flex items-center justify-end gap-3">
+                                                <div className="text-right space-y-2">
+                                                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">
+                                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                                    {trx.order_status}
+                                                    </span>
+                                                </div>
+                                                
+                                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300" />
+                                            </div>
                                         </div>
-                                        <span className="text-sm text-gray-500 block">{trx.quantity} items</span>
-                                      </div>
-                              
-                                      <div className="space-y-1 flex justify-center items-center">
-                                        <span className="block font-semibold text-gray-900">
-                                          {trx.amount_price.toLocaleString()} IDR
-                                        </span>
-                                      </div>
-                              
-                                      <div className="space-y-2 text-right">
-                                        <span className={`inline-block px-2  py-1  rounded text-xs italic bg-green-100 text-green-800'}`}>
-                                          {trx.order_status}
-                                        </span>
-                                        <span className="block text-sm text-gray-500">
-                                          {new Date(trx.created_at).toLocaleTimeString('en-ID', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                          })}
-                                        </span>
-                                      </div>
+
+                                        {/* Bottom accent line */}
+                                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                                        </div>
+                                    ))}
                                     </div>
-                                  ))}
                                 </div>
-                              ))                          
+                                ))                         
                             ) : (
                                 <EmptyHistory gambar={historyIcon} title={"Belom Ada Transaction"} desc={"Kamu belum pernah membuat transaksi. Mulai belanja dan lihat aktivitasmu di sini!"}/>
                         )

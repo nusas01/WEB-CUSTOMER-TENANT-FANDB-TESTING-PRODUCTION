@@ -591,7 +591,7 @@ export function GeneralJournalForm() {
           </label>
           <input
             type="text"
-            maxLength="50"
+            maxLength="100"
             value={formData.keterangan}
             placeholder="Maksimal 50 karakter"
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredKeterangan ? 'border-red-500' : 'border-gray-300'}`}
@@ -670,7 +670,7 @@ export function GeneralJournalForm() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Nama Aset</label>
               <input
                 type="text"
-                maxLength="255"
+                maxLength="100"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredNameAsset ? 'border-red-500' : 'border-gray-300'}`}
                 onChange={(e) => handleInputChange('name_asset', e.target.value)}
                 value={formData.name_asset}
@@ -825,7 +825,7 @@ export function GeneralJournalForm() {
               </label>
               <input
                 type="text"
-                maxLength="50"
+                maxLength="100"
                 value={formData.keterangan}
                 placeholder="Maksimal 50 karakter"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredKeterangan ? 'border-red-500' : 'border-gray-300'}`}
@@ -931,7 +931,7 @@ export function GeneralJournalForm() {
               </label>
               <input
                 type="text"
-                maxLength="50"
+                maxLength="100"
                 placeholder="Maksimal 50 karakter"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${requiredKeterangan ? 'border-red-500' : 'border-gray-300'}`}
                 onChange={(e) => handleInputChange('keterangan', e.target.value)}

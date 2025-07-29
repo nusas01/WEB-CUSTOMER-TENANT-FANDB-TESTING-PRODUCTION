@@ -12,6 +12,7 @@ import { fetchProductsCustomer } from "../actions/get"
 import { setOrderTypeContext } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
+import {X, ShoppingBag, Plus} from "lucide-react"
 
 function Home() {
   const dispatch = useDispatch()
@@ -193,32 +194,35 @@ function Home() {
 
       <div className="container-bg">
         <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`} style={isFixed ? {marginTop: '50px'} : {}}>
-          {datas.map((item, index) => (
+          {datas.map((item, categoryIndex) => (
             <div
               id={item.category}
-              className="mb-12"
+              className="mb-16"
               key={item.category}
               ref={(el) => (categoryRefs.current[item.category_name] = el)}
             >
               {/* Category Title */}
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 text-center md:text-left">
+              <div className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left mb-2">
                   {item.category_name}
                 </h2>
-                <div className="w-16 h-1 bg-emerald-500 mt-2 mx-auto md:mx-0 rounded-full"></div>
+                <div className="w-20 h-1.5 bg-gradient-to-r from-green-500 to-emerald-500 mt-3 mx-auto md:mx-0 rounded-full shadow-sm"></div>
+                <p className="text-gray-600 text-sm md:text-base mt-2 text-center md:text-left">
+                  Pilihan terbaik untuk kategori {item.category_name.toLowerCase()}
+                </p>
               </div>
 
               {/* Product Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 pb-10">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
                 {item.products.map((product, index) => {
                   const isAvailable = product.available;
 
                   return (
                     <div
-                      className={`group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 relative ${
+                      className={`group bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all duration-300 relative ${
                         isAvailable
-                          ? 'hover:shadow-xl cursor-pointer transform hover:-translate-y-1'
-                          : 'cursor-not-allowed opacity-75'
+                          ? 'hover:shadow-2xl hover:border-green-200 cursor-pointer transform hover:-translate-y-2 hover:scale-[1.0]'
+                          : 'cursor-not-allowed opacity-80'
                       }`}
                       key={index}
                       onClick={() => {
@@ -228,64 +232,64 @@ function Home() {
                             name: product.name,
                             harga: product.price,
                             image: product.image,
-                            description: product.description
+                            desc: product.desc
                           });
                         }
                       }}
                     >
                       {/* UNAVAILABLE OVERLAY */}
                       {!isAvailable && (
-                        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm z-20 flex items-center justify-center">
-                          <div className="text-center p-2">
-                            <div className="w-8 h-8 md:w-10 md:h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                              <svg className="w-4 h-4 md:w-5 md:h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center">
+                          <div className="text-center p-3">
+                            <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                              <X className="w-6 h-6 md:w-7 md:h-7 text-red-500" />
                             </div>
-                            <p className="text-xs md:text-sm font-medium text-gray-700">Tidak Tersedia</p>
-                            <p className="text-xs text-gray-500 mt-1">Sementara habis</p>
+                            <p className="text-sm md:text-base font-semibold text-gray-800 mb-1">Tidak Tersedia</p>
+                            <p className="text-xs md:text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                              Sementara habis
+                            </p>
                           </div>
                         </div>
                       )}
 
+                      {/* AVAILABILITY BADGE */}
+                      {isAvailable && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                            Tersedia
+                          </div>
+                        </div>
+                      )}
+
+                      {/* CATEGORY BADGE */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <div className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full shadow-sm border border-gray-200">
+                          {item.category_name}
+                        </div>
+                      </div>
+
                       {/* IMAGE SECTION */}
-                      <div className="relative h-32 md:h-40 lg:h-48 w-full overflow-hidden">
+                      <div className="relative h-36 md:h-44 lg:h-52 w-full overflow-hidden">
                         <img
-                          className={`w-full h-full object-cover transition-transform duration-300 ${
+                          className={`w-full h-full object-cover transition-all duration-500 ${
                             isAvailable
-                              ? 'group-hover:scale-105'
-                              : 'grayscale brightness-75'
+                              ? 'group-hover:scale-110'
+                              : 'grayscale brightness-75 contrast-75'
                           }`}
                           src={`/image/${product.image}`}
                           alt={product.name}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                      </div>
-
-                      {/* CONTENT SECTION */}
-                      <div className="p-3 md:p-4 space-y-2 md:space-y-3">
-                        <h3 className={`text-sm md:text-base lg:text-lg font-semibold line-clamp-2 leading-tight ${
-                          isAvailable ? 'text-gray-800' : 'text-gray-500'
-                        }`}>
-                          {product.name}
-                        </h3>
-                        <p className={`text-xs md:text-sm line-clamp-2 leading-relaxed ${
-                          isAvailable ? 'text-gray-600' : 'text-gray-400'
-                        }`}>
-                          {product.description}
-                        </p>
-
-                        {/* PRICE AND ACTION SECTION */}
-                        <div className="flex justify-between items-center pt-2">
-                          <p className={`text-sm md:text-base lg:text-lg font-bold ${
-                            isAvailable ? 'text-gray-900' : 'text-gray-400'
-                          }`}>
-                            Rp {product.price.toLocaleString("id-ID")}
-                          </p>
-
-                          {isAvailable ? (
+                        <div className={`absolute inset-0 transition-all duration-300 ${
+                          isAvailable 
+                            ? 'bg-gradient-to-t from-black/30 via-transparent to-transparent group-hover:from-black/40' 
+                            : 'bg-gradient-to-t from-black/50 to-black/20'
+                        }`} />
+                        
+                        {/* Quick Add Button Overlay */}
+                        {isAvailable && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300">
                             <button
-                              className="p-2 bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0 ml-2"
+                              className="bg-white/90 backdrop-blur-sm text-green-600 p-3 rounded-full shadow-xl transform scale-75 group-hover:scale-100 transition-all duration-200 hover:bg-white hover:shadow-2xl"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleShowModal(true, {
@@ -293,41 +297,116 @@ function Home() {
                                   name: product.name,
                                   harga: product.price,
                                   image: product.image,
-                                  description: product.description
+                                  desc: product.desc
                                 });
                               }}
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-white" viewBox="0 0 16 16">
-                                <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
-                              </svg>
+                              <ShoppingBag className="w-5 h-5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CONTENT SECTION */}
+                      <div className="p-4 md:p-5 space-y-3">
+                        <div className="space-y-2">
+                          <h3 className={`text-base md:text-lg font-bold line-clamp-2 leading-tight transition-colors ${
+                            isAvailable ? 'text-gray-800 group-hover:text-green-700' : 'text-gray-500'
+                          }`}>
+                            {product.name}
+                          </h3>
+                          <p className={`text-sm line-clamp-2 leading-relaxed ${
+                            isAvailable ? 'text-gray-600' : 'text-gray-400'
+                          }`}>
+                            {product.desc || 'Deskripsi tidak tersedia'}
+                          </p>
+                        </div>
+
+                        {/* PRICE AND ACTION SECTION */}
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500 mb-1">Harga</span>
+                            <p className={`text-lg md:text-xl font-bold transition-colors ${
+                              isAvailable ? 'text-gray-800' : 'text-gray-400'
+                            }`}>
+                              Rp {product.price.toLocaleString("id-ID")}
+                            </p>
+                          </div>
+
+                          {isAvailable ? (
+                            <button
+                              className="group/btn relative p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShowModal(true, {
+                                  id: product.product_id,
+                                  name: product.name,
+                                  harga: product.price,
+                                  image: product.image,
+                                  desc: product.desc
+                                });
+                              }}
+                            >
+                              <Plus className="h-5 w-5 md:h-6 md:w-6 text-white transition-transform group-hover/btn:rotate-90" />
+                              
+                              {/* Ripple effect */}
+                              <div className="absolute inset-0 rounded-xl bg-white opacity-0 group-hover/btn:opacity-20 group-active/btn:opacity-30 transition-opacity"></div>
                             </button>
                           ) : (
-                            <div className="p-2 bg-gray-300 rounded-lg flex-shrink-0 ml-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-gray-500" viewBox="0 0 16 16">
-                                <path fill="currentColor" d="M10.5 3.5a2.5 2.5 0 1 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0M8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5z"/>
-                              </svg>
+                            <div className="p-3 bg-gradient-to-r from-gray-300 to-gray-400 rounded-xl shadow-inner">
+                              <Plus className="h-5 w-5 md:h-6 md:w-6 text-gray-500" />
                             </div>
                           )}
                         </div>
+
+                        {/* PRODUCT RATING/POPULARITY INDICATOR */}
+                        {isAvailable && (
+                          <div className="flex items-center justify-between pt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <div className="flex items-center space-x-1">
+                              {[...Array(3)].map((_, i) => (
+                                <div key={i} className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" style={{animationDelay: `${i * 0.2}s`}}></div>
+                              ))}
+                              <span className="text-xs text-green-600 font-medium ml-2">Populer</span>
+                            </div>
+                            <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                              #{index + 1}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
               </div>
+
+              {/* Category Statistics */}
+              <div className="mt-6 flex justify-center md:justify-start">
+                <div className="flex items-center space-x-6 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-full">
+                  <span className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>{item.products.filter(p => p.available).length} Tersedia</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>{item.products.filter(p => !p.available).length} Habis</span>
+                  </span>
+                  <span className="text-gray-500">Total: {item.products.length} item</span>
+                </div>
+              </div>
             </div>
           ))}
-
         </div>
-      </div>   
+      </div>
+
       
       {showModelAddProduct && (
           <AddProductToCart 
             onClose={() => setShowModelAddProduct(false)} 
             id={productData.id}
             name={productData.name} 
+            desc={productData.desc}
             harga={productData.harga} 
             image={productData.image} 
-            description={productData.description} 
             type={"CUSTOMER"}
           />
         )}

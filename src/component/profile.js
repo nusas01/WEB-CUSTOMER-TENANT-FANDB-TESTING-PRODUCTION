@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import {SpinnerRelative} from "../helper/spinner";
 import { OrderTypeInvalidAlert } from "./alert";
+import {Mail, Settings, Shield, ChevronRight, Key, LogOut} from "lucide-react"
 
 export default function Profile() {
     const dispatch = useDispatch();
@@ -58,63 +59,132 @@ export default function Profile() {
     }, [tableId, orderTakeAway])
     
     return (
-        <div className="container-profile" >
-            { orderTypeInvalid && (
+        <div className="min-h-screen bg-white pb-20">
+            {orderTypeInvalid && (
                 <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
             )}
 
-                { !spinner ? (
-                    <div>
-                        <div className="header-profile">
-                            <div className="circle-profile">
+            {!spinner ? (
+                <div className="max-w-md mx-auto">
+                {/* Header Profile Section */}
+                <div className="bg-white rounded-b-3xl shadow-lg border-b border-gray-100 px-6 py-8">
+                    <div className="flex items-center space-x-4">
+                    {/* Profile Circle */}
+                    <div className="relative">
+                        <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                        <span className="text-white text-2xl font-bold">
                             {initials}
-                            </div>
-                            <div className="header-data">
-                                <p class="title">James Grey</p>
-                                <p class="article">Nama digunakan saat pemesanan</p>
-                            </div>
+                        </span>
                         </div>
-                        <div className="body-profile">
-                            <div className="fill-body-profile">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#b1aeae" class="bi bi-envelope-fill" viewBox="0 0 16 16">
-                                <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/>
-                                </svg>
-                                <span style={{color: '#b1aeae'}}>{data.email}</span>
-                            </div>
-                            { !data.password ? (
-                                <div onClick={() => navigate("/setpassword")} className="fill-body-profile pointer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-shield-lock-fill" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5"/>
-                                    </svg>
-                                    <span>Set Password</span>
-                                </div>
-                            ) : (
-                                <div onClick={() => navigate("/changepassword")} className="fill-body-profile pointer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-key" viewBox="0 0 16 16">
-                                    <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8m4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5"/>
-                                    <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                                    </svg>
-                                    <span>Ganti Password</span>
-                                </div>
-                            )}
-                            
-                            <div onClick={() => handleLogout()} className="fill-body-profile pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/>
-                                <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/>
-                                </svg>
-                                <span>Keluar</span>
-                            </div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                         </div>
                     </div>
-                ): (
-                    <SpinnerRelative h="h-[90vh]"/>
-                )}
-            
-            <div style={{maxWidth: '30rem', width: '100%', position: 'relative'}}>
-                <BottomNavbar />
-            </div>
 
+                    {/* Profile Info */}
+                    <div className="flex-1">
+                        <h1 className="text-2xl font-bold text-gray-800 mb-1">
+                        James Grey
+                        </h1>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                        Nama digunakan saat pemesanan
+                        </p>
+                        <div className="flex items-center mt-2 space-x-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span className="text-xs text-green-600 font-medium">Akun Aktif</span>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                {/* Menu Options */}
+                <div className="px-6 py-6 space-y-3">
+                    {/* Email Section */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md">
+                    <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-gray-600" />
+                        </div>
+                        <div className="flex-1">
+                        <p className="text-sm text-gray-500 mb-1">Email Address</p>
+                        <p className="text-gray-800 font-medium">{data.email}</p>
+                        </div>
+                    </div>
+                    </div>
+
+                    {/* Password Section */}
+                    {!data.password ? (
+                    <div 
+                        onClick={() => navigate("/setpassword")} 
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md hover:border-green-200 cursor-pointer group"
+                    >
+                        <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-200">
+                            <Shield className="w-6 h-6 text-orange-600" />
+                            </div>
+                            <div>
+                            <p className="text-gray-800 font-semibold group-hover:text-green-700 transition-colors">
+                                Set Password
+                            </p>
+                            <p className="text-sm text-gray-500">Amankan akun Anda</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                        </div>
+                    </div>
+                    ) : (
+                    <div 
+                        onClick={() => navigate("/changepassword")} 
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md hover:border-green-200 cursor-pointer group"
+                    >
+                        <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
+                            <Key className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                            <p className="text-gray-800 font-semibold group-hover:text-green-700 transition-colors">
+                                Ganti Password
+                            </p>
+                            <p className="text-sm text-gray-500">Ubah kata sandi akun</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                        </div>
+                    </div>
+                    )}
+
+                    {/* Logout Section */}
+                    <div 
+                    onClick={() => handleLogout()} 
+                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md hover:border-red-200 cursor-pointer group"
+                    >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center group-hover:from-red-200 group-hover:to-red-300 transition-all duration-200">
+                            <LogOut className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div>
+                            <p className="text-gray-800 font-semibold group-hover:text-red-700 transition-colors">
+                            Keluar
+                            </p>
+                            <p className="text-sm text-gray-500">Logout dari akun</p>
+                        </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-600 transition-colors" />
+                    </div>
+                    </div>
+                </div>
+            </div>
+        ) : (
+            <SpinnerRelative h="h-[90vh]"/>
+        )}
+        
+        {/* Bottom Navigation */}
+        <div className="max-w-[30rem] w-full relative mx-auto">
+            <BottomNavbar />
         </div>
+    </div>
     )
 }

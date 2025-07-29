@@ -14,8 +14,6 @@ import {
     fetchTransactionOnGoingCustomer, 
 } from "../actions/get"
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
-import { UndoIcon } from "lucide-react"
-import { orderTypeSlice } from "../reducers/reducers"
 import { 
     OrderTypeInvalidAlert, 
     ErrorAlert, 
