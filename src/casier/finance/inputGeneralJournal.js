@@ -5,10 +5,10 @@ import { SpinnerFixed } from '../../helper/spinner';
 import { fetchAssetsStoreInternal } from '../../actions/get';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useHandleDataUpdateGeneralJournal } from './updateGeneralJournal'
-import { ErrorAlert } from '../../component/alert'
-import {inputGeneralJournalInternalSlice} from '../../reducers/post'
+import { ErrorAlert, Toast, ToastPortal } from '../../component/alert'
+import {inputGeneralJournalInternalSlice, getJournalDrafByJsonInternalSlice} from '../../reducers/post'
 import {updateGeneralJournalInternalSlice} from '../../reducers/put'
-import {inputGeneralJournalInternal} from '../../actions/post'
+import {inputGeneralJournalInternal, getJournalDrafByJsonInternal} from '../../actions/post'
 import {UpdateGeneralJournalInternal} from '../../actions/put'
 
 export function GeneralJournalForm() {
@@ -17,7 +17,6 @@ export function GeneralJournalForm() {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [formData, setFormData] = useState({});
-  const [spinner, setSpinner] = useState(false);
   const dispatch = useDispatch();
   const location = useLocation();
   const [requiredDate, setRequiredDate] = useState(false)
@@ -37,7 +36,8 @@ export function GeneralJournalForm() {
   const [requiredPercentageSale, setRequiredPercentageSale] = useState(false)
   const [requiredOptionMethodSale, setRequiredOptionMethodSale] = useState(false)
   const [requiredMetodeAmortisasi, setRequiredMetodeAmortisasi] = useState(false)
-
+  const [toast, setToast] = useState(null);
+  
   const loadStateRequired = () => {
     setRequiredDate(false)
     setRequiredAmount(false)
@@ -61,8 +61,21 @@ export function GeneralJournalForm() {
     loadStateRequired() 
   }, [selectedAccount, selectedType])
 
-  const journalData = location.state?.journalData || null;
+  const previousPath = location.state?.from || "/";
+  const isUpdateMode = previousPath === '/internal/admin/general-journal';
 
+  // handle respone get data journal draf from server, jika update data draf 
+  const { 
+    resetErrorGetJournalByJsonInternal,
+    resetGetJournalByJsonInternal,
+  } = getJournalDrafByJsonInternalSlice.actions
+  const { 
+    dataDrafGetJournalByJsonInternal: journalData,
+    errorGetJournalByJsonJournal, 
+    loadingGetJournalByJson, 
+  } = useSelector((state) => state.persisted.getJournalDrafByJsonInternal)
+
+  console.log('data update general journal: ', journalData)
   const {
     selectedAccount: journalDataSelectedAccount,
     selectedType: journalDataSelectedType,
@@ -76,7 +89,10 @@ export function GeneralJournalForm() {
       setFormData(journalDataFormData);
     }
   }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
-
+  console.log("data selected account: ", selectedAccount)
+  console.log("data selected type: ", selectedType)
+  console.log("data form date: ", formData)
+  
   useEffect(() => {
   
     const updatedData = { ...formData };
@@ -467,7 +483,10 @@ export function GeneralJournalForm() {
   const handleSubmitJournal = (action) => {
     const data = {
       account_name: selectedAccount,
-      detail: {...formData, action: action},
+      detail: {...formData, 
+        action: action, 
+        type: selectedType,
+      },
     }
 
     console.log('kenapa data null:', data)
@@ -481,8 +500,6 @@ export function GeneralJournalForm() {
 
   }
 
-
-
   // handle response update journal 
   const {resetUpdateGeneralJournalInternal} = updateGeneralJournalInternalSlice.actions
   const {successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, loadingUpdateGeneralJournalInternal} = useSelector((state) => state.updateGeneralJournalInternalState)
@@ -492,27 +509,10 @@ export function GeneralJournalForm() {
     if (successUpdateGeneralJournalInternal) {
       navigate("/internal/admin/general-journal")
       dispatch(resetUpdateGeneralJournalInternal())
+      dispatch(resetGetJournalByJsonInternal())
     }
   }, [successUpdateGeneralJournalInternal])
 
-  useEffect(() => {
-    if (errorUpdateGeneralJournalInternal) {
-      setErrorAlert(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-      const timeout = setTimeout(() => {
-        setErrorAlert(false); 
-        dispatch(resetUpdateGeneralJournalInternal())
-      }, 3000);
-  
-      return () => clearTimeout(timeout); 
-    }
-  }, [errorUpdateGeneralJournalInternal]);
-  
-
-  useEffect(() => {
-    setSpinner(loadingUpdateGeneralJournalInternal)
-  }, [loadingUpdateGeneralJournalInternal])
 
   // handle response input journal
   const {resetInputGeneralJournalInternal} = inputGeneralJournalInternalSlice.actions
@@ -526,25 +526,25 @@ export function GeneralJournalForm() {
     }
   }, [successInputGeneralJournal])
 
+
   useEffect(() => {
-    if (errorInputGeneralJournal) {
-      setErrorAlert(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-      const timeout = setTimeout(() => {
-        setErrorAlert(false); 
+    if (errorGetJournalByJsonJournal || errorInputGeneralJournal || errorUpdateGeneralJournalInternal) {
+      setToast({
+        message: "There was an error on the internal server, we are fixing it.",
+        type: 'error'
+      });
+        
+      const timer = setTimeout(() => {
         dispatch(resetInputGeneralJournalInternal())
-      }, 3000);
-  
-      return () => clearTimeout(timeout); 
+        dispatch(resetErrorGetJournalByJsonInternal())
+        dispatch(resetUpdateGeneralJournalInternal())
+      }, 3000)
+
+      return () => clearTimeout(timer)
     }
-  }, [errorInputGeneralJournal])
+  }, [errorGetJournalByJsonJournal, errorInputGeneralJournal, errorUpdateGeneralJournalInternal]);
 
-  useEffect(() => {
-    setSpinner(loadingInputGeneralJournal)
-  }, [loadingInputGeneralJournal])
 
-  
 
   const renderFormFields = () => {
     if (!selectedAccount || !selectedType) return null;
@@ -845,7 +845,7 @@ export function GeneralJournalForm() {
                   <select
                     value={formData.id_asset || ""}
                     onChange={(e) => handleInputChange("id_asset", e.target.value)}
-                    disabled={journalData !== null}
+                    disabled={isUpdateMode}
                     className={`w-full px-4 py-3 pr-10 border disabled:cursor-not-allowed disabled:opacity-60
                       disabled:hover:border-gray-300 disabled:hover:bg-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed ${requiredIdAsset ? 'border-red-500' : 'border-gray-300'}`}
                   >
@@ -1131,14 +1131,20 @@ export function GeneralJournalForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      { errorAlert && (
-        <ErrorAlert 
-        message={"Terjadi kesalahan di server. Sistem tidak dapat memproses permintaan Anda. Tim pengembang telah diberitahu dan sedang melakukan perbaikan."} 
-        onClose={() => setErrorAlert(false)}
-        />
+      {toast && (
+        <ToastPortal> 
+          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+            <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast(null)} 
+            duration={3000}
+            />
+          </div>
+        </ToastPortal>
       )}
 
-      { spinner && (
+      { (loadingUpdateGeneralJournalInternal || loadingInputGeneralJournal || loadingGetJournalByJson)  && (
         <SpinnerFixed colors={'fill-gray-800'}/>
       )}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1163,7 +1169,7 @@ export function GeneralJournalForm() {
                 <select
                   value={journalData !== null ? journalDataSelectedAccount : selectedAccount}
                   onChange={(e) => handleAccountChange(e.target.value)}
-                  disabled={journalData !== null}
+                  disabled={isUpdateMode}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 disabled:cursor-not-allowed disabled:opacity-60
                   disabled:hover:border-gray-300 disabled:hover:bg-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                 >
@@ -1193,7 +1199,7 @@ export function GeneralJournalForm() {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    disabled={journalData !== null}
+                    disabled={isUpdateMode}
                     className="w-full px-4 py-3 border disabled:cursor-not-allowed disabled:opacity-60
                     disabled:hover:border-gray-300 disabled:hover:bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                   >

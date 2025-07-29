@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {voidGeneralJournalInternal} from '../../actions/put'
 import {voidGeneralJournalInternalSlice} from '../../reducers/put'
+import {getJournalDrafByJsonInternalSlice} from '../../reducers/post.js'
 import{VoidJournalConfirmationModal, Toast, ToastPortal} from '../../component/alert'
 import {
   filterGeneralJournalInternalSlice, 
@@ -51,10 +52,9 @@ import { set } from 'date-fns';
 
  
 export default function GeneralJournalDashboard() {
-    const [activeMenu, setActiveMenu] = useState("general-journal")
+    const activeMenu = "general-journal"
     const dispatch = useDispatch()
     const [toast, setToast] = useState(null);
-    const [spinnerFixed, setSpinnerFixed] = useState(false)
 
     // maxsimaz minimaz layar
     const contentRef = useRef(null);
@@ -67,6 +67,13 @@ export default function GeneralJournalDashboard() {
     const {resetVoidGeneralJournal} = voidGeneralJournalInternalSlice.actions
     const {errorVoidGeneralJournal} = useSelector((state) => state.voidGeneralJournalInternalState)
 
+    // reset data update generl journal draf 
+    const {resetGetJournalByJsonInternal} = getJournalDrafByJsonInternalSlice.actions
+
+    useEffect(() => {
+      dispatch(resetGetJournalByJsonInternal())
+    }, [])
+ 
     useEffect(() => {
       if (errorVoidGeneralJournal) {
         setToast({
@@ -516,7 +523,7 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
   return (
-    <div className="min-h-screen bg-gray-50">        
+    <div className="min-h-screen relative bg-gray-50">        
 
       { spinnerFixed && (
         <SpinnerFixed colors={"fill-gray-900"}/>
@@ -655,7 +662,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
                       </select>
                     </div>
                   )}
-
                   <button onClick={() => navigate('/internal/admin/general-journal/form')} 
                   className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 transition-colors text-sm"
                   >

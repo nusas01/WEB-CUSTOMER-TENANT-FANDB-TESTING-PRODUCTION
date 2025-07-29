@@ -342,6 +342,34 @@ export const deleteProductInternalSlice = createSlice({
     }
 })
 
+const initialGetJournalDrafByJsonInternalState = {
+    dataDrafGetJournalByJsonInternal: null,
+    errorGetJournalByJsonJournal: null,
+    loadingGetJournalByJson: false,
+}
+export const getJournalDrafByJsonInternalSlice = createSlice({
+    name: "getJournalDrafByJsonInternal",
+    initialState: initialGetJournalDrafByJsonInternalState,
+    reducers: {
+        setSuccessGetJournalByJsontInternal: (state, action) => {
+            state.dataDrafGetJournalByJsonInternal = action.payload
+        },
+        setErrorGetJournalByJsonIntenal: (state, action) => {
+            state.errorGetJournalByJsonJournal = action.payload
+        },
+        setLoadingGetJournalByJsonInternal: (state, action) => {
+            state.loadingGetJournalByJson = action.payload
+        },      
+        resetErrorGetJournalByJsonInternal: (state) => {
+            state.errorInputGeneralJournal = null
+        },
+        resetGetJournalByJsonInternal: (state) => {
+            state.errorGetJournalByJsonJournal  = null
+            state.dataDrafGetJournalByJsonInternal = null
+        }
+    }
+})
+
 
 const initialInputGeneralJournalInternalState = {
     successInputGeneralJournal: null,

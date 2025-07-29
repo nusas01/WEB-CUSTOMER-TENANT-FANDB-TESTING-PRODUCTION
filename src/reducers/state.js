@@ -61,6 +61,7 @@ import {
   inputGeneralJournalInternalSlice,
   createTableInternalSlice,
   createQROrderTypeTakeAwaySlice,
+  getJournalDrafByJsonInternalSlice,
 } from './post'
 import {
   updateInternalSlice,
@@ -129,6 +130,7 @@ const persistedReducers = combineReducers({
   dataDrafToVoidInternal: dataDrafToVoidInternalSlice.reducer,
   filterOrderInternal: filterOrderInternalSlice.reducer, 
   navbarInternal: navbarInternalSlice.reducer,
+  getJournalDrafByJsonInternal: getJournalDrafByJsonInternalSlice.reducer,
 })
 
 // 2. Konfigurasi persist

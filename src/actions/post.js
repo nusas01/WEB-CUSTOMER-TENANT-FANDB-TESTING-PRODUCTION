@@ -19,6 +19,7 @@ import axios from "axios"
     inputGeneralJournalInternalSlice,
     createTableInternalSlice,
     createQROrderTypeTakeAwaySlice,
+    getJournalDrafByJsonInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice
@@ -355,6 +356,31 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
         }
         dispatch(setErrorDeleteProductIntenal(error.response?.data?.error))
         console.log("response data create transacrion internal: ", error)
+    }
+}
+
+const {setSuccessGetJournalByJsontInternal, setErrorGetJournalByJsonIntenal, setLoadingGetJournalByJsonInternal} = getJournalDrafByJsonInternalSlice.actions
+export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState) => {
+    const configJson = {
+        headers: {
+            "Content-Type": "application/json",
+            "API_KEY": process.env.REACT_APP_API_KEY,
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingGetJournalByJsonInternal(true))
+    try {
+        const response = await axios.post(`${process.env.REACT_APP_GET_JOURNAL_DRAF_BY_JSON_INTERNAL_URL}`, data, configJson)
+        console.log("response data create transacrion internal: ", response)
+        dispatch(setSuccessGetJournalByJsontInternal(response.data))
+    } catch(error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+        dispatch(setErrorGetJournalByJsonIntenal(error.response?.data?.error))
+        console.log("response data create transacrion internal: ", error)
+    } finally {
+        dispatch(setLoadingGetJournalByJsonInternal(false))
     }
 }
 

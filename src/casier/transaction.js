@@ -6,7 +6,6 @@ import { checkTransactionNonCashInternalSlice  } from "../reducers/get"
 import { useFullscreen } from "../helper/helper"
 import { Toast, ToastPortal } from "../component/alert";
 
-
 export default function KasirTransaction() {
     const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Transaction")

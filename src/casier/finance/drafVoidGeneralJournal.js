@@ -9,9 +9,10 @@ import {
   Info 
 } from 'lucide-react';
 import {GeneralJournalForm} from './inputGeneralJournal'
-import { data, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { data, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector} from 'react-redux';
 import { dataDrafToVoidInternalSlice } from '../../reducers/reducers';
+import { getJournalDrafByJsonInternal } from '../../actions/post'
 
 export const DrafVoidDataComponent = ({ 
   drafData = [], 
@@ -20,8 +21,11 @@ export const DrafVoidDataComponent = ({
   }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const location = useLocation()
+
     const handleDrafJournal = (data) => {
-      navigate('/internal/admin/general-journal/form', { state: { journalData: data } });
+      navigate('/internal/admin/general-journal/form', { state: { from: location.pathname } })
+      dispatch(getJournalDrafByJsonInternal(data))
     }
 
     console.log("draf data tidak terprint: ", drafData)
