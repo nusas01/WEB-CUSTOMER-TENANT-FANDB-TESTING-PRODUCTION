@@ -196,12 +196,12 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     const {setData, setIncrementPage, resetData} = dataFilteringTransactionHistorySlice.actions
     const {method, status, startDate, endDate, startTime, endTime , page} = useSelector((state) => state.persisted.dataFilteringTransactionHistoryState)
     const {
-    dataTransactionHistoryInternal,
-    loadingTransactionHistoryInternal,
-    hasMore,
-    totalCount: totalCountFilter,
-    totalRevenue: totalRevenueFilter,
-  } = useSelector((state) => state.persisted.transactionHistoryInternal);
+      dataTransactionHistoryInternal,
+      loadingTransactionHistoryInternal,
+      hasMore,
+      totalCount: totalCountFilter,
+      totalRevenue: totalRevenueFilter,
+    } = useSelector((state) => state.persisted.transactionHistoryInternal);
 
   useEffect(() => {
     if (dataTransactionHistoryInternal.length > 0) {
@@ -222,8 +222,8 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     hasMore,
     loading: loadingTransactionHistoryInternal,
     loadMore: loadMoreCallback,
-    threshold: 0.1,
-    rootMargin: '50px'
+    threshold: 1.0,
+    rootMargin: '100px'
   });
 
   // hook untuk infinite scroll mobile devaci

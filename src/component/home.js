@@ -1,21 +1,17 @@
 import "../App.css"
-import Footer from "./footer"
 import Navbar from "./navbar"
 import { AddProductToCart } from "./add"
 import { useState, useEffect, useRef } from "react"
 import Cart from "./cart"
 import { UseResponsiveClass } from "../helper/presentationalLayer"
-import { data, useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import BottomNavbar from "./bottomNavbar"
 import { useDispatch, useSelector } from "react-redux"
-import { fetchProductsCustomer } from "../actions/get"
-import { setOrderTypeContext } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
 import {X, ShoppingBag, Plus} from "lucide-react"
 
 function Home() {
-  const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const { orderTakeAway, tableId } = useSelector((state) => state.persisted.orderType)
   const [activeCategory, setActiveCategory] = useState()
@@ -26,7 +22,6 @@ function Home() {
   const [showModelCart, setShowModelCart] = useState(false);
   const [productData, setProductData] = useState(null);
   const containerClass = UseResponsiveClass()
-  const navigate = useNavigate()
   const lastActiveCategoryRef = useRef(null);
   const [headerOffset, setHeaderOffset] = useState(140);
 
@@ -35,8 +30,6 @@ function Home() {
   useEffect(() => {
     setSpinner(loading)
   }, [loading])
-  console.log(datas)
-  console.log("ioiiiofioeuou: ", error)
 
   useEffect(() => {
     if (datas.length > 0) {
@@ -44,18 +37,7 @@ function Home() {
     }
   }, [datas, window.location.pathname])
 
-
-  // get table id or order_tye_take_away = true from query
-  const location = useLocation();
-  if (orderTakeAway === null && tableId === null) {
-    const q = new URLSearchParams(location.search);
-    const orderTakeAways = q.get("order_type_take_away") === "true";
-    const tableIds = q.get("table_id");
-
-    dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
-  }
   
-
   const handleShowModal = (show, product) => {
     setShowModelAddProduct(show);
     setProductData(product);

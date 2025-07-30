@@ -7,9 +7,14 @@ import "../style/loginSignup.css";
 import { useDispatch, useSelector } from "react-redux";
 import { signupCustomer, loginCustomer, loginGoogleCustomer, loginInternal } from "../actions/post";
 import { useLocation, useNavigate } from "react-router-dom";
-import { loginCustomerSlice, signupCustomerSlice, loginGoogleCustomerSlice } from "../reducers/post";
+import { 
+  loginCustomerSlice, 
+  signupCustomerSlice, 
+  loginGoogleCustomerSlice,
+  loginInternalSlice,
+} from "../reducers/post";
 import {SpinnerFixed} from "../helper/spinner";
-import { OrderTypeInvalidAlert } from "./alert";
+import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert";
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -18,6 +23,7 @@ export default function RegisterPage() {
   const [signup, setSignup] = useState(false)
   const [repeatPassword, setRepeatPassword] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
+  const [toast, setToast] = useState(null)
   const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
   const location = useLocation()
 
@@ -34,8 +40,6 @@ export default function RegisterPage() {
     email: '',
     password: '',
   })
-
-
 
   // handle toggle signup dan login 
   // ketika switch from signup maka clear all data before switch begitu juga sebaliknya
@@ -85,6 +89,21 @@ export default function RegisterPage() {
   }, [successSign])
 
   useEffect(() => {
+    if (error) {
+      setToast({
+        type: 'error',
+        message: 'Terjadi kesalahan saat mendaftarkan akun. Silakan coba lagi nanti.',
+      })
+
+      const timer = setTimeout(() => {
+        dispatch(resetSignupCustomer())
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [error])
+
+  useEffect(() => {
     setSpinner(loadingSign)
   }, [loadingSign])
 
@@ -118,7 +137,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (messageLoginSuccess) {
       navigate('/')
-
+      dispatch(setLoginStateNullCustomer())
       setFormLogin({
           email: '',
           password: '',
@@ -143,6 +162,7 @@ export default function RegisterPage() {
 
 
   // handle response login internal 
+  const { setLoginStateNullInternal } = loginInternalSlice.actions
   const { messageLoginSuccessInternal, loadingLoginInternal, statusCodeSuccessInternal, errorLoginInternal, errPassInternal, errEmailInternal } = useSelector((state) => state.loginInternalState) || {}
   useEffect(() => {
     setSpinner(loadingLoginInternal)
@@ -151,7 +171,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (messageLoginSuccessInternal) {
       navigate('/internal/admin/transaction')
-
+      dispatch(setLoginStateNullInternal())
       setFormLogin({
           email: '',
           password: '',
@@ -188,22 +208,33 @@ export default function RegisterPage() {
   }
 
 
+
   // handle receive data from verification code 
-  const [showAlertVerification, setShowAlertVerificationSuccess] = useState(false)
   const data = location.state?.data
+
+  // useEffect(() => {
+  //   if (data) {
+  //     setShowAlertVerificationSuccess(true);
+
+  //     const timer = setTimeout(() => {
+  //       setShowAlertVerificationSuccess(false);
+  //     }, 2000);
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [data]);
 
   useEffect(() => {
     if (data) {
-      setShowAlertVerificationSuccess(true);
+        setToast({
+            type: 'success',
+            message: 'Verifikasi berhasil! Silakan login.',
+        })
 
-      const timer = setTimeout(() => {
-        setShowAlertVerificationSuccess(false);
-      }, 2000);
-
-      return () => clearTimeout(timer);
+        // Clear state after showing toast
+        navigate(location.pathname, { replace: true });
     }
-  }, [data]);
-
+  }, [data])
 
 
 
@@ -214,21 +245,8 @@ export default function RegisterPage() {
   useEffect(() => {
     setSpinner(loadingLoginGoogleCustomer)
   }, [loadingLoginGoogleCustomer])
-
-  useEffect(() => {
-    if (errorLoginGoogleCustomer) {
-      console.log(errorLoginGoogleCustomer)
-      setShowAlertError(true)
-
-      const timer = setTimeout(() => {
-        dispatch(resetLoginGoogleCustomer())
-        setShowAlertError(false)
-      }, 200)
-
-      return () => clearTimeout(timer)
-    }
-  }, [errorLoginGoogleCustomer])
-
+  
+  
   const handleLoginAndSignupGoogle = () => {
     dispatch(setLoginStateNullCustomer())
     dispatch(resetSignupCustomer())
@@ -236,17 +254,34 @@ export default function RegisterPage() {
     setFormLogin({
         email: '',
         password: '',
-    })
-
-    setFormSignup({
+      })
+      
+      setFormSignup({
         email: '',
         username: '',
         password: '',
         repeatPassword: '',
-    })
-    
-    dispatch(loginGoogleCustomer())
+      })
+      
+      dispatch(loginGoogleCustomer())
   }
+    
+  useEffect(() => {
+        if (errorLoginGoogleCustomer || errorLoginInternal || errorLogin) {
+            setToast({
+                type: 'error',
+                message: 'Terjadi kesalahan di server kami saat login. Silakan coba lagi nanti.',
+            })
+
+            const timer = setTimeout(() => {
+              dispatch(resetLoginGoogleCustomer())
+              dispatch(setLoginStateNullCustomer())
+              dispatch(setLoginStateNullInternal())
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
+        }
+    }, [errorLoginGoogleCustomer, errorLoginInternal, errorLogin])
 
 
   // handle alert error invalid order type jika user bukan scan dari table atau kasir
@@ -264,18 +299,19 @@ export default function RegisterPage() {
   return (
     <div className="container">
       <div className="card">
-        {showAlertVerification && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-green-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
-            Verifikasi berhasil! Silakan login.
-          </div>
+        {toast && (
+            <ToastPortal> 
+                <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+                <Toast 
+                message={toast.message} 
+                type={toast.type} 
+                onClose={() => setToast(null)} 
+                duration={3000}
+                />
+                </div>
+            </ToastPortal>
         )}
 
-        { showAlertError && (
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[400px] bg-red-500 text-white p-3 rounded-lg text-center shadow-lg animate-slideDown">
-                terjadi error di server kami
-            </div>
-        )}
-        
         { orderTypeInvalid && (
             <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
         )}

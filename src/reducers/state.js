@@ -46,6 +46,7 @@ import {
   getDataEmployeeInternalSlice,
   searchOrderInternalSlice,
   getSearchTransactionInternalSlice,
+  getDetailTransactionsHistoryCustomerSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -131,6 +132,7 @@ const persistedReducers = combineReducers({
   filterOrderInternal: filterOrderInternalSlice.reducer, 
   navbarInternal: navbarInternalSlice.reducer,
   getJournalDrafByJsonInternal: getJournalDrafByJsonInternalSlice.reducer,
+  getDetailTransactionsHistoryCustomer:  getDetailTransactionsHistoryCustomerSlice.reducer,
 })
 
 // 2. Konfigurasi persist

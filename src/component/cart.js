@@ -21,10 +21,13 @@ import {
     InvalidAmountModal,
     CashPaymentUnavailableModal,
     QRErrorModal,
+    Toast, 
+    ToastPortal,
 } from "./alert"
 import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import {createTransactionCustomerSlice} from "../reducers/post"
+import { setOrderTypeContext } from "../reducers/reducers"
 
 function Cart({ closeCart }) {
     const [notesId, setNotesId] = useState('')
@@ -33,7 +36,6 @@ function Cart({ closeCart }) {
     const containerClass = UseResponsiveClass()
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const location =  useLocation()
     const [isPaymentMethod, setIsPaymentMethod] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState()
     const [channelCode, setChannelCode] = useState()
@@ -41,7 +43,6 @@ function Cart({ closeCart }) {
     const [feeTransaction, setFeeTransaction] = useState(0)
     const [taxTransaction, setTaxTransaction] = useState(0)
     const [totalTransaction, setTotalTransaction] = useState(0)
-    const [numberEwallet, setNumberEwallet] = useState()
     const [isModelInputNumberEwallet, setIsModelInputNumberEwallet] = useState(false)
     const [spinner, setSpinner] = useState(true)
     const [spinnerTransaction, setSpinnerTrannsaction] = useState(false)
@@ -50,6 +51,7 @@ function Cart({ closeCart }) {
     const [alertError, setAlertError] = useState(false)
     const [invalidAmountPrice, setInvalidAmountPrice] = useState(false)
     const [paymentUnavailable, setPaymentUnavailable] = useState(false)
+    const [toast, setToast] = useState(null)
 
     const {dataPaymentMethodCustomer, taxRate, loadingPaymentMethodsCustomer, errorPaymentMethodsCustomer, paymentMethodCash} = useSelector((state) => state.persisted.paymentMethodsCustomer)
     const [dataTransaction, setDataTransaction] = useState({
@@ -258,7 +260,7 @@ function Cart({ closeCart }) {
     // handle create transaction
     const [productUnavailable, setProductUnavailable] = useState(false)
     const {resetCreateTransactionCustomer} = createTransactionCustomerSlice.actions
-    const {message, errorAmountPrice, error, loading, errorTable, errorProductUnavailable, errorCashNonActive} = useSelector((state) => state.createTransactionCustomerState)
+    const {message, errorAmountPrice, error, errorOrderType, errorPhoneNumber, loading, errorTable, errorProductUnavailable, errorCashNonActive} = useSelector((state) => state.createTransactionCustomerState)
     const {loading: loadingOnGoingTransaction} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
 
     useEffect(() => {
@@ -325,22 +327,56 @@ function Cart({ closeCart }) {
 
     useEffect(() => {
         if (error) {
-            if (error === "Invalid mobile number format") {
-                setIsModelInputNumberEwallet(true)
-                dispatch(resetCreateTransactionCustomer())
-                return
-            }
+            setToast({
+                type: 'error',
+                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+            })
 
-            setAlertError(true)
-
-            const timeout = setTimeout(() => {
-                setAlertError(false)
+            const timer = setTimeout(() => {
                 dispatch(resetCreateTransactionCustomer())
-            }, 3000)
-            
-            return () => clearTimeout(timeout)
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
         }
     }, [error])
+
+    useEffect(() => {
+        if (errorPhoneNumber) {
+            setToast({
+                type: 'error',
+                message: errorPhoneNumber,
+            })
+            setIsModelInputNumberEwallet(true)
+
+
+            const timer = setTimeout(() => {
+                dispatch(resetCreateTransactionCustomer())
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
+        }
+    }, [errorPhoneNumber])
+
+    // useEffect(() => {
+    //     if (error) {
+    //         if (error === "Invalid mobile number format") {
+    //             setIsModelInputNumberEwallet(true)
+    //             dispatch(resetCreateTransactionCustomer())
+    //             return
+    //         }
+
+    //         setAlertError(true)
+
+    //         const timeout = setTimeout(() => {
+    //             setAlertError(false)
+    //             dispatch(resetCreateTransactionCustomer())
+    //         }, 3000)
+            
+    //         return () => clearTimeout(timeout)
+    //     }
+    // }, [error])
+
+
 
     useEffect(() => {
         setSpinnerTrannsaction(loading)
@@ -405,7 +441,18 @@ function Cart({ closeCart }) {
     }, [loadingPaymentMethodsCustomer])
 
 
-    console.log("data payment method: ", dataPaymentMethodCustomer)
+
+     // get table id or order_tye_take_away = true from query
+    const location = useLocation();
+    if (orderTakeAway === null && tableId === null) {
+        const q = new URLSearchParams(location.search);
+        const orderTakeAways = q.get("order_type_take_away") === "true";
+        const tableIds = q.get("table_id");
+
+        dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
+    }
+
+    
     return (
     <div class="container-main-cart" style={{position: 'relative'}}>
         {/* payment cash non active */}
@@ -452,7 +499,7 @@ function Cart({ closeCart }) {
         )}
 
         {/* section alert invalid order type */}
-        { orderTypeInvalid && (
+        { (orderTypeInvalid || errorOrderType) && (
             <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>   
         )}
 
@@ -472,11 +519,17 @@ function Cart({ closeCart }) {
             <SpinnerFixed colors={'fill-green-500'}/>
         )}
 
-        {/* alert error create transaction */}
-        { alertError && (
-            <div className="fixed">
-                <ErrorAlert onClose={() => setAlertError(false)} message={error}/>
-            </div>
+        {toast && (
+            <ToastPortal> 
+                <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+                <Toast 
+                message={toast.message} 
+                type={toast.type} 
+                onClose={() => setToast(null)} 
+                duration={3000}
+                />
+                </div>
+            </ToastPortal>
         )}
        
 

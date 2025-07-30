@@ -6,7 +6,7 @@ import { SpinnerFixed } from "../helper/spinner"
 import { useState } from "react"
 import { useEffect } from "react"
 import {changePasswordCustomerSlice} from "../reducers/patch"
-import { OrderTypeInvalidAlert } from "./alert"
+import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert"
 
 
 export default function ChangePassword() {
@@ -15,6 +15,7 @@ export default function ChangePassword() {
     const [spinner, setSpinner] = useState(false)
     const [alertSuccess, setAlertSuccess] = useState(false)
     const [alertError, setAlertError] = useState(false)
+    const [toast, setToast] = useState(null)
     const [lastPassword, setLastPassword] = useState(null)
     const [newPassword, setNewPassword] = useState(null)
     const [repeatPassword, setRepeatPassword] = useState(false)
@@ -36,32 +37,55 @@ export default function ChangePassword() {
 
     const {resetChangePasswordCustomer} = changePasswordCustomerSlice.actions
     const {responseSucces, errorField, errorMessage, errorCP, loading} = useSelector((state) => state.changePasswordCustomerState)
-    
+
     useEffect(() => {
         if (responseSucces) {
+            setToast({
+                type: 'success',
+                message: 'Password Berhasil di Perbaruhi',
+            })
+
             setData({
                 last_password: "",
                 new_password: "",
                 repeatPassword: ""
             })
-            dispatch(resetChangePasswordCustomer())
+
             setLastPassword(null)
             setNewPassword(null)
-            setAlertSuccess(true)
-            setTimeout(() => {
-                setAlertSuccess(false)
-            }, 3000)
+
+            const timer = setTimeout(() => {
+                dispatch(resetChangePasswordCustomer())
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
         }
     }, [responseSucces])
 
-    useEffect(() => { 
+
+    useEffect(() => {
         if (errorCP) {
-            setAlertError(true)
-            setTimeout(() => {
-                setAlertError(false)
-            }, 3000)
+            setToast({
+                type: 'error',
+                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+            })
+
+            const timer = setTimeout(() => {
+                dispatch(resetChangePasswordCustomer())
+            }, 3000) 
+
+            return () => clearTimeout(timer) 
         }
     }, [errorCP])
+
+    // useEffect(() => { 
+    //     if (errorCP) {
+    //         setAlertError(true)
+    //         setTimeout(() => {
+    //             setAlertError(false)
+    //         }, 3000)
+    //     }
+    // }, [errorCP])
 
     useEffect(() => {
         setSpinner(loading)
@@ -134,18 +158,18 @@ export default function ChangePassword() {
     return (
         <div className="min-h-screen bg-gray-50 p-4">
             <div className="max-w-md mx-auto">
-                {/* Success Alert */}
-                {alertSuccess && (
-                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-sm bg-green-500 text-white px-4 py-3 rounded-lg text-center shadow-lg z-50 animate-slide-down">
-                        Ganti Password Berhasil
-                    </div>
-                )}
-
                 {/* Error Alert */}
-                {alertError && (
-                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-sm bg-red-500 text-white px-4 py-3 rounded-lg text-center shadow-lg z-50 animate-slide-down">
-                        Terjadi error di server kami
-                    </div>
+                {toast && (
+                    <ToastPortal> 
+                        <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+                        <Toast 
+                        message={toast.message} 
+                        type={toast.type} 
+                        onClose={() => setToast(null)} 
+                        duration={3000}
+                        />
+                        </div>
+                    </ToastPortal>
                 )}
 
                 {/* Order Type Invalid Alert */}

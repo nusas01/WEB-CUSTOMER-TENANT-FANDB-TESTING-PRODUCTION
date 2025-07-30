@@ -140,6 +140,8 @@ const initialCreateTransactionCustomer = {
     errorTable: null,
     errorAmountPrice: null,
     errorCashNonActive: null,
+    errorPhoneNumber: null,
+    errorOrderType: null,
     loading: false,
 }
 export const createTransactionCustomerSlice = createSlice({
@@ -156,7 +158,9 @@ export const createTransactionCustomerSlice = createSlice({
             state.errorAmountPrice = action.payload.errorAmountPrice
             state.errorTable = action.payload.errorTable
             state.statusCode = action.payload.statusCode
+            state.errorOrderType = action.payload.errorOrderType
             state.errorCashNonActive = action.payload.errorCashNonActive
+            state.errorPhoneNumber = action.payload.errorPhoneNumber
         }, 
         setLoadingCreateTransactionCustomer: (state, action) => {
             state.loading = action.payload;
@@ -169,6 +173,8 @@ export const createTransactionCustomerSlice = createSlice({
             state.errorTable = null
             state.error = null
             state.errorCashNonActive = null
+            state.errorPhoneNumber = null
+            state.errorOrderType = null
         }
     }
 })

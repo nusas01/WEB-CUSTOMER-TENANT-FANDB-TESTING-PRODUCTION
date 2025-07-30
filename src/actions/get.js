@@ -29,7 +29,7 @@ import {
     getNeracaInternalSlice,
     getDataEmployeeInternalSlice,
     searchOrderInternalSlice,
-    getSearchTransactionInternalSlice,
+    getSearchTransactionInternalSlice,getDetailTransactionsHistoryCustomerSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice
@@ -130,26 +130,23 @@ export const fetchTransactionOnGoingCustomer = () => {
 }
 
 const {setLoadingGetTransactionHistoryCustomer, fetchSuccessGetTransactionHistoryCustomer, fetchErrorGetTransactionHistoryCustomer} = getTransactionsHistoryCustomerSlice.actions;
-export const fetchTransactionHistoryCustomer = (page) => {
+export const fetchTransactionHistoryCustomer = () => {
     return async (dispatch, getState) => {
       const { statusExpiredToken } = getState().statusExpiredTokenState;
       if (statusExpiredToken) return; 
 
       dispatch(setLoadingGetTransactionHistoryCustomer(true))
       try {
-        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_TRANSACTION_HISTORY_URL}?page=${page}`, {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_TRANSACTION_HISTORY_URL}`, {
           withCredentials: true,
           headers: {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log(response)
-        const rawData = response?.data?.data || [];
-        const hasMore = response?.data.hasMore
-        const grouped = groupByDate(rawData);
-        const countProses = rawData.filter(trx => trx.order_status === "PROSES").length
+        console.log()
+        const grouped = groupByDate(response?.data || []);
   
-        dispatch(fetchSuccessGetTransactionHistoryCustomer({ data: grouped, hasMore, page, lengthTransactionProses: countProses }))
+        dispatch(fetchSuccessGetTransactionHistoryCustomer(grouped))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
@@ -161,6 +158,40 @@ export const fetchTransactionHistoryCustomer = (page) => {
         dispatch(fetchErrorGetTransactionHistoryCustomer(message))
       } finally {
         dispatch(setLoadingGetTransactionHistoryCustomer(false))
+      }
+    }
+}
+
+const {fetchSuccessDetailTransactionHistoryCustomer, fetchErrorDetailTransactionHistoryCustomer, setLoadingDetailTransactionHistoryCustomer} = getDetailTransactionsHistoryCustomerSlice.actions;
+export const fetchDetailTransactionHistoryCustomer = (id) => {
+    return async (dispatch, getState) => {
+      const { statusExpiredToken } = getState().statusExpiredTokenState;
+      if (statusExpiredToken) return; 
+
+      dispatch(setLoadingDetailTransactionHistoryCustomer(true))
+      try {
+        const response = await axiosInstance.get(`${process.env.REACT_APP_GET_DETAIL_TRANSACTION_HISTORY_URL}`, {
+          withCredentials: true,
+          headers: {
+            'API_KEY': process.env.REACT_APP_API_KEY
+          },
+          params: {
+            id: id,
+          },
+        })
+        console.log("daya res[[seponse: ", response)
+        dispatch(fetchSuccessDetailTransactionHistoryCustomer(response?.data || null))
+      } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+                dispatch(setStatusExpiredToken(true))
+        }
+        const message = {
+          error: error.response?.data?.message || "Unknown error",
+          statusCode: error.response?.status || 500,
+        }
+        dispatch(fetchErrorDetailTransactionHistoryCustomer(message))
+      } finally {
+        dispatch(setLoadingDetailTransactionHistoryCustomer(false))
       }
     }
 }

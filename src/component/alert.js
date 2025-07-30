@@ -1,5 +1,22 @@
 import React, { useState, useEffect, forwardRef } from "react"
-import { CheckCircle, XCircle, Clock, AlertTriangle, QrCode, Users, AlertCircle, Ban, X, RefreshCw, ShoppingCart, Banknote, CreditCard } from "lucide-react"
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  AlertTriangle, 
+  QrCode, 
+  Users, 
+  AlertCircle, 
+  Ban, 
+  X, 
+  RefreshCw, 
+  ShoppingCart, 
+  Banknote, 
+  CreditCard,
+  UtensilsCrossed, 
+  ShoppingBag, 
+  RotateCcw, 
+} from "lucide-react"
 import { useRef } from "react"
 import  ImagePaymentMethod  from '../helper/imagePaymentMethod'
 import { useDispatch } from "react-redux"
@@ -7,47 +24,73 @@ import { createPortal } from "react-dom";
 
 export const OrderTypeInvalidAlert = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-90 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-90 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
       <div
-        className="bg-white flex flex-col items-center rounded-2xl p-6 w-11/12 max-w-md shadow-lg"
+        className="bg-white flex flex-col items-center rounded-3xl p-8 w-full max-w-sm shadow-2xl transform animate-in fade-in-0 zoom-in-95 duration-300"
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex flex-col items-center gap-1 mb-6">
-          <span className="text-[70px]">
-          ⚠️
-          </span>
-          <h2 className="text-red-600 text-lg font-bold">
-              Jenis Pesanan Tidak Sesuai
+        <div className="flex flex-col items-center gap-4 mb-8">
+          <div className="relative">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-10 h-10 text-red-500" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+              <X className="w-3 h-3 text-white" />
+            </div>
+          </div>
+          <h2 className="text-red-600 text-xl font-bold text-center leading-tight">
+            Jenis Pesanan Tidak Sesuai
           </h2>
         </div>
 
         {/* Body */}
-        <div className="mb-6 text-sm flex flex-col items-center text-gray-700">
-          <p className="mb-2">Pastikan Anda scan:</p>
-          <ul className="space-y-1 list-disc list-inside">
-            <li>
-              <strong>Barcode meja</strong> untuk Dine-In
-            </li>
-            <li>
-              <strong>Barcode kasir</strong> untuk Take Away
-            </li>
-          </ul>
-          <p className="mt-5 italic text-gray-500">
-            Silakan ulangi proses pemindaian
-          </p>
+        <div className="mb-8 text-sm text-center text-gray-700 space-y-4">
+          <p className="font-medium text-gray-800">Pastikan Anda scan:</p>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <UtensilsCrossed className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-green-800">Barcode meja</p>
+                <p className="text-xs text-green-600">untuk Dine-In</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <ShoppingBag className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-blue-800">Barcode kasir</p>
+                <p className="text-xs text-blue-600">untuk Take Away</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-center gap-2 text-gray-500">
+              <RotateCcw className="w-4 h-4" />
+              <p className="text-sm italic">
+                Silakan ulangi proses pemindaian
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
-        {/* <div className="flex justify-end">
+        <div className="w-full">
           <button
             onClick={onClose}
-            className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md text-sm font-semibold transition duration-200"
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-2xl text-base font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
           >
+            <CheckCircle className="w-5 h-5" />
             Baiklah
           </button>
-        </div> */}
+        </div>
       </div>
     </div>
   )

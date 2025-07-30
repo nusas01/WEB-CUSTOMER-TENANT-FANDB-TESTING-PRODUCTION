@@ -104,13 +104,11 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
 
 
 const initialTransactionsHistoryCustomer = {
-    dataTransactionHistory: [],
+    dataTransactionHistory: null,
     error: null,
     statusCode: null,
     lengthTransactionProses: 0,
     loadingHistory: false,
-    hasMore: false,
-    page: 1,
 }
 export const getTransactionsHistoryCustomerSlice = createSlice({
     name: "transactionHistory",
@@ -120,19 +118,39 @@ export const getTransactionsHistoryCustomerSlice = createSlice({
             state.loadingHistory = action.payload
         },
         fetchSuccessGetTransactionHistoryCustomer: (state, action) => {
-            const { data, hasMore, page, lengthTransactionProses } = action.payload
-            if (page === 1) {
-                state.dataTransactionHistory = data;
-              } else {
-                state.dataTransactionHistory = [...state.dataTransactionHistory, ...data]; 
-              }
-            state.page = page
-            state.hasMore = hasMore
-            state.lengthTransactionProses = lengthTransactionProses
+            state.dataTransactionHistory = action.payload;
         },
         fetchErrorGetTransactionHistoryCustomer: (state, action) => {
             state.error = action.payload.error
             state.statusCode = action.payload.statusCode
+        }
+    }
+})
+
+
+const initialDetailTransactionsHistoryCustomer = {
+    dataDetailTransactionHistory: null,
+    error: null,
+    statusCode: null,
+    lengthTransactionProses: 0,
+    loadingHistory: false,
+}
+export const getDetailTransactionsHistoryCustomerSlice = createSlice({
+    name: "detailTransactionHistory",
+    initialState: initialDetailTransactionsHistoryCustomer,
+    reducers: {
+        setLoadingDetailTransactionHistoryCustomer: (state, action) => {
+            state.loadingHistory = action.payload
+        },
+        fetchSuccessDetailTransactionHistoryCustomer: (state, action) => {
+            state.dataDetailTransactionHistory = action.payload;
+        },
+        fetchErrorDetailTransactionHistoryCustomer: (state, action) => {
+            state.error = action.payload.error
+            state.statusCode = action.payload.statusCode
+        },
+        resetError: (state) => {
+            state.error = null
         }
     }
 })

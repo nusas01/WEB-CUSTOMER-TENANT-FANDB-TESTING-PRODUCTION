@@ -87,15 +87,6 @@ function App() {
   }, [])
 
 
-  // get data transaction history
-  const {dataTransactionHistory} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
-  useEffect(() => {
-    if (!dataTransactionHistory || Object.keys(dataTransactionHistory).length === 0) {
-      dispatch(fetchTransactionHistoryCustomer(1))
-  }  
-  }, [])
-
-
   // handle expired token
   const { clearStatusExpiredToken } = statusExpiredTokenSlice.actions
   const { statusExpiredToken } = useSelector((state) => state.statusExpiredTokenState)

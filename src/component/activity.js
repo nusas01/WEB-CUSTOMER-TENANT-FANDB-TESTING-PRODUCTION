@@ -9,12 +9,22 @@ import {OrderTypeInvalidAlert} from "./alert"
 import { useSelector, useDispatch } from "react-redux"
 import historyIcon from "../image/nota.png"
 import { CountDown } from "../helper/countDown"
-import {fetchTransactionOnGoingCustomer, fetchTransactionHistoryCustomer} from "../actions/get"
+import {fetchDetailTransactionHistoryCustomer, fetchTransactionHistoryCustomer} from "../actions/get"
 import { SpinnerRelative } from "../helper/spinner"
 import { buttonActivityCustomerSlice } from "../reducers/reducers"
 import { da } from "date-fns/locale"
-import { Clock, UtensilsCrossed, ChevronRight } from 'lucide-react';
-
+import { 
+    Clock, 
+    AlertCircle, 
+    ChevronRight,
+    CheckCircle,
+    Loader2,
+    Package,
+    Truck,
+    CreditCard,
+} from 'lucide-react';
+import {getDetailTransactionsHistoryCustomerSlice} from '../reducers/get'
+import { setOrderTypeContext } from "../reducers/reducers"
 
 export default function Activity() {
     const dispatch = useDispatch()
@@ -38,6 +48,13 @@ export default function Activity() {
     useEffect(() => {
         setSpinner(loadingHistory)
     }, [loadingHistory])
+
+    // get data transaction history
+    useEffect(() => {
+    if (!dataTransactionHistory || Object.keys(dataTransactionHistory).length === 0) {
+        dispatch(fetchTransactionHistoryCustomer(1))
+    }  
+    }, [])
     
 
     // get data button active status
@@ -47,22 +64,27 @@ export default function Activity() {
         dispatch(setButtonActivity(data))
     }
 
-
-    const handleDetail = (detailOrder) => {
-        navigate("/activity/detail", { state: { detailOrder } })
+    const {resetError} = getDetailTransactionsHistoryCustomerSlice.actions;
+    const handleDetail = (id) => {
+        dispatch(resetError());
+        dispatch(fetchDetailTransactionHistoryCustomer(id))
+        navigate("/activity/detail", {state: {id}})
     }
 
     const handlePembayaran = (detailOrder) => {
         navigate("/activity/pembayaran", {state: { detailOrder }})
     }
 
+    
+    // get table id or order_tye_take_away = true from query
     const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
-    useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
-            setOrderTypeInvalid(true)
-            return
-        }
-    }, [tableId, orderTakeAway])
+    if (orderTakeAway === null && tableId === null) {
+        const q = new URLSearchParams(location.search);
+        const orderTakeAways = q.get("order_type_take_away") === "true";
+        const tableIds = q.get("table_id");
+
+        dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
+    }
 
 
     return (
@@ -99,7 +121,7 @@ export default function Activity() {
                         </button>
                     </div>
 
-                    {spinner && (
+                    {((buttonActive === 'history' && loadingHistory) || (buttonActive === 'on going' && loading)) && (
                         <SpinnerRelative h="h-[70vh]"/>
                     )}
 
@@ -135,19 +157,7 @@ export default function Activity() {
                                         <div
                                         key={htrIndex}
                                         onClick={() =>
-                                            handleDetail({
-                                            id: trx.id,
-                                            created_at: trx.created_at,
-                                            items: trx.order,
-                                            subTotal: trx.sub_total,
-                                            fee: trx.payment_method_fee,
-                                            tax: trx.tax,
-                                            amount: trx.amount_price,
-                                            methodPembayaran: trx.payment_method_type,
-                                            channel_code: trx.channel_code,
-                                            statusPembayaran: trx.order_status,
-                                            notes: "lupa kasih notes",
-                                            })
+                                            handleDetail(trx.id)
                                         } 
                                         className="group bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300
                                                     border border-gray-100 cursor-pointer transform hover:-translate-y-1 
@@ -214,117 +224,164 @@ export default function Activity() {
                     )}
 
 
+                    
                     {/* TRANSACTION ON GOING */}
                     <div>
-                        {buttonActive === 'on going' && !spinner &&  (
+                        {buttonActive === 'on going' && !spinner && (
                             Array.isArray(dataTransactionOnGoing) && dataTransactionOnGoing.length > 0 ? (
-                                <div style={{display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '50px'}}>
+                                <div className="flex flex-col gap-4 mb-12 px-4">
                                     {dataTransactionOnGoing.map((data, index) => (
-                                        <div key={index} className="container-belum-bayar p-6 bg-light">
-                                            { data.status_transaction == 'PENDING' && (
-                                                <p class="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
+                                        <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                            {data.status_transaction == 'PENDING' && (
+                                                <p className="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
                                             )}
-                                            <div className="flex justify-end">
-                                                { data.status_transaction === "PENDING" ? (
-                                                    <p style={{margin: '5px 0'}}>
-                                                        Belum Bayar
-                                                    </p>
-                                                ):(
-                                                        <p
-                                                            style={{ margin: "5px 0" }}
-                                                            className={`inline-block px-4 py-2 rounded text-xs italic 
-                                                                ${data.order_status === "PROSES" ? "bg-red-100 text-red-900" : ""}
-                                                                ${data.order_status === "PROGRES" ? "bg-yellow-100 text-yellow-900" : ""}
-                                                                ${data.order_status === "FINISHED" ? "bg-green-100 text-green-900" : ""}
-                                                            `}
-                                                            >
+                                            
+                                            {/* Status Header */}
+                                            <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-100">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                        <span className="text-sm font-medium text-gray-600">Transaction ID: #{data.id}</span>
+                                                    </div>
+                                                    {data.status_transaction === "PENDING" ? (
+                                                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
+                                                            <Clock className="w-4 h-4" />
+                                                            Belum Bayar
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                                                            ${data.order_status === "PROSES" ? "bg-red-100 text-red-800" : ""}
+                                                            ${data.order_status === "PROGRES" ? "bg-yellow-100 text-yellow-800" : ""}
+                                                            ${data.order_status === "FINISHED" ? "bg-green-100 text-green-800" : ""}
+                                                        `}>
+                                                            {data.order_status === "PROSES" && <AlertCircle className="w-4 h-4" />}
+                                                            {data.order_status === "PROGRES" && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                            {data.order_status === "FINISHED" && <CheckCircle className="w-4 h-4" />}
                                                             {data.order_status}
-                                                        </p>
-                                                )}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
 
-                                            <div>
-                                                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                            {/* Order Items */}
+                                            <div className="p-6">
+                                                <div className="space-y-4">
                                                     {data.order.map((item, idx) => (
-                                                        <div key={idx} className="container-item flex">
-                                                            <img
-                                                                src={`/image/${item.product.image}`} // sesuaikan path folder gambar kamu
-                                                                style={{width: '100px', height: '100px'}}
-                                                                className="object-cover"
-                                                                alt={item.product.name}
-                                                            />
-                                                            <div className="item-information">
-                                                                <div className="item-title">
-                                                                    <p>{item.product.name}</p>
+                                                        <div key={idx} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                                                            <div className="relative">
+                                                                <img
+                                                                    src={`/image/${item.product.image}`}
+                                                                    className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                                                                    alt={item.product.name}
+                                                                />
+                                                                <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                                                                    {item.quantity}
                                                                 </div>
-                                                                <div className="spase-bettwen font-17 text-gray-500">
-                                                                    <p>Rp {(item.product.price).toLocaleString("id-ID")}</p>
-                                                                    <p>x{item.quantity}</p>
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="font-semibold text-gray-900 text-base leading-tight mb-2">
+                                                                    {item.product.name}
+                                                                </h4>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-green-600 font-bold text-lg">
+                                                                        Rp {(item.product.price).toLocaleString("id-ID")}
+                                                                    </span>
+                                                                    <span className="text-gray-500 text-sm bg-white px-2 py-1 rounded-md">
+                                                                        x{item.quantity}
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ))}
+                                                </div>
 
-                                                    <div>
-                                                        <div>
-                                                            <div className="flex justify-between items-center" style={{ padding: '15px 0' }}>
-                                                                <p>{data.order.length} item</p>
-                                                                
-                                                                {(data.status_transaction === "PAID" && data.order_status === 'PROCESS') ? (
-                                                                <p>Pesanan Anda Sedang Kami Proses</p>
-                                                                ) : data.order_status === "PROGRESS" ? (
-                                                                <p>Pesanan Sedang Diproses</p>
-                                                                ) : data.order_status === "FINISHED" ? (
-                                                                <p>Pesanan Selesai</p>
-                                                                ) : (
-                                                                <p>Jumlah Harus Dibayar: Rp{data.amount_price.toLocaleString("id-ID")}</p>
-                                                                )}
-                                                            </div>
+                                                {/* Summary Section */}
+                                                <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Package className="w-5 h-5 text-green-600" />
+                                                            <span className="font-medium text-gray-700">{data.order.length} item</span>
                                                         </div>
-
-
-                                                        {data.status_transaction !== 'PAID' && (
-                                                            <div className="spase-bettwen">
-                                                                <p>Bayar sebelum {FormatISODate(data.expires_at)}</p>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        if (data.payment_method_type === "EWALLET") {
-                                                                            {localStorage.setItem("pendingTransaction", data.id)}
-                                                                            window.location.href = data.payment_reference; // atau URL redirect yang sesuai
-                                                                        } else {
-                                                                            handlePembayaran({
-                                                                                id: data.id,
-                                                                                amount: data.amount_price,
-                                                                                methodPembayaran: data.payment_method_type,
-                                                                                exp: data.expires_at,
-                                                                                unixNumber: data.payment_reference,
-                                                                                channel_code: data.channel_code,
-                                                                            });
-                                                                        }
-                                                                    }}
-                                                                    className="text-white transition-colors button-on-going"
-                                                                    style={{backgroundColor: 'red'}}
-                                                                >
-                                                                    Bayar Sekarang
-                                                                </button>
-                                                            </div>
-                                                        )}
-
-                                                        {data.status_transaction === 'FINISHED' && (
-                                                            <div style={{display: 'flex', justifyContent: 'end'}}>
-                                                                <button className="bg-blue-600 text-white transition-colors button-on-going">
-                                                                    Diterima
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                        
+                                                        <div className="text-right">
+                                                            {(data.status_transaction === "PAID" && data.order_status === 'PROCESS') ? (
+                                                                <div className="flex items-center gap-2 text-blue-600">
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    <span className="text-sm font-medium">Pesanan Anda Sedang Kami Proses</span>
+                                                                </div>
+                                                            ) : data.order_status === "PROGRESS" ? (
+                                                                <div className="flex items-center gap-2 text-yellow-600">
+                                                                    <Truck className="w-4 h-4" />
+                                                                    <span className="text-sm font-medium">Pesanan Sedang Diproses</span>
+                                                                </div>
+                                                            ) : data.order_status === "FINISHED" ? (
+                                                                <div className="flex items-center gap-2 text-green-600">
+                                                                    <CheckCircle className="w-4 h-4" />
+                                                                    <span className="text-sm font-medium">Pesanan Selesai</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    <p className="text-sm text-gray-600 mb-1">Total Pembayaran</p>
+                                                                    <p className="text-2xl font-bold text-green-600">
+                                                                        Rp {data.amount_price.toLocaleString("id-ID")}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
+
+                                                    {/* Payment Actions */}
+                                                    {data.status_transaction !== 'PAID' && (
+                                                        <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <Clock className="w-4 h-4 text-amber-600" />
+                                                                <span className="text-sm text-amber-700 font-medium">
+                                                                    Bayar sebelum {FormatISODate(data.expires_at)}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (data.payment_method_type === "EWALLET") {
+                                                                        localStorage.setItem("pendingTransaction", data.id);
+                                                                        window.location.href = data.payment_reference;
+                                                                    } else {
+                                                                        handlePembayaran({
+                                                                            id: data.id,
+                                                                            amount: data.amount_price,
+                                                                            methodPembayaran: data.payment_method_type,
+                                                                            exp: data.expires_at,
+                                                                            unixNumber: data.payment_reference,
+                                                                            channel_code: data.channel_code,
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
+                                                            >
+                                                                <CreditCard className="w-5 h-5" />
+                                                                Bayar Sekarang
+                                                            </button>
+                                                        </div>
+                                                    )}
+
+                                                    {data.status_transaction === 'FINISHED' && (
+                                                        <div className="flex justify-end mt-4">
+                                                            <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 shadow-lg">
+                                                                <CheckCircle className="w-5 h-5" />
+                                                                Diterima
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <EmptyHistory gambar={historyIcon} title={"Belum Ada Transaksi"} desc={"Kamu belum memiliki transaksi yang sedang berlangsung. Mulai belanja dan lihat aktivitasmu di sini!"}/>
+                                <EmptyHistory 
+                                    gambar={historyIcon} 
+                                    title={"Belum Ada Transaksi"} 
+                                    desc={"Kamu belum memiliki transaksi yang sedang berlangsung. Mulai belanja dan lihat aktivitasmu di sini!"} 
+                                />
                             )
                         )}
                     </div>

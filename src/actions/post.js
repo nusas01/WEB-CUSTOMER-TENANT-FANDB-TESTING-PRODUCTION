@@ -161,11 +161,13 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
         console.log(error)
         const message = {
             error: error.response?.data?.error,
+            errorPhoneNumber: error.response?.data?.error?.ErrorFields?.phone_number_ewallet,
             errorProductUnavailable: error?.response?.data?.errorProductUnavailable,
             errorAmountPrice: error.response?.data?.errorAmountPrice,
             errorCashNonActive: error.response?.data?.errorCashNonActive,
             errorTable: error.response?.data?.errorTable,
             statusCode: error?.response?.status,
+            errorOrderType: error?.response.data?.errorOrderType,
         }
         dispatch(errorCreateTransactionCustomer(message))
     }finally {
