@@ -56,6 +56,13 @@ export default function Profile() {
         dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
     }
 
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
+
     const getInitials = (username) => {
     if (!username) return "";
     return username

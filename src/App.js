@@ -107,7 +107,6 @@ function App() {
 
   console.log("data assets: ", dataAssetsStoreInternal)
 
-
   return (
     <Router>
       <div> 

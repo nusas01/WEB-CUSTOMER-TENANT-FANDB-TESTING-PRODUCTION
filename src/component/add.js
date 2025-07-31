@@ -35,8 +35,8 @@ export const AddProductToCart = ({ onClose, id, name, desc, harga, image, type }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-20">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center sm:p-4 z-20">
+      <div className="bg-white my-2 sm:my-0 rounded-2xl shadow-xl w-full max-w-md transform transition-all">
         {/* Modal Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h3 className="text-2xl font-bold text-gray-800">Tambah ke Keranjang</h3>

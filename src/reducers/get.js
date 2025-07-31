@@ -85,6 +85,7 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
             state.dataTransactionOnGoing = state.dataTransactionOnGoing.filter(
                 (item) => item.id !== action.payload
             )
+            state.lengthTransactionOnGoing = state.dataTransactionOnGoing.length;
         },
         updateTransactionOnGoingStatusById: (state, action) => {
             const updated = state.dataTransactionOnGoing.map(item => {

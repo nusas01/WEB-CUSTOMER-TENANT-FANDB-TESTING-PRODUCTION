@@ -1,29 +1,41 @@
 import "../App.css"
+import Footer from "./footer"
 import Navbar from "./navbar"
 import { AddProductToCart } from "./add"
 import { useState, useEffect, useRef } from "react"
 import Cart from "./cart"
 import { UseResponsiveClass } from "../helper/presentationalLayer"
-import { useNavigate } from "react-router-dom"
+import { data, useLocation, useNavigate } from "react-router-dom"
 import BottomNavbar from "./bottomNavbar"
 import { useDispatch, useSelector } from "react-redux"
+import { fetchProductsCustomer } from "../actions/get"
+import { setOrderTypeContext } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
-import {X, ShoppingBag, Plus} from "lucide-react"
+import {
+  X, 
+  ShoppingBag, 
+  Plus,
+  ChevronLeft, 
+  ChevronRight,
+} from "lucide-react"
 
 function Home() {
+  const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
   const { orderTakeAway, tableId } = useSelector((state) => state.persisted.orderType)
   const [activeCategory, setActiveCategory] = useState()
   const [clickedCategory, setClickedCategory] = useState(null);
   const categoryRefs = useRef({});
+  const categoryScrollRef = useRef(null);
   const clickedCategoryRef = useRef(clickedCategory);
   const [showModelAddProduct, setShowModelAddProduct] = useState(false);
   const [showModelCart, setShowModelCart] = useState(false);
   const [productData, setProductData] = useState(null);
   const containerClass = UseResponsiveClass()
+  const navigate = useNavigate()
   const lastActiveCategoryRef = useRef(null);
-  const [headerOffset, setHeaderOffset] = useState(140);
+  const headerOffset = 100;
 
   // get data  products
   const { datas, loading, error, errorStatusCode } = useSelector((state) => state.persisted.productsCustomer)
@@ -37,35 +49,134 @@ function Home() {
     }
   }, [datas, window.location.pathname])
 
+
+  // get table id or order_tye_take_away = true from query
+  const location = useLocation();
+  if (orderTakeAway === null && tableId === null) {
+    const q = new URLSearchParams(location.search);
+    const orderTakeAways = q.get("order_type_take_away") === "true";
+    const tableIds = q.get("table_id");
+
+    dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
+  }
   
+
   const handleShowModal = (show, product) => {
     setShowModelAddProduct(show);
     setProductData(product);
   };
 
   // Sync ref dengan state clickedCategory
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [isManualClick, setIsManualClick] = useState(false);
+
+  // Debounce function untuk menghindari update yang terlalu sering
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
+  // Function untuk mendeteksi kategori yang paling terlihat
+  const getMostVisibleCategory = () => {
+    let mostVisible = null;
+    let maxVisibility = 0;
+
+    Object.entries(categoryRefs.current).forEach(([categoryName, element]) => {
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        // Hitung area yang terlihat
+        const visibleTop = Math.max(0, rect.top);
+        const visibleBottom = Math.min(viewportHeight, rect.bottom);
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+        
+        // Hitung persentase visibility
+        const elementHeight = rect.height;
+        const visibilityPercentage = elementHeight > 0 ? visibleHeight / elementHeight : 0;
+        
+        // Prioritaskan elemen yang berada di area atas viewport
+        const topBonus = rect.top < viewportHeight * 0.3 ? 0.2 : 0;
+        const totalScore = visibilityPercentage + topBonus;
+        
+        if (totalScore > maxVisibility && visibilityPercentage > 0.1) {
+          maxVisibility = totalScore;
+          mostVisible = categoryName;
+        }
+      }
+    });
+
+    return mostVisible;
+  };
+
+  // Debounced scroll handler
+  const handleScrollDebounced = debounce(() => {
+    if (!isManualClick) {
+      const visibleCategory = getMostVisibleCategory();
+      if (visibleCategory && visibleCategory !== activeCategory) {
+        setActiveCategory(visibleCategory);
+        lastActiveCategoryRef.current = visibleCategory;
+      }
+    }
+  }, 150);
 
   // Function untuk menghitung kategori aktif berdasarkan scroll
   useEffect(() => {
+    const handleScroll = () => {
+      if (!isManualClick) {
+        handleScrollDebounced();
+      }
+    };
+
+    // Tambahkan event listener dengan passive: true untuk performa
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isManualClick, activeCategory]);
+
+  // Alternative intersection observer dengan threshold yang lebih baik
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const category = Object.keys(categoryRefs.current).find(
-              (key) => categoryRefs.current[key] === entry.target
-            );
-            
-            // Mengupdate kategori aktif hanya jika tidak ada kategori yang di-klik manual
-            if (category && clickedCategoryRef.current === null) {
-              setActiveCategory(category);
-              lastActiveCategoryRef.current = category;
+        if (!isManualClick) {
+          // Cari entry dengan intersection ratio tertinggi
+          let mostVisible = null;
+          let maxRatio = 0;
+
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+              const category = Object.keys(categoryRefs.current).find(
+                (key) => categoryRefs.current[key] === entry.target
+              );
+              
+              if (category) {
+                maxRatio = entry.intersectionRatio;
+                mostVisible = category;
+              }
             }
+          });
+
+          // Update kategori aktif hanya jika ada yang terlihat signifikan
+          if (mostVisible && maxRatio > 0.3) {
+            setActiveCategory(mostVisible);
+            lastActiveCategoryRef.current = mostVisible;
           }
-        });
+        }
       },
       {
-        rootMargin: "0px 0px -20% 0px", // Agar lebih responsif terhadap scroll
-        threshold: 0.5, // Kategori dianggap aktif ketika setidaknya 10% terlihat
+        rootMargin: "-20% 0px -30% 0px", // Area trigger yang lebih fokus
+        threshold: [0.1, 0.3, 0.5, 0.7], // Multiple threshold untuk deteksi yang lebih akurat
       }
     );
 
@@ -75,62 +186,207 @@ function Home() {
     });
 
     return () => observer.disconnect();
+  }, [isManualClick]);
+
+  const checkScrollArrows = () => {
+    const container = categoryScrollRef.current;
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const scrollToActiveButton = (activeCategory) => {
+    const container = categoryScrollRef.current;
+    if (!container || !activeCategory || isScrolling) return;
+
+    const activeButton = container.querySelector(`[data-category="${activeCategory}"]`);
+    if (!activeButton) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    
+    // Hitung posisi relatif button terhadap container
+    const buttonLeft = buttonRect.left - containerRect.left + container.scrollLeft;
+    const buttonRight = buttonLeft + buttonRect.width;
+    const buttonCenter = buttonLeft + (buttonRect.width / 2);
+    
+    // Tentukan apakah button perlu di-scroll
+    const visibleLeft = container.scrollLeft;
+    const visibleRight = container.scrollLeft + container.clientWidth;
+    const containerCenter = container.clientWidth / 2;
+    
+    let targetScrollLeft = container.scrollLeft;
+    const margin = 60; // Margin yang lebih besar untuk memastikan button tidak di pojok
+    
+    // Jika button terpotong di kiri atau terlalu dekat dengan sisi kiri
+    if (buttonLeft < visibleLeft + margin) {
+      // Scroll sehingga button berada di tengah atau setidaknya tidak di pojok
+      targetScrollLeft = Math.max(0, buttonCenter - containerCenter);
+    }
+    // Jika button terpotong di kanan atau terlalu dekat dengan sisi kanan
+    else if (buttonRight > visibleRight - margin) {
+      // Scroll sehingga button berada di tengah atau setidaknya tidak di pojok
+      targetScrollLeft = Math.min(
+        container.scrollWidth - container.clientWidth,
+        buttonCenter - containerCenter
+      );
+    }
+    // Jika button sudah terlihat tapi masih terlalu di pojok, center-kan
+    else {
+      const buttonLeftFromCenter = Math.abs(buttonCenter - (visibleLeft + containerCenter));
+      // Jika jarak dari center terlalu jauh, center-kan button
+      if (buttonLeftFromCenter > containerCenter * 0.7) {
+        targetScrollLeft = Math.max(0, Math.min(
+          container.scrollWidth - container.clientWidth,
+          buttonCenter - containerCenter
+        ));
+      }
+    }
+    
+    // Smooth scroll ke posisi target hanya jika perlu
+    if (Math.abs(targetScrollLeft - container.scrollLeft) > 10) {
+      setIsScrolling(true);
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth'
+      });
+      
+      // Reset flag setelah animasi selesai
+      setTimeout(() => {
+        setIsScrolling(false);
+      }, 500);
+    }
+  };
+
+
+  // Function untuk scroll manual dengan arrow
+  const scrollCategory = (direction) => {
+    const container = categoryScrollRef.current;
+    if (!container) return;
+    
+    const scrollAmount = container.clientWidth * 0.7;
+    const currentScroll = container.scrollLeft;
+    const targetScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : Math.min(container.scrollWidth - container.clientWidth, currentScroll + scrollAmount);
+    
+    setIsScrolling(true);
+    container.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth'
+    });
+    
+    setTimeout(() => {
+      setIsScrolling(false);
+    }, 500);
+  };
+
+  // Effect untuk auto-scroll ketika activeCategory berubah
+  useEffect(() => {
+    if (!isManualClick) {
+      scrollToActiveButton(activeCategory);
+    }
+  }, [activeCategory, isManualClick]);
+
+  // Effect untuk setup scroll listeners pada category container
+  useEffect(() => {
+    const container = categoryScrollRef.current;
+    if (!container) return;
+
+    // Initial check
+    checkScrollArrows();
+    
+    // Setup scroll listener
+    const handleScroll = () => {
+      checkScrollArrows();
+    };
+    
+    // Setup resize listener
+    const handleResize = () => {
+      setTimeout(checkScrollArrows, 100);
+    };
+    
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  // Fungsi untuk mengubah kategori saat klik
+  // Fungsi untuk mengubah kategori saat klik - DIPERBAIKI
   const scrollToCategory = (category) => {
+    // Set flag manual click
+    setIsManualClick(true);
     setClickedCategory(category);
     setActiveCategory(category);
     clickedCategoryRef.current = category;
 
+    // Scroll ke kategori yang diklik
     requestAnimationFrame(() => {
       const element = categoryRefs.current[category];
       if (element) {
-        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({
-          top: elementPosition - headerOffset,
-          behavior: "smooth",
-        });
+        // Cari elemen heading (h2) di dalam kategori section
+        const categoryHeading = element.querySelector('h2');
+        
+        if (categoryHeading) {
+          // Jika ada heading, scroll ke posisi heading
+          const headingPosition = categoryHeading.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: headingPosition - headerOffset, // Tambah margin 20px untuk spacing
+            behavior: "smooth",
+          });
+        } else {
+          // Fallback ke posisi element jika tidak ada heading
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: elementPosition - headerOffset,
+            behavior: "smooth",
+          });
+        }
 
-        // Reset setelah scroll selesai
+        // Reset manual click flag setelah scroll selesai
         setTimeout(() => {
+          setIsManualClick(false);
           clickedCategoryRef.current = null;
           setClickedCategory(null);
-        }, 300);
+        }, 1000); // Diperpanjang untuk memastikan scroll selesai
       }
     });
   };
 
   // Menyesuaikan headerOffset saat ukuran layar berubah
-  useEffect(() => {
-    const updateHeaderOffset = () => {
-      if (window.innerWidth <= 500) {
-        setHeaderOffset(150); // Misalnya untuk perangkat mobile
-      } else {
-        setHeaderOffset(145); // Untuk perangkat dengan layar lebih besar
-      }
-    };
+  // useEffect(() => {
+  //   const updateHeaderOffset = () => {
+  //     if (window.innerWidth <= 500) {
+  //       setHeaderOffset(10);
+  //     } else {
+  //       setHeaderOffset(145);
+  //     }
+  //   };
 
-    // Panggil saat pertama kali dan pada saat ukuran layar berubah
-    window.addEventListener("resize", updateHeaderOffset);
-    updateHeaderOffset();
+  //   window.addEventListener("resize", updateHeaderOffset);
+  //   updateHeaderOffset();
 
-    return () => {
-      window.removeEventListener("resize", updateHeaderOffset);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("resize", updateHeaderOffset);
+  //   };
+  // }, []);
 
 
-  const [isFixed, setIsFixed] = useState(false);
+  // const [isFixed, setIsFixed] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsFixed(window.scrollY > 60);
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     setIsFixed(window.scrollY > 60);
+  //   };
   
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
 
   const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
@@ -144,23 +400,105 @@ function Home() {
 
   return (
     <div style={{position: 'relative'}}>
-      <div className={containerClass === "container-main-cart" ? "fixed h-40 bg-white shadow-md" : "w-full z-10 bg-white relative"}>
-        <Navbar
-        className={containerClass === "container-main-cart" ? "fixed" : "relative"}
-        onCart={() => setShowModelCart(true)}
-        closeCart={() => setShowModelCart(false)}
-        statusCart={showModelCart}
-        />
-        <div className={containerClass === "container-main-cart" ? "container-button-category" : `flex justify-center shadow-md ${isFixed && "container-button-category-mobile"}`}>
-          {datas.map((item, index) => (
-            <button
-              key={item.category}
-              className={`tab ${activeCategory === item.category_name ? "active" : ""}`}
-              onClick={() => scrollToCategory(item.category_name)}
-            >
-              {item.category_name}
-            </button>
-          ))}
+      <div className={"w-full z-10 bg-white relative"}>        
+        {/* Modern Category Button Container */}
+        <div className={`relative mx-auto ${"container-button-category-mobile"}`}>
+          {/* Left Arrow */}
+          <div className={`absolute left-0 top-0 bottom-0 z-20 flex items-center transition-all duration-300 ${
+            showLeftArrow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}>
+            <div className="bg-gradient-to-r from-white via-white to-transparent pl-2 pr-6 h-full flex items-center">
+              <button
+                onClick={() => scrollCategory('left')}
+                className="group p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 hover:shadow-xl hover:bg-white transition-all duration-200 hover:scale-105 active:scale-95"
+                aria-label="Scroll ke kiri"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800 transition-colors" />
+              </button>
+            </div>
+          </div>
+
+          {/* Right Arrow */}
+          <div className={`absolute right-0 top-0 bottom-0 z-20 flex items-center transition-all duration-300 ${
+            showRightArrow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}>
+            <div className="bg-gradient-to-l from-white via-white to-transparent pr-2 pl-6 h-full flex items-center">
+              <button
+                onClick={() => scrollCategory('right')}
+                className="group p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 hover:shadow-xl hover:bg-white transition-all duration-200 hover:scale-105 active:scale-95"
+                aria-label="Scroll ke kanan"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-800 transition-colors" />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable Button Container */}
+          <div 
+            ref={categoryScrollRef}
+            className="overflow-x-auto no-scrollbar scroll-smooth"
+            style={{ 
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitScrollbar: { display: 'none' }
+            }}
+          >
+            <div className="inline-flex px-4 gap-3 py-3 min-w-full">
+              {/* Left Padding Spacer */}
+              <div className={`flex-shrink-0 transition-all duration-300 ${showLeftArrow ? 'w-8' : 'w-0'}`} />
+              
+              {datas.map((item, index) => (
+                <button
+                  key={item.category}
+                  data-category={item.category_name}
+                  className={`group relative flex-shrink-0 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                    activeCategory === item.category_name
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg hover:shadow-xl hover:from-green-600 hover:to-emerald-600'
+                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300 hover:text-green-600 hover:shadow-md hover:bg-green-50'
+                  }`}
+                  onClick={() => scrollToCategory(item.category_name)}
+                >
+                  {/* Background Animation */}
+                  <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
+                    activeCategory === item.category_name
+                      ? 'bg-white/20 scale-100'
+                      : 'bg-green-500/0 scale-95 group-hover:bg-green-500/10 group-hover:scale-100'
+                  }`} />
+                  
+                  {/* Text */}
+                  <span className="relative z-10 whitespace-nowrap">
+                    {item.category_name}
+                  </span>
+                  
+                  {/* Active Indicator */}
+                  {activeCategory === item.category_name && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm" />
+                  )}
+                  
+                  {/* Hover Glow Effect */}
+                  <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
+                    activeCategory === item.category_name
+                      ? 'shadow-lg shadow-green-500/25'
+                      : 'shadow-none group-hover:shadow-md group-hover:shadow-green-500/20'
+                  }`} />
+                </button>
+              ))}
+              
+              {/* Right Padding Spacer */}
+              <div className={`flex-shrink-0 transition-all duration-300 ${showRightArrow ? 'w-8' : 'w-0'}`} />
+            </div>
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100">
+            <div 
+              className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 rounded-full"
+              style={{
+                width: `${((categoryScrollRef.current?.scrollLeft || 0) / 
+                  Math.max(1, (categoryScrollRef.current?.scrollWidth || 1) - (categoryScrollRef.current?.clientWidth || 0))) * 100}%`
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -175,21 +513,21 @@ function Home() {
         )}
 
       <div className="container-bg">
-        <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`} style={isFixed ? {marginTop: '50px'} : {}}>
+        <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`}>
           {datas.map((item, categoryIndex) => (
             <div
               id={item.category}
-              className="mb-16"
+              className="mb-[30px]"
               key={item.category}
               ref={(el) => (categoryRefs.current[item.category_name] = el)}
             >
+
               {/* Category Title */}
-              <div className="mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left mb-2">
+              <div className="mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">
                   {item.category_name}
                 </h2>
-                <div className="w-20 h-1.5 bg-gradient-to-r from-green-500 to-emerald-500 mt-3 mx-auto md:mx-0 rounded-full shadow-sm"></div>
-                <p className="text-gray-600 text-sm md:text-base mt-2 text-center md:text-left">
+                <p className="text-gray-600 text-sm md:text-base text-center md:text-left">
                   Pilihan terbaik untuk kategori {item.category_name.toLowerCase()}
                 </p>
               </div>

@@ -121,6 +121,7 @@ body {
 
 .container-bg {
   background-color: #fff;
+  padding-top: 80px;
 }
 
 .container-home {
@@ -128,7 +129,6 @@ body {
   align-items: center;
   margin: auto;
   position: relative;
-  padding-top: 150px;
   padding-bottom: 50px;
   min-height: 100vh;
 }

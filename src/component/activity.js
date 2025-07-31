@@ -86,6 +86,12 @@ export default function Activity() {
         dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
     }
 
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false) {
+            setOrderTypeInvalid(true)
+            return
+        }
+    }, [tableId, orderTakeAway])
 
     return (
         <div>
