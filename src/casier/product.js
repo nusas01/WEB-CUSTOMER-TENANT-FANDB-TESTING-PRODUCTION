@@ -62,11 +62,12 @@ import {deleteCategoryInternal} from "../actions/delete"
 import {
   deleteCategoryInternalSlice, 
 } from "../reducers/delete"
+import { AccessDeniedModal } from "../component/model"
 
 export default function KasirProducts() {
-   const dispatch = useDispatch()
+    const dispatch = useDispatch()
     const [activeMenu, setActiveMenu] = useState("Product")
-    const [toast, setToast] = useState(null);
+    const [toast, setToast] = useState(null);    
 
     // handle response add product
     const { resetCreateProductInternal } = createProductInternalSlice.actions
@@ -266,7 +267,13 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     const [spinnerProduct, setSpinnerProduct ] = useState(false)
     const [modelConfirmDeleteProduct, setModelConfirmDeleteProduct] = useState(false)
     const [productIdDelete, setProductIdDelete] = useState(null)
+    const [showAccessDenied, setShowAccessDenied] = useState(false);
+
     const dispatch = useDispatch()
+
+    // handle data employee internal
+    const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  
 
      // handle hidden header
     const {setHeaderHidden} = headerHiddenInternalSlice.actions
@@ -498,6 +505,14 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
               </div>
             )}
 
+            <AccessDeniedModal
+              isOpen={showAccessDenied}
+              onClose={() => setShowAccessDenied(false)}
+              title="Akses Ditolak"
+              message="Role anda tidak memiliki izin untuk mengakses fitur ini."
+              buttonText="Mengerti"
+            />
+
             <div className="p-6 max-w-7xl mx-auto" style={{marginTop: headerHeight}}>
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 {/* Header Section */}
@@ -544,9 +559,13 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                 <div className="px-8 py-4 bg-white">
                   <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
                     <button
-                      onClick={() => { 
-                        setAddCategory(true)
-                        dispatch(setHeaderHidden(true))
+                      onClick={() => {
+                        if (dataEmployeeInternal?.position === "Manager") {
+                          setAddCategory(true);
+                          dispatch(setHeaderHidden(true));
+                        } else {
+                          setShowAccessDenied(true); 
+                        }
                       }}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl"
                     >
@@ -556,9 +575,14 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                     
                     <button
                       onClick={() => {
-                        setAddProduct(true)
-                        dispatch(setHeaderHidden(true))
+                        if (dataEmployeeInternal?.position === "Manager") {
+                          setAddProduct(true);
+                          dispatch(setHeaderHidden(true));
+                        } else {
+                          setShowAccessDenied(true); 
+                        }
                       }}
+
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-[#00A676] hover:bg-[#00825B] text-white rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 shadow-lg hover:shadow-xl z-10 relative"
                     >
                       <Plus size={18} />
@@ -644,9 +668,13 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                                 
                                 <div
                                   onClick={() => {
-                                    setProductIdDelete(product.id)
-                                    setModelConfirmDeleteProduct(true)
-                                    dispatch(setHeaderHidden(true))
+                                    if (dataEmployeeInternal?.position === "Manager") {
+                                      setProductIdDelete(product.id);
+                                      setModelConfirmDeleteProduct(true);
+                                      dispatch(setHeaderHidden(true));
+                                    } else {
+                                      setShowAccessDenied(true); 
+                                    }
                                   }}
                                   className="flex justify-center space-x-2  items-center w-full mt-2 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 rounded-lg text-red-600"
                                 >

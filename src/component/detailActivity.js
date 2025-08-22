@@ -280,6 +280,32 @@ export default function DetailActivity() {
                     </div>
                 </div>
 
+                {/* Store Information */}
+                <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                    <div className="flex items-start space-x-3">
+                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <Store className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-sm font-semibold text-gray-800">Informasi Toko</h3>
+                                {detailOrder?.table && (
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full border border-blue-200">
+                                        Meja {detailOrder.table}
+                                    </span>
+                                )}
+                            </div>
+                            <h4 className="font-semibold text-gray-900 mb-1">{detailOrder?.name_store}</h4>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                {detailOrder?.address}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                                {detailOrder?.city}, {detailOrder?.state}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Transaction Meta */}
                 <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-100">
                     <div className="flex items-center justify-between">

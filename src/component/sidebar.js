@@ -14,6 +14,7 @@ import {
   X,
   Home,
   ChevronDown,
+  Lock,
 } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
@@ -22,21 +23,22 @@ import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
 import {useDeviceDetection} from "../helper/helper"
 import {navbarInternalSlice} from "../reducers/reducers"
+import { AccessDeniedModal } from "./model"
 
 const menuItems = [
-  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction' },
-  { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier' },
-  { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders' },
-  { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product' },
-  { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table' },
-  { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics' },
-  { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings' }
+  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: true },
+  { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier', requiresManager: false },
+  { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders', requiresManager: false },
+  { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product', requiresManager: false },
+  { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table', requiresManager: false },
+  { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics', requiresManager: true },
+  { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings', requiresManager: false }
 ];
 
 const financeSubItems = [
-  { title: "General Journal", path: '/internal/admin/general-journal', key: 'general-journal' },
-  { title: "Profit And Loss", path: '/internal/admin/profit-and-loss', key: 'profit-and-loss' },
-  { title: "Neraca", path: '/internal/admin/neraca', key: 'neraca' }
+  { title: "Store 1", path: '/internal/admin/general-journal', key: 'general-journal' },
+  { title: "Store 2", path: '/internal/admin/profit-and-loss', key: 'profit-and-loss' },
+  { title: "Store 3", path: '/internal/admin/neraca', key: 'neraca' }
 ];
 
 const Sidebar = ({activeMenu}) => {
@@ -45,20 +47,29 @@ const Sidebar = ({activeMenu}) => {
   const [spinner, setSpinner] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
   const [openFinance, setOpenFinance] = useState(false);
+
   const location = useLocation()
   
   useDeviceDetection();
   const { setIsOpen } = navbarInternalSlice.actions
   const {isOpen, isMobileDeviceType} = useSelector((state) => state.persisted.navbarInternal)
 
-  const handleNavigate = (value) => {
+  // data employee
+  const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  const isManager = dataEmployeeInternal?.position === 'Manager';
+
+  const handleNavigate = (value, requiresManager = false) => {
+    // Check if the menu requires manager role and user is not a manager
+    if (requiresManager && !isManager) {
+      return; // Don't navigate if access is denied
+    }
+
     navigate(value)
 
     if (isMobileDeviceType) {
       dispatch(setIsOpen(false))
     }
   }
-
 
   useEffect(() => {
     if (location.pathname.includes('/internal/admin/general-journal')) {
@@ -107,8 +118,7 @@ const Sidebar = ({activeMenu}) => {
     setIsOpen(false);
   };
 
-
-   // Render Desktop Sidebar
+  // Render Desktop Sidebar
   const renderDesktopSidebar = () => (
     <div className="flex w-72 flex-col fixed inset-y-0 bg-white border-r border-gray-200 shadow-sm">
       {/* Desktop Header */}
@@ -127,24 +137,43 @@ const Sidebar = ({activeMenu}) => {
       {/* Desktop Navigation */}
       <nav className="flex-1 px-4 py-6 overflow-y-auto">
         <div className="space-y-2">
-          {menuItems.map((item) => (
-            <div
-              key={item.key}
-              onClick={() => handleNavigate(item.path)}
-              className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
-                activeMenu === item.key ? 'bg-gray-100 text-gray-950 shadow-sm' : 'text-gray-700'
-              }`}
-            >
-              <NavItem 
-                Icon={item.Icon} 
-                title={item.title}
-                className="flex-1"
-              />
-              <ChevronRight className={`w-4 h-4 mr-3 transition-colors ${
-                activeMenu === item.key ? 'text-gray-950' : 'text-gray-400 group-hover:text-gray-600'
-              }`} />
-            </div>
-          ))}
+          {menuItems.map((item) => {
+            const isDisabled = item.requiresManager && !isManager;
+            
+            return (
+              <div key={item.key}>
+                <div
+                  onClick={() => handleNavigate(item.path, item.requiresManager)}
+                  className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
+                    isDisabled 
+                      ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                      : activeMenu === item.key 
+                        ? 'bg-gray-100 text-gray-950 shadow-sm hover:bg-gray-100' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <NavItem 
+                    Icon={item.Icon} 
+                    title={item.title}
+                    className="flex-1"
+                    isDisabled={isDisabled}
+                  />
+                  {isDisabled ? (
+                    <Lock className="w-4 h-4 mr-3 text-gray-400" />
+                  ) : (
+                    <ChevronRight className={`w-4 h-4 mr-3 transition-colors ${
+                      activeMenu === item.key ? 'text-gray-950' : 'text-gray-400 group-hover:text-gray-600'
+                    }`} />
+                  )}
+                </div>
+                {isDisabled && (
+                  <p className="text-xs text-red-500 mt-1 ml-3 px-3">
+                    Role Anda tidak dapat mengakses fitur ini
+                  </p>
+                )}
+              </div>
+            );
+          })}
 
           {/* Finance Section */}
           <div className="mt-4">
@@ -253,26 +282,43 @@ const Sidebar = ({activeMenu}) => {
         {/* Mobile Navigation */}
         <nav className="flex-1 px-6 py-6 overflow-y-auto">
           <div className="space-y-3">
-            {menuItems.map((item) => (
-              <div
-                key={item.key}
-                onClick={() => handleNavigate(item.path)}
-                className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
-                  activeMenu === item.key 
-                    ? 'bg-blue-50 text-blue-700 shadow-sm' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <NavItem 
-                  Icon={item.Icon} 
-                  title={item.title}
-                  className="flex-1 p-4"
-                />
-                <ChevronRight className={`w-4 h-4 mr-4 transition-colors ${
-                  activeMenu === item.key ? 'text-blue-500' : 'text-gray-400'
-                }`} />
-              </div>
-            ))}
+            {menuItems.map((item) => {
+              const isDisabled = item.requiresManager && !isManager;
+              
+              return (
+                <div key={item.key}>
+                  <div
+                    onClick={() => handleNavigate(item.path, item.requiresManager)}
+                    className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
+                      isDisabled 
+                        ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                        : activeMenu === item.key 
+                          ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                          : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <NavItem 
+                      Icon={item.Icon} 
+                      title={item.title}
+                      className="flex-1 p-4"
+                      isDisabled={isDisabled}
+                    />
+                    {isDisabled ? (
+                      <Lock className="w-4 h-4 mr-4 text-gray-400" />
+                    ) : (
+                      <ChevronRight className={`w-4 h-4 mr-4 transition-colors ${
+                        activeMenu === item.key ? 'text-blue-500' : 'text-gray-400'
+                      }`} />
+                    )}
+                  </div>
+                  {isDisabled && (
+                    <p className="text-xs text-red-500 mt-1 ml-6 px-4">
+                      Role Anda tidak dapat mengakses fitur ini
+                    </p>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Finance Section Mobile */}
             <div className="mt-6">
@@ -354,11 +400,10 @@ const Sidebar = ({activeMenu}) => {
   );
 };
 
-
-const NavItem = ({ Icon, title }) => (
-  <div className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition">
-    <Icon className="w-5 h-5" />
-    <span className="text-sm font-medium">{title}</span>
+const NavItem = ({ Icon, title, className = "", isDisabled = false }) => (
+  <div className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition ${className}`}>
+    <Icon className={`w-5 h-5 ${isDisabled ? 'text-gray-400' : ''}`} />
+    <span className={`text-sm font-medium ${isDisabled ? 'text-gray-400' : ''}`}>{title}</span>
   </div>
 );
 

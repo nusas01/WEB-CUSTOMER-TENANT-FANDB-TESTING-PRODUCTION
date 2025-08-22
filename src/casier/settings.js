@@ -57,6 +57,7 @@ import { validatePassword } from '../helper/validate'
 import { formatCurrency, EmptyState, useFullscreen, useElementHeight } from '../helper/helper'
 import { current } from '@reduxjs/toolkit';
 import { navbarInternalSlice } from "../reducers/reducers"
+import { AccessDeniedModal } from '../component/model';
  
 export default function KasirSettings() {
   const activeMenu = "settings"
@@ -67,8 +68,6 @@ export default function KasirSettings() {
   const contentRef = useRef(null);
   const { setIsOpen } = navbarInternalSlice.actions
   const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
-
-  
 
   // handle sidebar and elemant header yang responsice
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
@@ -192,6 +191,7 @@ export default function KasirSettings() {
 const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
   const [spinnerFixed, setSpinnerFixed] = useState(false)
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
 
   // call data payment method
   const [paymentSettings, setPaymentSettings] = useState(null);
@@ -441,6 +441,14 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
       { spinnerFixed && (
         <SpinnerFixed colors={"fill-gray-900"}/>
       )}
+
+      <AccessDeniedModal 
+        isOpen={showAccessDenied}
+        onClose={() => setShowAccessDenied(false)}
+        title='Akses Ditolak'
+        message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+        buttonText='Mengerti'
+      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -945,7 +953,13 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
                 <div className="flex justify-end">
                   <button
-                    onClick={() => handleSubmitUpdatePaymentMethods()}
+                    onClick={() => { 
+                      if (dataEmployeeInternal?.position === "Manager") {
+                        handleSubmitUpdatePaymentMethods()
+                      } else {
+                        setShowAccessDenied(true)
+                      }
+                    }}
                     className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     Simpan Pengaturan

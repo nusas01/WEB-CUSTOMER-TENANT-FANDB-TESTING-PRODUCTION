@@ -84,17 +84,17 @@ export const loginCustomerSlice = createSlice({
         loginSuccessCustomer: (state, action) => {
             state.messageLoginSuccess = action.payload.messageLoginSuccess;
             state.statusCodeSuccess = action.payload.statusCodeSuccess;
-            state.loadingLogin = false;
-            state.errorLogin = null;
-            state.errPass = null;
-            state.errUsername = null;
+            // state.loadingLogin = false;
+            // state.errorLogin = null;
+            // state.errPass = null;
+            // state.errUsername = null;
         },
         loginErrorCustomer: (state, action) => {
             state.errorLogin = action.payload.errorLogin;
             state.errPass = action.payload.errPass;
             state.errUsername = action.payload.errUsername;
-            state.statusCodeSuccess = null;
-            state.loadingLogin = false;
+            // state.statusCodeSuccess = null;
+            // state.loadingLogin = false;
         },
         setLoginLoadingCustomer: (state, action) => {
             state.loadingLogin = action.payload;
