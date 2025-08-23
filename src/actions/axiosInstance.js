@@ -6,12 +6,17 @@ const axiosInstance = axios.create();
 axiosInstance.interceptors.response.use(
   response => response,
   error => {
+    const statusCode = error.response?.data?.code;
 
-    if (error.response?.data?.code === "TOKEN_EXPIRED") {
-      localStorage.setItem("statusExpiredToken", "true"); 
+    if (statusCode === "TOKEN_EXPIRED") {
+      localStorage.setItem("statusExpiredToken", "true");
     }
 
-    if (error.response.status === 503) {
+    if (statusCode === "TOKEN_USER_EXPIRED") {
+        localStorage.setItem("statusUserExpiredToken", "true");
+    }
+
+    if (statusCode === "SERVICE_ON_MAINTENANCE") {
       localStorage.setItem("statusServiceMaintenance", "true");
     }
 

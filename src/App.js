@@ -149,12 +149,17 @@ function App() {
   useEffect(() => {
     if (localStorage.getItem("statusServiceMaintenance") === "true") {
       navigate("/maintenance");
-      // hapus biar gak loop
       localStorage.removeItem("statusServiceMaintenance");
     }
   }, [navigate]);
 
-
+  // handle response authorization
+  useEffect(() => {
+    if (localStorage.getItem("statusUserExpiredToken") === "true") {
+      navigate("/login");
+      localStorage.removeItem("statusUserExpiredToken");
+    }
+  }, [navigate]);
 
   return (
     <Router>

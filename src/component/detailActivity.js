@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "../style/activity.css"
 import ImagePaymentMethod from "../helper/imagePaymentMethod";
-import { Calendar, Clock, ArrowLeft, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, RefreshCw, AlertTriangle, Loader2, Store } from 'lucide-react';
 import { useSelector, useDispatch } from "react-redux";
 import { getDetailTransactionsHistoryCustomerSlice } from "../reducers/get"
 import { fetchDetailTransactionHistoryCustomer } from "../actions/get"
