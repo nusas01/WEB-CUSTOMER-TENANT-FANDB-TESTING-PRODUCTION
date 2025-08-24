@@ -32,12 +32,16 @@ import {
     getSearchTransactionInternalSlice,getDetailTransactionsHistoryCustomerSlice,
  } from "../reducers/get.js"
  import {
-    statusExpiredTokenSlice
+    statusExpiredTokenSlice,
+    statusExpiredUserTokenSlice,
+    statusServiceMaintenanceSlice,
  } from "../reducers/expToken.js"
  import {groupByDate} from "../helper/groupData.js"
  import { useSelector } from "react-redux";
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
+const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
 const {setLoadingProducts, successFetchProducts, errorFetchProducts} = getProductsCustomerSlice.actions;
 export const fetchProductsCustomer = () => {
@@ -58,6 +62,15 @@ export const fetchProductsCustomer = () => {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
             }
+
+            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+              dispatch(setStatusExpiredUserToken(true));
+            }
+
+            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+              dispatch(setStatusServiceMaintenance(true));
+            }
+
             const message = {
                 message: error.response?.data?.message,
                 status: error.response?.status,
@@ -88,6 +101,15 @@ export const fetchGetDataCustomer = () => {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
             }
+
+            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+              dispatch(setStatusExpiredUserToken(true));
+            }
+
+            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+              dispatch(setStatusServiceMaintenance(true));
+            }
+
             const message = {
                 message: error.response.message,
                 status: error.response.status,
@@ -118,6 +140,15 @@ export const fetchTransactionOnGoingCustomer = () => {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
             }
+
+            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+              dispatch(setStatusExpiredUserToken(true));
+            }
+
+            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+              dispatch(setStatusServiceMaintenance(true));
+            }
+
             const message = {
                 error: error.response.message,
                 statusCode: error.response.status,
@@ -150,6 +181,14 @@ export const fetchTransactionHistoryCustomer = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
         const message = {
           error: error.response?.data?.message || "Unknown error",
@@ -185,6 +224,15 @@ export const fetchDetailTransactionHistoryCustomer = (id) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
           error: error.response?.data?.message || "Unknown error",
           statusCode: error.response?.status || 500,
@@ -218,6 +266,15 @@ export const fetchSearchTransactionInternal = (id_transaction) => {
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
           dispatch(setStatusExpiredToken(true))
       }
+
+      if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+        dispatch(setStatusExpiredUserToken(true));
+      }
+
+      if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+        dispatch(setStatusServiceMaintenance(true));
+      }
+      
       dispatch(fetchErrorSearchTransactionInternal(error.response.data?.error))
     } finally {
       dispatch(setLoadingSearchTransactionInternal(false))
@@ -245,6 +302,15 @@ export const fetchPaymentMethodsCustomer = () => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
           error: error.response?.data?.error || "Unknown error",
           statusCode: error.response?.status || 500,
@@ -279,6 +345,15 @@ export const logoutCustomer = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+          
           dispatch(logoutErrorCustomer(error.response))
       } finally {
           dispatch(setLoadingLogoutCustomer(true))
@@ -304,6 +379,15 @@ export const loginStatusCustomer = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+
           dispatch(setLoginStatusCustomer(false))
           console.log(error)
       }
@@ -328,6 +412,15 @@ export const loginStatusInternal = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+
           dispatch(setLoginStatusInternal(false))
           console.log(error)
       }
@@ -356,7 +449,15 @@ export const logoutInternal = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
-          console.log(error)
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+          
           dispatch(logoutErrorInternal(error.response))
       } finally {
           dispatch(setLoadingLogoutInternal(false))
@@ -383,7 +484,15 @@ export const fetchTransactionCashOnGoingInternal = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
-          console.log(error)
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+
           const message = {
               error: error.response.message,
               statusCode: error.response.status,
@@ -415,7 +524,15 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           }
-          console.log(error)
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+          
           const message = {
               error: error.response?.message,
               statusCode: error.response?.status,
@@ -483,6 +600,15 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
             }
+
+            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+              dispatch(setStatusExpiredUserToken(true));
+            }
+
+            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+              dispatch(setStatusServiceMaintenance(true));
+            }
+
             if (error === null) {
                 return
             } else {
@@ -517,7 +643,15 @@ export const checkTransactionNonCashInternal = (data) => {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
           } 
-          console.log(error)
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
+
           dispatch(checkTransactionNonCashError(error.response?.data?.error))
       } finally {
           dispatch(setLoadingCheckTransactionNonCash(false))
@@ -545,6 +679,14 @@ export const fetchGetAllCreateTransactionInternal = () => {
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
+          }
+
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
+
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
           }
 
           if (error === null) {
@@ -584,6 +726,15 @@ export const fetchPaymentMethodsInternal = () => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
           error: error.response?.data?.error || "Unknown error",
         }
@@ -614,6 +765,14 @@ export const fetchCategoryInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorCategoryInternal(error.response?.data?.error))
@@ -650,6 +809,14 @@ export const fetchCategoryAndProductInternal = () => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(fetchErrorCategoryAndProductInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingCategoryAndProductInternal(false))
@@ -680,6 +847,14 @@ export const fetchLabaRugiInternal = (startDate, endDate) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorLabaRugiInternal(error.response?.data?.error))
@@ -714,6 +889,14 @@ export const fetchNeracaInternal = (startDate, endDate) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(fetchErrorNeracaInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingNeracaInternal(false))
@@ -744,6 +927,14 @@ export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorGeneralJournalByEventAllInternal(error.response?.data?.error))
@@ -804,10 +995,18 @@ export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, pag
                 page: page // ✅ Fix: Kirim page ke reducer
             }))
         } catch (error) {
-            console.error("Fetch error:", error);
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
             }
+
+            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+              dispatch(setStatusExpiredUserToken(true));
+            }
+
+            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+              dispatch(setStatusServiceMaintenance(true));
+            }
+
             dispatch(fetchErrorGeneralJournalByEventPerDayInternal(error.response?.data?.error))
         }
     }
@@ -854,10 +1053,18 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, is
         hasMore: response?.data?.hasMore || false,
       }));
     } catch (error) {
-      console.error("Fetch error (Void):", error);
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
         dispatch(setStatusExpiredToken(true));
       }
+
+      if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+        dispatch(setStatusExpiredUserToken(true));
+      }
+
+      if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+        dispatch(setStatusServiceMaintenance(true));
+      }
+
       dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error || "Unknown error"));
     }
   };
@@ -878,11 +1085,18 @@ export const fetchGeneralJournalDrafInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessGeneralJournalDrafInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorGeneralJournalDrafInternal(error.response?.data?.error))
@@ -912,6 +1126,14 @@ export const fetchAssetsStoreInternal = (data) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorAssetsStoreInternal(error.response?.data?.error))
@@ -945,6 +1167,14 @@ export const fetchOrdersInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorOrdersInternal(error.response?.data?.error))
@@ -998,10 +1228,18 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
         totalRevenue: response?.data?.totalRevenue || 0,
       }))
     } catch (error) {
-      console.error("Fetch error:", error);
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
         dispatch(setStatusExpiredToken(true))
       }
+
+      if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+        dispatch(setStatusExpiredUserToken(true));
+      }
+
+      if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+        dispatch(setStatusServiceMaintenance(true));
+      }
+
       dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error || 'Unknown error'))
     }
   }
@@ -1048,6 +1286,14 @@ export const fetchSearchOrderInternal = (searchQuery, currentPage, isLoadMore = 
       dispatch(setStatusExpiredToken(true));
     }
 
+    if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+      dispatch(setStatusExpiredUserToken(true));
+    }
+
+    if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+      dispatch(setStatusServiceMaintenance(true));
+    }
+
     dispatch(fetchErrorSearchOrder(error.response?.data?.error || 'Error fetching search data'));
   }
 };
@@ -1075,6 +1321,14 @@ export const fetchTablesInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(fetchErrorTablesInternal(error.response?.data?.error))
@@ -1106,6 +1360,14 @@ export const fetchDataEmployeeInternal = () => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+        
         dispatch(fetchErrorDataEmployeeInternal(error.response?.data?.error))
       } finally {
         dispatch(setLoadingDataEmployeeInternal(false))

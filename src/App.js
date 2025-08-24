@@ -38,7 +38,11 @@ import Cashier from './casier/cashier'
 import GeneralJournalDashboard from './casier/finance/generalJournal'
 import ProfitLossStatement from './casier/finance/profitAndLoss'
 import NeracaDashboard from './casier/finance/neraca'
-import {statusExpiredTokenSlice} from './reducers/expToken'
+import {
+  statusExpiredTokenSlice,
+  statusExpiredUserTokenSlice,
+  statusServiceMaintenanceSlice,
+} from './reducers/expToken'
 import MaintenanceComponent from './component/maintanance'
 import { Outlet } from "react-router-dom";
 
@@ -60,7 +64,6 @@ function InternalWrapper() {
       dispatch(loginStatusInternal())
     }
   }, [loggedInInternal])
-
 
   const {dataAssetsStoreInternal} = useSelector((state) => state.persisted.getAssetsStoreInternal)
   useEffect(() => {
@@ -114,7 +117,7 @@ function CustomerWrapper() {
   return <Outlet />; // render semua child route customer
 }
 
-function App() {
+function AppContent() {
   const dispatch = useDispatch()
   const navigate = useNavigate();
   
@@ -126,89 +129,95 @@ function App() {
     }
   }, [])
 
-
   // get data customer
   // set username jika user sign menggunakan account google
   const {data, statusCode} = useSelector((state) => state.persisted.dataCustomer)
 
-
   // handle expired token
-  // const { clearStatusExpiredToken } = statusExpiredTokenSlice.actions
+  const { clearStatusExpiredToken } = statusExpiredTokenSlice.actions
   const { statusExpiredToken } = useSelector((state) => state.statusExpiredTokenState)
 
   useEffect(() => {
     if (statusExpiredToken) {
       navigate("/service/renewal");
-      // dispatch(clearStatusExpiredToken())
-      localStorage.removeItem("statusExpiredToken");
+      dispatch(clearStatusExpiredToken())
     }
   }, [statusExpiredToken])
 
-
-  // handle maintanance
+  // handle expired user token
+  const { clearStatusExpiredUserToken } = statusExpiredUserTokenSlice.actions
+  const { statusExpiredUserToken } = useSelector((state) => state.statusExpiredUserTokenState)
   useEffect(() => {
-    if (localStorage.getItem("statusServiceMaintenance") === "true") {
-      navigate("/maintenance");
-      localStorage.removeItem("statusServiceMaintenance");
-    }
-  }, [navigate]);
-
-  // handle response authorization
-  useEffect(() => {
-    if (localStorage.getItem("statusUserExpiredToken") === "true") {
+    if (statusExpiredUserToken) {
       navigate("/login");
-      localStorage.removeItem("statusUserExpiredToken");
+      dispatch(clearStatusExpiredUserToken())
     }
-  }, [navigate]);
+  }, [statusExpiredUserToken])
+
+
+  // handle expired service on maintanance
+  const {clearStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
+  const { statusServiceMaintenance } = useSelector((state) => state.statusServiceMaintenanceState)
+
+  useEffect(() => {
+    if (statusServiceMaintenance) {
+      navigate("/maintenance");
+      dispatch(clearStatusServiceMaintenance())
+    }
+  }, [statusServiceMaintenance])
 
   return (
+    <div> 
+      <UsedSSEContainer />
+    
+      <Routes>
+        <Route path='/' element={<Home/>}/>
+        <Route path='/cart' element={<Cart/>}/>
+        <Route path='/access' element={<RegisterPage/>}/>
+        <Route path='/verification' element={<Verification/>}/>
+        <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
+        <Route path='/maintenance' element={<MaintenanceComponent/>}/>
+        <Route element={<PrivateRouteCustomer/>}>
+          <Route element={<CustomerWrapper/>}>
+            <Route path='/profile' element={<Profile/>}/>
+            <Route path='/changepassword' element={<ChangePassword/>}/> 
+            <Route path='/setpassword' element={<SetPassword/>}/> 
+            <Route path='/activity' element={<Activity/>}/> 
+            <Route path='/activity/detail' element={<DetailActivity/>}/> 
+            <Route path='/activity/pembayaran' element={<Buy/>}/> 
+          </Route>
+        </Route>
+
+        <Route path='/internal/access' element={<RegisterPage/>}/>
+        <Route element={<PrivateRouteInternal/>}>
+          <Route element={<InternalWrapper/>}>
+            <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
+            <Route path='/internal/admin/general-journal' element={<GeneralJournalDashboard/>}/>
+            <Route path='/internal/admin/profit-and-loss' element={<ProfitLossStatement/>}/>
+            <Route path='/internal/admin/neraca' element={<NeracaDashboard/>}/>
+            <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
+            <Route path="/internal/admin/statistics" element={<KasirStatistik/>}/>
+            <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
+            <Route path='/internal/admin/cashier' element={<Cashier/>}/>
+            <Route path="/internal/admin/products" element={<KasirProducts/>}/>
+            <Route path="/internal/admin/tables" element={<KasirTables/>}/>
+            <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
+          </Route>
+        </Route>
+      </Routes>
+
+      { data.username === "" && statusCode === 200 && (
+        <SetUsername/>
+      )}
+    </div>
+  );
+}
+
+// Main App component dengan Router di level tertinggi
+function App() {
+  return (
     <Router>
-      <div> 
-        <UsedSSEContainer />
-      
-        <Routes>
-          <Route path='/' element={<Home/>}/>
-          <Route path='/cart' element={<Cart/>}/>
-          <Route path='/access' element={<RegisterPage/>}/>
-          <Route path='/verification' element={<Verification/>}/>
-          <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
-          <Route path='/maintenance' element={<MaintenanceComponent/>}/>
-          <Route element={<PrivateRouteCustomer/>}>
-            <Route element={<CustomerWrapper/>}>
-              <Route path='/profile' element={<Profile/>}/>
-              <Route path='/changepassword' element={<ChangePassword/>}/> 
-              <Route path='/setpassword' element={<SetPassword/>}/> 
-              <Route path='/activity' element={<Activity/>}/> 
-              <Route path='/activity/detail' element={<DetailActivity/>}/> 
-              <Route path='/activity/pembayaran' element={<Buy/>}/> 
-            </Route>
-          </Route>
-
-          <Route path='/internal/access' element={<RegisterPage/>}/>
-          <Route element={<PrivateRouteInternal/>}>
-            <Route element={<InternalWrapper/>}>
-              <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
-              <Route path='/internal/admin/general-journal' element={<GeneralJournalDashboard/>}/>
-              <Route path='/internal/admin/profit-and-loss' element={<ProfitLossStatement/>}/>
-              <Route path='/internal/admin/neraca' element={<NeracaDashboard/>}/>
-              <Route path="/internal/admin/orders" element={<KasirOrders/>}/>
-              <Route path="/internal/admin/statistics" element={<KasirStatistik/>}/>
-              <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
-              <Route path='/internal/admin/cashier' element={<Cashier/>}/>
-              <Route path="/internal/admin/products" element={<KasirProducts/>}/>
-              <Route path="/internal/admin/tables" element={<KasirTables/>}/>
-              <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
-            </Route>
-            {/* <Route path="/internal/admin/transaction/create" element={<CreateTransaction/>}/> */}
-            {/* <Route path="/internal/admin/order/details" element={<OrderDetails/>}/> */}
-          </Route>
-        </Routes>
-
-        { data.username === "" && statusCode === 200 && (
-          <SetUsername/>
-        )}
-
-      </div>
+      <AppContent />
     </Router>
   );
 }

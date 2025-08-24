@@ -1,4 +1,4 @@
-import axios from "axios"
+import axiosInstance from "./axiosInstance.js";
  import { 
     changePasswordCustomerSlice,
     setPasswordCustomerSlice,
@@ -11,7 +11,9 @@ import axios from "axios"
     changePasswordInternalSlice,
  } from "../reducers/patch"
   import {
-    statusExpiredTokenSlice
+    statusExpiredTokenSlice, 
+    statusExpiredUserTokenSlice,
+    statusServiceMaintenanceSlice
  } from "../reducers/expToken.js"
 import {
     getCategoryAndProductInternalSlice,
@@ -21,6 +23,8 @@ import {
 
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
+const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
 
 const { changePassSuccessCustomer, changePassErrorCustomer, setLoadingPassCustomer } = changePasswordCustomerSlice.actions;
@@ -34,11 +38,19 @@ export const changePasswordCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoadingPassCustomer(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_CUSTOMER_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_CUSTOMER_URL}`, data, config)
         dispatch(changePassSuccessCustomer(response?.data.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
         }
         const message = {
             errorField: error.response?.data.ErrorFields, 
@@ -63,12 +75,21 @@ export const setPasswordCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoadingSetPassCustomer(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_SET_PASSWORD_CUSTOMER_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_SET_PASSWORD_CUSTOMER_URL}`, data, config)
         dispatch(setPassSuccessCustomer(response?.data.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             errorField: error.response?.data?.ErrorFields, 
             error: error.response?.data?.error,
@@ -91,12 +112,21 @@ export const setUsernameCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoadingSetUsernameCustomer(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_SET_USERNAME_CUSTOMER_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_SET_USERNAME_CUSTOMER_URL}`, data, config)
         dispatch(setUsernameSuccessCustomer(response?.data.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log(error.response)
         const message = {
             errorField: error.response?.data.ErrorFields, 
@@ -119,13 +149,22 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingBuyTransactionCashOnGoingInternal(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_BUY_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_BUY_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}`, data, config)
         dispatch(setSuccessBuyTransactionCashOnGoingInternal(response.data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log(error.response)
         const message = {
             errorField: error.response?.data?.ErrorFields || "something error in our server", 
@@ -149,7 +188,7 @@ export const availableProductInternal = (data) => async (dispatch) => {
         withCredentials: true,
     }
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_AVAILABLE_PRODUCT_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_AVAILABLE_PRODUCT_INTERNAL_URL}`, data, config)
         dispatch(setSuccessAvailableProduct(response.data?.success))
         dispatch(toggleProductAvailability(data.id))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
@@ -157,6 +196,15 @@ export const availableProductInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorAvailableProduct(error.response?.data?.error));
     } 
@@ -174,7 +222,7 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingToProgressOrder(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
         dispatch(setSuccessToProgressOrder(response.data?.data))
         dispatch(appendOrdersInternal(response.data?.data))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
@@ -182,6 +230,15 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorToProgressOrder(error.response?.data?.error));
     } finally {
@@ -204,7 +261,7 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         const formData = {
             transaction_id: data.id,
         }
-        const response = await axios.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
         dispatch(setSuccessToFinishedOrder(response.data?.data))
         // dispatch(addOrderFinishedInternal(data))
         dispatch(appendOrdersInternal(response.data?.data))
@@ -213,6 +270,15 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorToFinishedOrder(error.response?.data?.error));
     } finally {
@@ -233,13 +299,22 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
     dispatch(setLoadingUpdateDataEmployee(true))
     try {
         console.log("data update employee hehehe: ", data);
-        const response = await axios.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, data, config)
         dispatch(setSuccessUpdateDataEmployee(response.data?.success))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorUpdateDataEmployee(error.response?.data?.error));
     } finally {
@@ -259,13 +334,22 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
     dispatch(setLoadingChangePasswordInternal(true))
     try {
         console.log("data update employee hehehe: ", data);
-        const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_INTERNAL_URL}`, data, config)
         dispatch(setSuccessChangePasswordInternal(response.data?.success))
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+        
         console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorChangePasswordInteral({
             error: error.response.data.error,

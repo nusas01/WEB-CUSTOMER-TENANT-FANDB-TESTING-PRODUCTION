@@ -82,7 +82,9 @@ import {
   changePasswordInternalSlice,
 } from './patch'
 import {
-  statusExpiredTokenSlice
+  statusExpiredTokenSlice,
+  statusExpiredUserTokenSlice,
+  statusServiceMaintenanceSlice,
 } from './expToken'
 import {
   paymentSuccessTransactionCashierSlice,
@@ -181,6 +183,8 @@ const nonPersistedReducers = {
   createQROrderTypeTakeAwayState: createQROrderTypeTakeAwaySlice.reducer,
   deleteCategoryInternalState: deleteCategoryInternalSlice.reducer,
   headerHiddenInternalState: headerHiddenInternalSlice.reducer,
+  statusExpiredUserTokenState: statusExpiredUserTokenSlice.reducer,
+  statusServiceMaintenanceState: statusServiceMaintenanceSlice.reducer,
 }
 
 const rootReducer = combineReducers({

@@ -1,4 +1,4 @@
-import axios from "axios"
+import axiosInstance from "./axiosInstance.js"
 import {
     deleteTableInternalSlice, 
     deleteCategoryInternalSlice
@@ -8,10 +8,14 @@ import {
     getCategoryInternalSlice,
 } from '../reducers/get'
 import {
-    statusExpiredTokenSlice
+    statusExpiredTokenSlice,
+    statusExpiredUserTokenSlice,
+    statusServiceMaintenanceSlice
 } from "../reducers/expToken.js"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
+const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
 const {deleteTableInternalByNumber} = getTablesInternalSlice.actions
 const {setSuccessDeleteTableInternal, setErrorDeleteTableInternal, setLoadingDeleteTableInternal} = deleteTableInternalSlice.actions
@@ -24,7 +28,7 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
     }
     dispatch(setLoadingDeleteTableInternal(true))
     try {
-        const response = await axios.delete(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, config);
+        const response = await axiosInstance.delete(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, config);
         if (response.status === 200) {
             dispatch(setSuccessDeleteTableInternal(response?.data.success));
             dispatch(deleteTableInternalByNumber())
@@ -32,6 +36,14 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(setErrorDeleteTableInternal(error.response?.data?.error));
@@ -54,7 +66,7 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
     }
     dispatch(setLoadingDeleteCategoryInternal(true))
     try {
-        const response = await axios.delete(`${process.env.REACT_APP_DELETE_GET_CATEGORY_INTERNAL_URL}`, config);
+        const response = await axiosInstance.delete(`${process.env.REACT_APP_DELETE_GET_CATEGORY_INTERNAL_URL}`, config);
         if (response.status === 200) {
             dispatch(setSuccessDeleteCategoryInternal(response?.data.success));
             dispatch(deleteCategoryById(id))
@@ -62,6 +74,14 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
         }
 
         dispatch(setErrorDeleteCategoryInternal({

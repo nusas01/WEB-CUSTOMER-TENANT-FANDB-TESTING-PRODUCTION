@@ -16,3 +16,35 @@ export const statusExpiredTokenSlice = createSlice({
         }
     }
 })
+
+const initialStatusUserExpiredTokenState = {
+    statusExpiredUserToken: false,
+}
+export const statusExpiredUserTokenSlice = createSlice({
+    name: "statusExpiredUserToken",
+    initialState: initialStatusUserExpiredTokenState,
+    reducers: {
+        setStatusExpiredUserToken: (state, action) => {
+            state.statusExpiredUserToken = action.payload
+        },
+        clearStatusExpiredUserToken: (state) => {
+            state.statusExpiredUserToken = false
+        }
+    }
+})
+
+const initialStatusServiceMaintenanceState = {
+    statusServiceMaintenance: false,
+}
+export const statusServiceMaintenanceSlice = createSlice({
+    name: "statusServiceMaintenance",
+    initialState: initialStatusServiceMaintenanceState,
+    reducers: {
+        setStatusServiceMaintenance: (state, action) => {
+            state.statusServiceMaintenance = action.payload
+        },
+        clearStatusServiceMaintenance: (state) => {
+            state.statusServiceMaintenance = false
+        }
+    }
+})

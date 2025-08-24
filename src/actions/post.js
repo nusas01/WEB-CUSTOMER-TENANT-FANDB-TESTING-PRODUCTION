@@ -1,4 +1,4 @@
-import axios from "axios"
+import axiosInstance from "./axiosInstance.js";
  import {
     loginStatusCustomerSlice,
     loginStatusInternalSlice,
@@ -22,7 +22,9 @@ import axios from "axios"
     getJournalDrafByJsonInternalSlice,
  } from "../reducers/post"
 import {
-    statusExpiredTokenSlice
+    statusExpiredTokenSlice,
+    statusExpiredUserTokenSlice,
+    statusServiceMaintenanceSlice
  } from "../reducers/expToken.js"
  import {
     fetchCategoryInternal,
@@ -38,6 +40,8 @@ import store from "../reducers/state"
 import { useSelector } from "react-redux"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
+const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
 const { setLoadingSignCustomer, signupSuccessCustomer, signupErrorCustomer, resetSignupCustomer } = signupCustomerSlice.actions;
 export const signupCustomer = (data) => async (dispatch) => {
@@ -50,12 +54,21 @@ export const signupCustomer = (data) => async (dispatch) => {
     };
     dispatch(setLoadingSignCustomer(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, data, config);
+        const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, data, config);
         dispatch(signupSuccessCustomer(response?.data.success));
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const response = {
             error: error,
             errorObject: error.response?.data,
@@ -78,13 +91,21 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
     };
     dispatch(setLoadingSignupVerificationCustomer(true));
     try {
-        const response = await axios.post(`${process.env.REACT_APP_SIGNUP_VERIFICATION_CUSTOMER_URL}`, data, config)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_VERIFICATION_CUSTOMER_URL}`, data, config)
         dispatch(signupVerificationSuccessCustomer(response?.data.success));
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log(error)
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+    
         const message = {
             error: error.response?.data.error,
             errorField: error.response?.data.ErrorField,
@@ -109,7 +130,7 @@ export const loginCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoginLoadingCustomer(true));
     try {
-        const response = await axios.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, data, configJson)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, data, configJson)
         const message = {
             messageLoginSuccess: response?.data,
             statusCodeSuccess: response?.status,
@@ -120,16 +141,21 @@ export const loginCustomer = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log(error)
-        console.log("Error Detail ErrorFields password:", error.response?.data.ErrorFields.password);
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+        
         const message = {
             errorLogin: error.response?.data.error,
             errPass: error.response?.data.ErrorFields.password, 
             errUsername: error.response?.data.ErrorFields.email,
         }
-        console.log(message)
         dispatch(loginErrorCustomer(message));
-        console.log("Dispatched loginErrorCustomer"); 
     }finally {
         dispatch(setLoginLoadingCustomer(false));
     }
@@ -151,14 +177,22 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateTransactionCustomer(true));
     try {
-        const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
         dispatch(successCreateTransactionCustomer(response?.data));
         console.log("response data create transacrion: ", response?.data)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log(error)
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             error: error.response?.data?.error,
             errorPhoneNumber: error.response?.data?.error?.ErrorFields?.phone_number_ewallet,
@@ -180,7 +214,7 @@ const {loginGoogleErrorCustomer, setLoadingLoginGoogleCustomer} = loginGoogleCus
 export const loginGoogleCustomer = () => async (dispatch) => {
     dispatch(setLoadingLoginGoogleCustomer(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_LOGIN_SIGNUP_GOOGLE_CUSTOMER}`, {}, {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_SIGNUP_GOOGLE_CUSTOMER}`, {}, {
             headers: {
                 "Content-Type": "application/json",
                 "API_KEY": process.env.REACT_APP_API_KEY,
@@ -192,7 +226,15 @@ export const loginGoogleCustomer = () => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log(error)
+        
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(loginGoogleErrorCustomer(error.response.data.error))
     } finally {
         dispatch(setLoadingLoginGoogleCustomer(false))
@@ -212,7 +254,7 @@ export const loginInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoginLoadingInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_LOGIN_INTERNAL_URL}`, data, configJson)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_INTERNAL_URL}`, data, configJson)
         const message = {
             messageLoginSuccess: response?.data,
             statusCodeSuccess: response?.status,
@@ -224,12 +266,20 @@ export const loginInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             errorLogin: error.response?.data.error,
             errPass: error.response?.data.ErrorFields.password, 
             errEmail: error.response?.data.ErrorFields.email,
         }
-        console.log(message)
         dispatch(loginErrorInternal(message))
     }finally {
         dispatch(setLoginLoadingInternal(false))
@@ -248,7 +298,7 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateTransactionInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
         const message = {
             data: response.data?.data,
@@ -262,6 +312,15 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             error: error.response?.data?.error,
             errorProductUnavailable: error.response?.data?.errorProductUnavailable,
@@ -269,7 +328,6 @@ export const createTransactionInternal = (data) => async (dispatch) => {
             errorCashNonActive: error.response?.data?.errorCashNonActive
         }
         dispatch(errorCreateTransactionInternal(message))
-        console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingCreateTransactionInternal(false))
     }
@@ -286,20 +344,27 @@ export const createCategoryInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateCategoryInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_INPUT_CATEGORY_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_CATEGORY_INTERNAL_URL}`, data, configJson)
         dispatch(fetchCategoryInternal())
         dispatch(successCreateCategoryInternal(response.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             error: error.response?.data?.ErrorField,
             errorField: error.response?.data?.error
         }
         dispatch(errorCreateCategoryInternal(message))
-        console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingCreateCategoryInternal(false))
     }
@@ -317,20 +382,27 @@ export const createProductInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateProductInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
         dispatch(fetchCategoryAndProductInternal())
         dispatch(successCreateProductInternal(response.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         const message = {
             errorField: error.response?.data?.ErrorField,
             error: error.response?.data?.error
         }
         dispatch(errorCreateProductInternal(message))
-        console.log("response data create product internal: ", error)
     }finally {
         dispatch(setLoadingCreateProductInternal(false))
     }
@@ -348,16 +420,23 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
         withCredentials: true,
     }
     try {
-        const response = await axios.post(`${process.env.REACT_APP_DELETE_PRODUCT_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_DELETE_PRODUCT_INTERNAL_URL}`, data, configJson)
         dispatch(setSuccessDeleteProductInternal(response.data?.success))
         dispatch(deleteProductById(data.id))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorDeleteProductIntenal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     }
 }
 
@@ -372,15 +451,22 @@ export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState)
     }
     dispatch(setLoadingGetJournalByJsonInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_GET_JOURNAL_DRAF_BY_JSON_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_GET_JOURNAL_DRAF_BY_JSON_INTERNAL_URL}`, data, configJson)
         dispatch(setSuccessGetJournalByJsontInternal(response.data))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorGetJournalByJsonIntenal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     } finally {
         dispatch(setLoadingGetJournalByJsonInternal(false))
     }
@@ -397,14 +483,12 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
     }
     dispatch(setLoadingInputGeneralJournalInternal(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
         console.log("response data create transacrion internal: ", response)
         dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
         if (response.status === 200 || response.status === 201) {
             const state = getState();
             const { dataGeneralJournalByEventPerDayInternal } = state.getGeneralJournalByEventPerDayInternal || {};
-
-            console.log("data input general journal wkwwkwk: ", data)
 
             if (data.detail.action === "DRAF") {
                 dispatch(fetchGeneralJournalDrafInternal());
@@ -422,8 +506,16 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorInputGeneralJournalIntenal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     } finally {
         dispatch(setLoadingInputGeneralJournalInternal(false))
     }
@@ -440,8 +532,7 @@ export const createTabelInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingCreateTableInternal(true))
     try {
-       const response = await axios.post(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
+       const response = await axiosInstance.post(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, data, configJson)
         if (response.status === 200) {
             dispatch(setSuccessCreateTableInternal(response.data?.success))
             const data = {
@@ -454,8 +545,16 @@ export const createTabelInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorCreateTableIntenal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     } finally {
         dispatch(setLoadingCreateTableInternal(false))
     }
@@ -472,8 +571,7 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
     }
     dispatch(setLoadingCreateQROrderTypeTakeAway(true))
     try {
-        const response = await axios.post(`${process.env.REACT_APP_CREATE_QR_ORDER_TYPE_TAKE_AWAY_INTERNAL_URL}`, {}, configJson)
-        console.log("response data create QR order type take away: ", response)
+        const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_QR_ORDER_TYPE_TAKE_AWAY_INTERNAL_URL}`, {}, configJson)
         if (response.data?.alreadyExists) {
             dispatch(setAlrdyCreatedQROrderTypeTakeAway(response.data?.success))
         } else {
@@ -483,7 +581,15 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log(error)
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorCreateQROrderTypeTakeAway(error.response?.data?.error))
     } finally {
         dispatch(setLoadingCreateQROrderTypeTakeAway(false))

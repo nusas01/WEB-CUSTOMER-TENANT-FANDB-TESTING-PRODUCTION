@@ -14,15 +14,18 @@ import {
     fetchGeneralJournalByEventPerDayInternal,
     fetchGeneralJournalDrafInternal,
  } from "./get.js"
-import axios from "axios"
+import axiosInstance from "./axiosInstance.js";
 import {
-statusExpiredTokenSlice
+statusExpiredTokenSlice,
+statusExpiredUserTokenSlice,
+statusServiceMaintenanceSlice
 } from "../reducers/expToken.js"
 import { useSelector } from "react-redux"
 
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
-
+const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
+const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
 const { successUpdateProductInternal, errorUpdateProductInternal, setLoadingUpdateProductInternal } = updateInternalSlice.actions
 export const UpdateProductInternal = (data) => async (dispatch) => {
@@ -35,16 +38,22 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingUpdateProductInternal(true))
     try {
-        const response = await axios.put(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
-      
+        const response = await axiosInstance.put(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
         dispatch(successUpdateProductInternal(response.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(errorUpdateProductInternal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingUpdateProductInternal(false))
     }
@@ -63,11 +72,8 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
 
     dispatch(setLoadingUpdateGeneralJournalInternal(true))
     try {
-        const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
-        
+        const response = await axiosInstance.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, configJson)
         dispatch(successUpdateGeneralJournalInternal(response.data?.success))
-        
         if (response.status === 200 || response.status === 201) {
             // const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
 
@@ -96,8 +102,16 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(errorUpdateGeneralJournalInternal(error.response?.data?.error))
-        console.log("response data create transacrion internal: ", error)
     }finally {
         dispatch(setLoadingUpdateGeneralJournalInternal(false))
     }
@@ -113,18 +127,24 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         },
         withCredentials: true,
     }
-    console.log("data draf to void: ", data)
     dispatch(setLoadingVoidGeneralJournal(true))
     try {
-        const response = await axios.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
         dispatch(setSuccessVoidGeneralJournal(response.data?.success))
         dispatch(removeGeneralJournalDrafInternalByAccountId(data))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
         dispatch(setErrorVoidGeneralJournal(error.response?.data?.error));
     } finally {
         dispatch(setLoadingVoidGeneralJournal(false))
@@ -142,15 +162,21 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingUpdatePaymentMethodsInternal(true))
     try {
-        console.log("data update employee hehehe: ", data);
-        const response = await axios.put(`${process.env.REACT_APP_GET_PUT_PAYMENT_METHODS_INTERNAL_URL}`, data, config)
+        const response = await axiosInstance.put(`${process.env.REACT_APP_GET_PUT_PAYMENT_METHODS_INTERNAL_URL}`, data, config)
         dispatch(setSuccessUpdatePaymentMethodsInternal(response.data?.success))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+        
         dispatch(setErrorUpdatePaymentMethodsInteral(error.response.data.error));
     } finally {
         dispatch(setLoadingUpdatePaymentMethodsInternal(false))
