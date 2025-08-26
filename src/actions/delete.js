@@ -9,13 +9,15 @@ import {
 } from '../reducers/get'
 import {
     statusExpiredTokenSlice,
+    statusExpiredInternalTokenSlice,
     statusExpiredUserTokenSlice,
-    statusServiceMaintenanceSlice
+    statusServiceMaintenanceSlice,
 } from "../reducers/expToken.js"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
+const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 
 const {deleteTableInternalByNumber} = getTablesInternalSlice.actions
 const {setSuccessDeleteTableInternal, setErrorDeleteTableInternal, setLoadingDeleteTableInternal} = deleteTableInternalSlice.actions
@@ -36,6 +38,10 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -74,6 +80,10 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {

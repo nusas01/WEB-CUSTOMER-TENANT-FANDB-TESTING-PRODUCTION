@@ -17,15 +17,16 @@ import {
 import axiosInstance from "./axiosInstance.js";
 import {
 statusExpiredTokenSlice,
+statusExpiredInternalTokenSlice,
 statusExpiredUserTokenSlice,
-statusServiceMaintenanceSlice
+statusServiceMaintenanceSlice,
 } from "../reducers/expToken.js"
-import { useSelector } from "react-redux"
 
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
+const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 
 const { successUpdateProductInternal, errorUpdateProductInternal, setLoadingUpdateProductInternal } = updateInternalSlice.actions
 export const UpdateProductInternal = (data) => async (dispatch) => {
@@ -43,6 +44,10 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -103,6 +108,10 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -137,6 +146,10 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -167,6 +180,10 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {

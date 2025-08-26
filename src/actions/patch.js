@@ -12,17 +12,18 @@ import axiosInstance from "./axiosInstance.js";
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice, 
+    statusExpiredInternalTokenSlice,
     statusExpiredUserTokenSlice,
     statusServiceMaintenanceSlice
  } from "../reducers/expToken.js"
 import {
     getCategoryAndProductInternalSlice,
     getOrdersInternalSlice, 
-    getOrdersFinishedInternalSlice,
 } from "../reducers/get"
 
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
@@ -43,6 +44,10 @@ export const changePasswordCustomer = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -82,6 +87,10 @@ export const setPasswordCustomer = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -117,6 +126,10 @@ export const setUsernameCustomer = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -155,6 +168,10 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -197,6 +214,10 @@ export const availableProductInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -229,6 +250,10 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -271,6 +296,10 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -307,6 +336,10 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -340,6 +373,10 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {

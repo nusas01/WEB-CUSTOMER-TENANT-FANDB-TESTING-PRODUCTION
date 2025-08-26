@@ -33,6 +33,22 @@ export const statusExpiredUserTokenSlice = createSlice({
     }
 })
 
+const initialStatusInternalExpiredTokenState = {
+    statusExpiredInternalToken: false,
+}
+export const statusExpiredInternalTokenSlice = createSlice({
+    name: "statusExpiredInternalToken",
+    initialState: initialStatusInternalExpiredTokenState,
+    reducers: {
+        setStatusExpiredInternalToken: (state, action) => {
+            state.statusExpiredInternalToken = action.payload
+        },
+        clearStatusExpiredInternalToken: (state) => {
+            state.statusExpiredInternalToken = false
+        }
+    }
+})
+
 const initialStatusServiceMaintenanceState = {
     statusServiceMaintenance: false,
 }

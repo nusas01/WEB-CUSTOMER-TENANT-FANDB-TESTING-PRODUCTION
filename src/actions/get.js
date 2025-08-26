@@ -33,13 +33,14 @@ import {
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice,
+    statusExpiredInternalTokenSlice,
     statusExpiredUserTokenSlice,
     statusServiceMaintenanceSlice,
  } from "../reducers/expToken.js"
  import {groupByDate} from "../helper/groupData.js"
- import { useSelector } from "react-redux";
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
@@ -61,6 +62,10 @@ export const fetchProductsCustomer = () => {
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
+            }
+
+            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+              dispatch(setStatusExpiredInternalToken(true));
             }
 
             if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -102,6 +107,10 @@ export const fetchGetDataCustomer = () => {
                 dispatch(setStatusExpiredToken(true))
             }
 
+            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+              dispatch(setStatusExpiredInternalToken(true));
+            }
+
             if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
               dispatch(setStatusExpiredUserToken(true));
             }
@@ -139,6 +148,10 @@ export const fetchTransactionOnGoingCustomer = () => {
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
+            }
+
+            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+              dispatch(setStatusExpiredInternalToken(true));
             }
 
             if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -183,6 +196,10 @@ export const fetchTransactionHistoryCustomer = () => {
                 dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
           dispatch(setStatusExpiredUserToken(true));
         }
@@ -223,6 +240,10 @@ export const fetchDetailTransactionHistoryCustomer = (id) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -267,6 +288,10 @@ export const fetchSearchTransactionInternal = (id_transaction) => {
           dispatch(setStatusExpiredToken(true))
       }
 
+      if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+        dispatch(setStatusExpiredInternalToken(true));
+      }
+
       if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
         dispatch(setStatusExpiredUserToken(true));
       }
@@ -301,6 +326,10 @@ export const fetchPaymentMethodsCustomer = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -346,6 +375,10 @@ export const logoutCustomer = () => {
               dispatch(setStatusExpiredToken(true))
           }
 
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+          }
+
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
           }
@@ -380,6 +413,10 @@ export const loginStatusCustomer = () => {
               dispatch(setStatusExpiredToken(true))
           }
 
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+          }
+
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
           }
@@ -411,6 +448,10 @@ export const loginStatusInternal = () => {
       } catch (error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
+          }
+
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
           }
 
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -450,6 +491,10 @@ export const logoutInternal = () => {
               dispatch(setStatusExpiredToken(true))
           }
 
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+          }
+
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
           }
@@ -483,6 +528,10 @@ export const fetchTransactionCashOnGoingInternal = () => {
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
+          }
+
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
           }
 
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -523,6 +572,10 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
+          }
+
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
           }
 
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -601,6 +654,10 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
                 dispatch(setStatusExpiredToken(true))
             }
 
+            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+              dispatch(setStatusExpiredInternalToken(true));
+            }
+
             if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
               dispatch(setStatusExpiredUserToken(true));
             }
@@ -644,6 +701,10 @@ export const checkTransactionNonCashInternal = (data) => {
               dispatch(setStatusExpiredToken(true))
           } 
 
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+          }
+
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
           }
@@ -679,6 +740,10 @@ export const fetchGetAllCreateTransactionInternal = () => {
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
+          }
+
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
           }
 
           if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -727,6 +792,10 @@ export const fetchPaymentMethodsInternal = () => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
           dispatch(setStatusExpiredUserToken(true));
         }
@@ -765,6 +834,10 @@ export const fetchCategoryInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -809,6 +882,10 @@ export const fetchCategoryAndProductInternal = () => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
           dispatch(setStatusExpiredUserToken(true));
         }
@@ -847,6 +924,10 @@ export const fetchLabaRugiInternal = (startDate, endDate) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -889,6 +970,10 @@ export const fetchNeracaInternal = (startDate, endDate) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
           dispatch(setStatusExpiredUserToken(true));
         }
@@ -927,6 +1012,10 @@ export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -999,6 +1088,10 @@ export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, pag
                 dispatch(setStatusExpiredToken(true))
             }
 
+            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+              dispatch(setStatusExpiredInternalToken(true));
+            }
+
             if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
               dispatch(setStatusExpiredUserToken(true));
             }
@@ -1057,6 +1150,10 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, is
         dispatch(setStatusExpiredToken(true));
       }
 
+      if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+        dispatch(setStatusExpiredInternalToken(true));
+      }
+
       if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
         dispatch(setStatusExpiredUserToken(true));
       }
@@ -1089,6 +1186,10 @@ export const fetchGeneralJournalDrafInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -1126,6 +1227,10 @@ export const fetchAssetsStoreInternal = (data) => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -1167,6 +1272,10 @@ export const fetchOrdersInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -1232,6 +1341,10 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
         dispatch(setStatusExpiredToken(true))
       }
 
+      if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+        dispatch(setStatusExpiredInternalToken(true));
+      }
+
       if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
         dispatch(setStatusExpiredUserToken(true));
       }
@@ -1286,6 +1399,10 @@ export const fetchSearchOrderInternal = (searchQuery, currentPage, isLoadMore = 
       dispatch(setStatusExpiredToken(true));
     }
 
+    if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+      dispatch(setStatusExpiredInternalToken(true));
+    }
+
     if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
       dispatch(setStatusExpiredUserToken(true));
     }
@@ -1323,6 +1440,10 @@ export const fetchTablesInternal = () => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
           dispatch(setStatusExpiredUserToken(true));
         }
@@ -1358,6 +1479,10 @@ export const fetchDataEmployeeInternal = () => {
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {

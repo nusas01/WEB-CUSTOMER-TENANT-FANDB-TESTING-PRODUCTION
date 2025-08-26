@@ -25,7 +25,8 @@ import {
   fetchGetDataCustomer, 
   fetchTransactionOnGoingCustomer, 
   fetchDataEmployeeInternal, 
-  fetchAssetsStoreInternal } from './actions/get'
+  fetchAssetsStoreInternal,
+} from './actions/get'
 import { GeneralJournalForm } from './casier/finance/inputGeneralJournal'
 import { useDispatch, useSelector } from 'react-redux'
 import { PrivateRouteCustomer, PrivateRouteInternal } from './helper/privateRoute'
@@ -42,9 +43,14 @@ import {
   statusExpiredTokenSlice,
   statusExpiredUserTokenSlice,
   statusServiceMaintenanceSlice,
+  statusExpiredInternalTokenSlice,
 } from './reducers/expToken'
 import MaintenanceComponent from './component/maintanance'
 import { Outlet } from "react-router-dom";
+import {
+  loginStatusInternalSlice,
+  loginStatusCustomerSlice,
+} from './reducers/get'
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -121,6 +127,9 @@ function AppContent() {
   const dispatch = useDispatch()
   const navigate = useNavigate();
   
+  const {setLoginStatusCustomer} = loginStatusCustomerSlice.actions
+  const {setLoginStatusInternal} = loginStatusInternalSlice.actions
+
   // get data products 
   const { datas } = useSelector((state) => state.persisted.productsCustomer)
   useEffect(() => {
@@ -149,11 +158,23 @@ function AppContent() {
   const { statusExpiredUserToken } = useSelector((state) => state.statusExpiredUserTokenState)
   useEffect(() => {
     if (statusExpiredUserToken) {
-      navigate("/login");
+      navigate("/access");
       dispatch(clearStatusExpiredUserToken())
+      dispatch(setLoginStatusCustomer(false))
     }
   }, [statusExpiredUserToken])
 
+
+  // handle expired internal user token
+  const {clearStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
+  const { statusExpiredInternalToken } = useSelector((state) => state.statusExpiredInternalTokenState)
+  useEffect(() => {
+    if (statusExpiredInternalToken) {
+      navigate("/internal/access");
+      dispatch(clearStatusExpiredInternalToken())
+      dispatch(setLoginStatusInternal(false))
+    }
+  }, [statusExpiredInternalToken])
 
   // handle expired service on maintanance
   const {clearStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions

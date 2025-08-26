@@ -83,6 +83,7 @@ import {
 } from './patch'
 import {
   statusExpiredTokenSlice,
+  statusExpiredInternalTokenSlice,
   statusExpiredUserTokenSlice,
   statusServiceMaintenanceSlice,
 } from './expToken'
@@ -185,6 +186,7 @@ const nonPersistedReducers = {
   headerHiddenInternalState: headerHiddenInternalSlice.reducer,
   statusExpiredUserTokenState: statusExpiredUserTokenSlice.reducer,
   statusServiceMaintenanceState: statusServiceMaintenanceSlice.reducer,
+  statusExpiredInternalTokenState: statusExpiredInternalTokenSlice.reducer,
 }
 
 const rootReducer = combineReducers({

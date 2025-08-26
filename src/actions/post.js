@@ -23,8 +23,9 @@ import axiosInstance from "./axiosInstance.js";
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice,
+    statusExpiredInternalTokenSlice,
     statusExpiredUserTokenSlice,
-    statusServiceMaintenanceSlice
+    statusServiceMaintenanceSlice,
  } from "../reducers/expToken.js"
  import {
     fetchCategoryInternal,
@@ -37,9 +38,9 @@ import {
     getTablesInternalSlice
  } from '../reducers/get.js'
 import store from "../reducers/state"
-import { useSelector } from "react-redux"
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
+const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
@@ -59,6 +60,10 @@ export const signupCustomer = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -96,6 +101,10 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -142,6 +151,10 @@ export const loginCustomer = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -185,6 +198,10 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -226,6 +243,10 @@ export const loginGoogleCustomer = () => async (dispatch) => {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
         }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
         
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
@@ -265,6 +286,10 @@ export const loginInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -313,6 +338,10 @@ export const createTransactionInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -350,6 +379,10 @@ export const createCategoryInternal = (data) => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -390,6 +423,10 @@ export const createProductInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -428,6 +465,10 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -456,6 +497,10 @@ export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
@@ -507,6 +552,10 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -546,6 +595,10 @@ export const createTabelInternal = (data) => async (dispatch) => {
             dispatch(setStatusExpiredToken(true))
         }
 
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
             dispatch(setStatusExpiredUserToken(true));
         }
@@ -580,6 +633,10 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
         }
 
         if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
