@@ -10,10 +10,10 @@ const ServiceRenewalNotice = ({ expirationDate }) => {
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              Layanan Anda Akan Segera Berakhir!
+              Layanan Anda Sudah Berakhir!
             </h1>
             <p className="text-gray-600 text-lg">
-              Masa berlaku layanan akan berakhir pada{' '}
+              Masa berlaku layanan sudah berakhir
               <span className="font-semibold text-red-500">
                 {expirationDate}
               </span>
@@ -25,22 +25,12 @@ const ServiceRenewalNotice = ({ expirationDate }) => {
           <div className="flex items-center gap-4 text-yellow-800">
             <Clock className="w-6 h-6 flex-shrink-0" />
             <p className="text-sm">
-              Untuk menghindari gangguan layanan, silakan perpanjang langganan Anda 
-              sebelum tanggal kedaluwarsa.
+              Untuk menggunakan layanan kembali, silakan perpanjang langganan Anda.
             </p>
           </div>
         </div>
 
         <div className="grid gap-6 mb-8">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Lakukan Pembaruan Sekarang
-            </h2>
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-8 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              Perpanjang Layanan Sekarang
-            </button>
-          </div>
 
           <div className="border-t pt-8">
             <h3 className="text-sm font-semibold text-gray-500 uppercase mb-4">
@@ -58,10 +48,7 @@ const ServiceRenewalNotice = ({ expirationDate }) => {
 
         <p className="text-sm text-gray-500 text-center">
           Butuh bantuan? Hubungi kami di{' '}
-          <a href="mailto:support@example.com" className="text-blue-600 hover:underline">
-            support@example.com
-          </a>{' '}
-          atau (+62) 123-4567-890
+          (+62) 123-4567-890
         </p>
       </div>
     </div>

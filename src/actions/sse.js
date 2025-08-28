@@ -47,10 +47,10 @@ const useSSE = (url, onMessage) => {
             }
         };
 
-        evtSource.onerror = (err) => {
-            console.error("SSE connection error:", err);
-            evtSource.close();
-        };
+        // evtSource.onerror = (err) => {
+        //     console.error("SSE connection error:", err);
+        //     evtSource.close();
+        // };
 
         return () => {
             if (sourceRef.current) {

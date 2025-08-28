@@ -1,13 +1,5 @@
 import React from 'react';
-import { 
-  Settings, 
-  Clock, 
-  AlertCircle, 
-  Wrench, 
-  Shield,
-  CheckCircle,
-  RefreshCw
-} from 'lucide-react';
+import { Settings, Shield, RefreshCw, CheckCircle, AlertCircle, Cog, Wrench } from 'lucide-react';
 
 const MaintenanceComponent = () => {
   const [currentTime, setCurrentTime] = React.useState(new Date());
@@ -38,19 +30,51 @@ const MaintenanceComponent = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4 relative">
+      {/* Floating Settings Icons - positioned to be visible */}
+      <div className="absolute inset-0 pointer-events-none overflow-visible">
+        <Settings 
+          className="absolute top-16 left-16 w-12 h-12 text-green-400 animate-spin opacity-60" 
+          style={{animationDuration: '8s'}} 
+        />
+        <Cog 
+          className="absolute top-24 right-24 w-10 h-10 text-emerald-500 animate-spin opacity-50" 
+          style={{animationDuration: '12s', animationDirection: 'reverse'}} 
+        />
+        <Wrench 
+          className="absolute top-40 left-1/4 w-8 h-8 text-green-500 animate-spin opacity-40" 
+          style={{animationDuration: '10s'}} 
+        />
+        <Settings 
+          className="absolute top-32 right-1/3 w-6 h-6 text-emerald-400 animate-spin opacity-55" 
+          style={{animationDuration: '6s', animationDirection: 'reverse'}} 
+        />
+        <Cog 
+          className="absolute top-56 left-12 w-7 h-7 text-green-400 animate-spin opacity-45" 
+          style={{animationDuration: '15s'}} 
+        />
+        <Settings 
+          className="absolute top-20 right-12 w-14 h-14 text-emerald-300 animate-spin opacity-35" 
+          style={{animationDuration: '9s', animationDirection: 'reverse'}} 
+        />
+        <Wrench 
+          className="absolute bottom-40 left-28 w-9 h-9 text-green-500 animate-spin opacity-50" 
+          style={{animationDuration: '11s'}} 
+        />
+        <Cog 
+          className="absolute bottom-56 right-32 w-11 h-11 text-emerald-400 animate-spin opacity-40" 
+          style={{animationDuration: '7s', animationDirection: 'reverse'}} 
+        />
+      </div>
+
+      <div className="max-w-2xl w-full relative z-10">
         {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-green-100 border border-green-100 overflow-hidden">
           {/* Header with animated background */}
-          <div className="relative bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white overflow-hidden">
-            <div className="absolute inset-0 bg-white bg-opacity-10">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 transform -skew-x-12 animate-pulse"></div>
-            </div>
-            
+          <div className="relative bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white">      
             <div className="relative z-10 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm">
-                <Settings className="w-10 h-10 animate-spin" style={{animationDuration: '3s'}} />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-white bg-opacity-20 rounded-full mb-6 backdrop-blur-sm animate-spin" style={{animationDuration: '4s'}}>
+                <Settings className="w-10 h-10 animate-spin" style={{animationDuration: '3s', animationDirection: 'reverse'}} />
               </div>
               
               <h1 className="text-3xl font-bold mb-2">Sistem Sedang Maintenance</h1>
