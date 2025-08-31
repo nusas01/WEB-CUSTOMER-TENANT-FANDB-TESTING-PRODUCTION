@@ -30,6 +30,7 @@ import {
     getDataEmployeeInternalSlice,
     searchOrderInternalSlice,
     getSearchTransactionInternalSlice,getDetailTransactionsHistoryCustomerSlice,
+    getEmployeesSlice,
  } from "../reducers/get.js"
  import {
     statusExpiredTokenSlice,
@@ -1498,4 +1499,42 @@ export const fetchDataEmployeeInternal = () => {
         dispatch(setLoadingDataEmployeeInternal(false))
       }
     }
+}
+
+const {
+  setEmployees,
+  setLoadingGetEmployees,
+  setErrorGetEmployees,
+} = getEmployeesSlice.actions
+export const fetchAllEmployees = (storeId) => {
+  return async (dispatch) => {
+    dispatch(setLoadingGetEmployees(true))
+    try {
+      const response = await axios.get(process.env.REACT_APP_EMPLOYEE, {
+        params: { store_id: storeId },
+        withCredentials: true,
+      })
+      dispatch(setEmployees(response?.data || []))
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+        
+        dispatch(setErrorGetEmployees(error?.response?.data?.error || 'Gagal memuat daftar employee'))
+    } finally {
+        dispatch(setLoadingGetEmployees(false))
+    }
+  }
 }

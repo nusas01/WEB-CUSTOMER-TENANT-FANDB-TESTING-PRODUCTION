@@ -26,15 +26,23 @@ import { SpinnerRelative } from '../../helper/spinner';
 import {getNeracaInternalSlice} from '../../reducers/get'
 import {fetchNeracaInternal} from '../../actions/get'
 import { useNavigate } from 'react-router-dom';
+import { AccessDeniedModal } from '../../component/model';
 
 export default function NeracaDashboard() {
   const dispatch = useDispatch()
   const [activeMenu, setActiveMenu] = useState("neraca")
   const [toast, setToast] = useState(null);
-
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
   const {resetErrorNeracaInternal} = getNeracaInternalSlice.actions 
   const {errorNeracaIntenal, loadingNeracaInternal} = useSelector((state) => state.persisted.getNeracaInternal)
-  
+
+  const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+    useEffect(() => {
+      if (dataEmployeeInternal?.position === "Staff") {
+        setShowAccessDenied(true)
+      }
+    }, [dataEmployeeInternal])
+
   // maxsimaz minimaz layar
   const contentRef = useRef(null);
   const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
@@ -80,6 +88,14 @@ export default function NeracaDashboard() {
             </div>
           </ToastPortal>
         )}
+
+        <AccessDeniedModal
+            isOpen={showAccessDenied}
+            onClose={() => setShowAccessDenied(true)}
+            title='Akses Ditolak'
+            message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+            buttonText='Mengerti'
+        />
 
         <div
           ref={contentRef}

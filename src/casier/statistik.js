@@ -30,198 +30,209 @@ import { useNavigate } from "react-router-dom";
 import { useFullscreen, useElementHeight } from "../helper/helper"
 import { navbarInternalSlice } from "../reducers/reducers"
 import { useDispatch, useSelector } from "react-redux";
+import { AccessDeniedModal } from "../component/model";
 
 export default function KasirStatistik() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const [activeMenu, setActiveMenu] = useState('statistics')
-  const [selectedPeriod, setSelectedPeriod] = useState('daily');
-  const [salesDateRange, setSalesDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
-  const [channelDateRange, setChannelDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
-  const [productsDateRange, setProductsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
-  const [customerDateRange, setCustomerDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
-  const [timeStatsDateRange, setTimeStatsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
-  const [dailyPerfDateRange, setDailyPerfDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const [activeMenu, setActiveMenu] = useState('statistics')
+    const [selectedPeriod, setSelectedPeriod] = useState('daily');
+    const [salesDateRange, setSalesDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [channelDateRange, setChannelDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [productsDateRange, setProductsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [customerDateRange, setCustomerDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [timeStatsDateRange, setTimeStatsDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [dailyPerfDateRange, setDailyPerfDateRange] = useState({ start: '2024-07-01', end: '2024-07-31' });
+    const [showAccessDenied, setShowAccessDenied] = useState(false);
 
-  // maxsimaz minimaz layar
-  const contentRef = useRef(null);
-  const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
-  // handle sidebar and elemant header yang responsice
-  const { ref: headerRef, height: headerHeight } = useElementHeight();
-  const { setIsOpen } = navbarInternalSlice.actions
-  const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
-
-  // Validation function for date range (max 31 days)
-  const validateDateRange = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 31;
-  };
-
-  // Date range handler with validation
-  const handleDateRangeChange = (setter, field, value) => {
-    setter(prev => {
-      const newRange = { ...prev, [field]: value };
-      if (validateDateRange(newRange.start, newRange.end)) {
-        return newRange;
+    const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+    useEffect(() => {
+      if (dataEmployeeInternal?.position === "Staff") {
+        setShowAccessDenied(true)
       }
-      return prev;
-    });
-  };
+    }, [dataEmployeeInternal])
 
-  // Sample data
-  const salesData = {
-    daily: { revenue: 15250000, transactions: 156, aov: 97756 },
-    weekly: { revenue: 89500000, transactions: 892, aov: 100336 },
-    monthly: { revenue: 385000000, transactions: 3847, aov: 100078 }
-  };
 
-  const channelData = [
-    { name: 'Kasir', revenue: 125000000, percentage: 45, transactions: 1234, color: 'bg-gradient-to-r from-gray-800 to-gray-700' },
-    { name: 'Website', revenue: 89000000, percentage: 32, transactions: 876, color: 'bg-gradient-to-r from-blue-600 to-blue-500' },
-  ];
+    // maxsimaz minimaz layar
+    const contentRef = useRef(null);
+    const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
 
-  const topProducts = [
-    { name: 'Nasi Gudeg Special', sold: 234, revenue: 35100000, growth: 12, category: 'Main Course' },
-    { name: 'Ayam Bakar Bumbu', sold: 198, revenue: 29700000, growth: 8, category: 'Main Course' },
-    { name: 'Sate Kambing', sold: 167, revenue: 25050000, growth: -3, category: 'Grilled' },
-    { name: 'Es Teh Manis', sold: 445, revenue: 13350000, growth: 15, category: 'Beverages' },
-    { name: 'Gudeg Jogja', sold: 123, revenue: 18450000, growth: 5, category: 'Traditional' }
-  ];
+    // handle sidebar and elemant header yang responsice
+    const { ref: headerRef, height: headerHeight } = useElementHeight();
+    const { setIsOpen } = navbarInternalSlice.actions
+    const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-  const customerStats = {
-    totalCustomers: 2847,
-    registeredCustomers: 1892,
-    guestCustomers: 955,
-    repeatCustomerRate: 68,
-    newCustomersThisMonth: 234
-  };
+    // Validation function for date range (max 31 days)
+    const validateDateRange = (startDate, endDate) => {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 31;
+    };
 
-  const topCustomers = [
-    { name: 'Ahmad Wijaya', orders: 24, spent: 4850000, lastOrder: '2 hari lalu', level: 'VIP' },
-    { name: 'Siti Nurhaliza', orders: 18, spent: 3420000, lastOrder: '1 hari lalu', level: 'Gold' },
-    { name: 'Budi Santoso', orders: 15, spent: 2950000, lastOrder: '3 hari lalu', level: 'Silver' },
-    { name: 'Dewi Lestari', orders: 12, spent: 2340000, lastOrder: '1 hari lalu', level: 'Silver' }
-  ];
+    // Date range handler with validation
+    const handleDateRangeChange = (setter, field, value) => {
+      setter(prev => {
+        const newRange = { ...prev, [field]: value };
+        if (validateDateRange(newRange.start, newRange.end)) {
+          return newRange;
+        }
+        return prev;
+      });
+    };
 
-  const peakHours = [
-    { hour: '06:00', orders: 12 },
-    { hour: '07:00', orders: 28 },
-    { hour: '08:00', orders: 45 },
-    { hour: '09:00', orders: 32 },
-    { hour: '10:00', orders: 18 },
-    { hour: '11:00', orders: 67 },
-    { hour: '12:00', orders: 89 },
-    { hour: '13:00', orders: 78 },
-    { hour: '14:00', orders: 45 },
-    { hour: '15:00', orders: 23 },
-    { hour: '16:00', orders: 34 },
-    { hour: '17:00', orders: 56 },
-    { hour: '18:00', orders: 87 },
-    { hour: '19:00', orders: 92 },
-    { hour: '20:00', orders: 67 },
-    { hour: '21:00', orders: 34 }
-  ];
+    // Sample data
+    const salesData = {
+      daily: { revenue: 15250000, transactions: 156, aov: 97756 },
+      weekly: { revenue: 89500000, transactions: 892, aov: 100336 },
+      monthly: { revenue: 385000000, transactions: 3847, aov: 100078 }
+    };
 
-  const weeklyData = [
-    { day: 'Senin', orders: 234, revenue: 35600000 },
-    { day: 'Selasa', orders: 198, revenue: 29800000 },
-    { day: 'Rabu', orders: 267, revenue: 42300000 },
-    { day: 'Kamis', orders: 289, revenue: 45600000 },
-    { day: 'Jumat', orders: 345, revenue: 56700000 },
-    { day: 'Sabtu', orders: 423, revenue: 67800000 },
-    { day: 'Minggu', orders: 389, revenue: 62400000 }
-  ];
+    const channelData = [
+      { name: 'Kasir', revenue: 125000000, percentage: 45, transactions: 1234, color: 'bg-gradient-to-r from-gray-800 to-gray-700' },
+      { name: 'Website', revenue: 89000000, percentage: 32, transactions: 876, color: 'bg-gradient-to-r from-blue-600 to-blue-500' },
+    ];
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
+    const topProducts = [
+      { name: 'Nasi Gudeg Special', sold: 234, revenue: 35100000, growth: 12, category: 'Main Course' },
+      { name: 'Ayam Bakar Bumbu', sold: 198, revenue: 29700000, growth: 8, category: 'Main Course' },
+      { name: 'Sate Kambing', sold: 167, revenue: 25050000, growth: -3, category: 'Grilled' },
+      { name: 'Es Teh Manis', sold: 445, revenue: 13350000, growth: 15, category: 'Beverages' },
+      { name: 'Gudeg Jogja', sold: 123, revenue: 18450000, growth: 5, category: 'Traditional' }
+    ];
 
-  const StatCard = ({ title, value, icon: Icon, change, changeType, subtitle }) => (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 hover:scale-20 group">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-3 rounded-xl group-hover:shadow-md transition-shadow">
-            <Icon className="h-6 w-6 text-white" />
+    const customerStats = {
+      totalCustomers: 2847,
+      registeredCustomers: 1892,
+      guestCustomers: 955,
+      repeatCustomerRate: 68,
+      newCustomersThisMonth: 234
+    };
+
+    const topCustomers = [
+      { name: 'Ahmad Wijaya', orders: 24, spent: 4850000, lastOrder: '2 hari lalu', level: 'VIP' },
+      { name: 'Siti Nurhaliza', orders: 18, spent: 3420000, lastOrder: '1 hari lalu', level: 'Gold' },
+      { name: 'Budi Santoso', orders: 15, spent: 2950000, lastOrder: '3 hari lalu', level: 'Silver' },
+      { name: 'Dewi Lestari', orders: 12, spent: 2340000, lastOrder: '1 hari lalu', level: 'Silver' }
+    ];
+
+    const peakHours = [
+      { hour: '06:00', orders: 12 },
+      { hour: '07:00', orders: 28 },
+      { hour: '08:00', orders: 45 },
+      { hour: '09:00', orders: 32 },
+      { hour: '10:00', orders: 18 },
+      { hour: '11:00', orders: 67 },
+      { hour: '12:00', orders: 89 },
+      { hour: '13:00', orders: 78 },
+      { hour: '14:00', orders: 45 },
+      { hour: '15:00', orders: 23 },
+      { hour: '16:00', orders: 34 },
+      { hour: '17:00', orders: 56 },
+      { hour: '18:00', orders: 87 },
+      { hour: '19:00', orders: 92 },
+      { hour: '20:00', orders: 67 },
+      { hour: '21:00', orders: 34 }
+    ];
+
+    const weeklyData = [
+      { day: 'Senin', orders: 234, revenue: 35600000 },
+      { day: 'Selasa', orders: 198, revenue: 29800000 },
+      { day: 'Rabu', orders: 267, revenue: 42300000 },
+      { day: 'Kamis', orders: 289, revenue: 45600000 },
+      { day: 'Jumat', orders: 345, revenue: 56700000 },
+      { day: 'Sabtu', orders: 423, revenue: 67800000 },
+      { day: 'Minggu', orders: 389, revenue: 62400000 }
+    ];
+
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(amount);
+    };
+
+    const StatCard = ({ title, value, icon: Icon, change, changeType, subtitle }) => (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 hover:scale-20 group">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-3 rounded-xl group-hover:shadow-md transition-shadow">
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+              <p className="text-2xl font-bold text-gray-900">{value}</p>
+              {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-          </div>
+          {change && (
+            <div className={`flex items-center space-x-1 px-3 py-1 rounded-full ${changeType === 'positive' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-sm font-medium">{change}%</span>
+            </div>
+          )}
         </div>
-        {change && (
-          <div className={`flex items-center space-x-1 px-3 py-1 rounded-full ${changeType === 'positive' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-            <TrendingUp className="h-4 w-4" />
-            <span className="text-sm font-medium">{change}%</span>
-          </div>
-        )}
       </div>
+    );
+
+    const DateRangeFilter = ({ dateRange, setDateRange, label }) => (
+    <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      
+      {/* Dropdown + Refresh Button */}
+      <div className="flex items-center space-x-3 mt-4 md:mt-0">
+        <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
+        >
+            <option value="daily">Harian</option>
+            <option value="weekly">Mingguan</option>
+            <option value="monthly">Bulanan</option>
+        </select>
+          <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
+
+      {/* Calendar Icon + Date Inputs */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 w-full">
+        {/* Label dan Icon */}
+        <div className="flex items-center space-x-2">
+          <CalendarDays className="h-5 w-5 text-gray-600 block" />
+          <label className="text-sm font-medium text-gray-700">{label}:</label>
+        </div>
+
+        {/* Input Date Range */}
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+          <input
+            type="date"
+            value={dateRange.start}
+            onChange={(e) => handleDateRangeChange(setDateRange, 'start', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
+          />
+          <span className="text-gray-500 hidden sm:inline">-</span>
+          <input
+            type="date"
+            value={dateRange.end}
+            onChange={(e) => handleDateRangeChange(setDateRange, 'end', e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
+          />
+        </div>
+      </div>
+
+
+      {/* Validation Error */}
+      {!validateDateRange(dateRange.start, dateRange.end) && (
+        <div className="flex items-center space-x-1 text-red-600 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span className="text-xs">Max 31 hari</span>
+        </div>
+      )}
     </div>
   );
-
-  const DateRangeFilter = ({ dateRange, setDateRange, label }) => (
-  <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-    
-    {/* Dropdown + Refresh Button */}
-    <div className="flex items-center space-x-3 mt-4 md:mt-0">
-      <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-800 focus:border-transparent shadow-sm"
-      >
-          <option value="daily">Harian</option>
-          <option value="weekly">Mingguan</option>
-          <option value="monthly">Bulanan</option>
-      </select>
-        <button className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2 hover:scale-105">
-          <RefreshCw className="h-4 w-4" />
-         </button>
-      </div>
-
-    {/* Calendar Icon + Date Inputs */}
-    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 w-full">
-      {/* Label dan Icon */}
-      <div className="flex items-center space-x-2">
-        <CalendarDays className="h-5 w-5 text-gray-600 block" />
-        <label className="text-sm font-medium text-gray-700">{label}:</label>
-      </div>
-
-      {/* Input Date Range */}
-      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
-        <input
-          type="date"
-          value={dateRange.start}
-          onChange={(e) => handleDateRangeChange(setDateRange, 'start', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
-        />
-        <span className="text-gray-500 hidden sm:inline">-</span>
-        <input
-          type="date"
-          value={dateRange.end}
-          onChange={(e) => handleDateRangeChange(setDateRange, 'end', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-sm w-full sm:w-auto"
-        />
-      </div>
-    </div>
-
-
-    {/* Validation Error */}
-    {!validateDateRange(dateRange.start, dateRange.end) && (
-      <div className="flex items-center space-x-1 text-red-600 text-sm">
-        <AlertCircle className="h-4 w-4" />
-        <span className="text-xs">Max 31 hari</span>
-      </div>
-    )}
-  </div>
-);
 
 
   const maxOrders = Math.max(...peakHours.map(h => h.orders));
@@ -237,6 +248,14 @@ export default function KasirStatistik() {
               />
           </div>
         )}
+
+        <AccessDeniedModal
+            isOpen={showAccessDenied}
+            onClose={() => setShowAccessDenied(true)}
+            title='Akses Ditolak'
+            message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+            buttonText='Mengerti'
+        />
 
         <div
           ref={contentRef}

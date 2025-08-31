@@ -47,6 +47,7 @@ import {
   searchOrderInternalSlice,
   getSearchTransactionInternalSlice,
   getDetailTransactionsHistoryCustomerSlice,
+  getEmployeesSlice,
 } from './get'
 import {
   signupCustomerSlice,
@@ -63,12 +64,14 @@ import {
   createTableInternalSlice,
   createQROrderTypeTakeAwaySlice,
   getJournalDrafByJsonInternalSlice,
+  createEmployeeSlice,
 } from './post'
 import {
   updateInternalSlice,
   updateGeneralJournalInternalSlice,
   voidGeneralJournalInternalSlice,
   updatePaymentMethodsInternalSlice,
+  updateEmployeeSlice,
 } from './put'
 import {
   changePasswordCustomerSlice,
@@ -80,6 +83,7 @@ import {
   toFinishedOrderInternalSlice,
   updateDataEmployeeSlice,
   changePasswordInternalSlice,
+  changePasswordEmployeeSlice,
 } from './patch'
 import {
   statusExpiredTokenSlice,
@@ -94,6 +98,7 @@ import {
 import {
   deleteTableInternalSlice,
   deleteCategoryInternalSlice,
+  deleteEmployeeSlice,
 } from './delete'
 
 
@@ -136,6 +141,7 @@ const persistedReducers = combineReducers({
   navbarInternal: navbarInternalSlice.reducer,
   getJournalDrafByJsonInternal: getJournalDrafByJsonInternalSlice.reducer,
   getDetailTransactionsHistoryCustomer:  getDetailTransactionsHistoryCustomerSlice.reducer,
+  getEmployee: getEmployeesSlice.reducer,
 })
 
 // 2. Konfigurasi persist
@@ -187,6 +193,10 @@ const nonPersistedReducers = {
   statusExpiredUserTokenState: statusExpiredUserTokenSlice.reducer,
   statusServiceMaintenanceState: statusServiceMaintenanceSlice.reducer,
   statusExpiredInternalTokenState: statusExpiredInternalTokenSlice.reducer,
+  createEmployeeState: createEmployeeSlice.reducer,
+  updateEmployeeState: updateEmployeeSlice.reducer,
+  changePasswordEmployeeState: changePasswordEmployeeSlice.reducer,
+  deleteEmployeeState: deleteEmployeeSlice.reducer,
 }
 
 const rootReducer = combineReducers({

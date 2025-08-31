@@ -1,7 +1,8 @@
 import axiosInstance from "./axiosInstance.js"
 import {
     deleteTableInternalSlice, 
-    deleteCategoryInternalSlice
+    deleteCategoryInternalSlice,
+    deleteEmployeeSlice,
 } from '../reducers/delete'
 import {
     getTablesInternalSlice,
@@ -102,3 +103,42 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
         dispatch(setLoadingDeleteCategoryInternal(false))
     }
 };
+
+const {
+  setSuccessDeleteEmployee,
+  setErrorDeleteEmployee,
+  setLoadingDeleteEmployee,
+} = deleteEmployeeSlice.actions
+export const deleteEmployee = (id) => {
+  return async (dispatch) => {
+    dispatch(setLoadingDeleteEmployee(true))
+    try {
+        const response = await axios.delete(process.env.REACT_APP_EMPLOYEE, {
+            params: { id: id },
+            withCredentials: true,
+        })
+        dispatch(setSuccessDeleteEmployee(true))
+        return response.data
+    } catch (error) {
+      if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
+        dispatch(setErrorDeleteEmployee(error?.response?.data?.error || 'Gagal menghapus employee'))
+    } finally {
+        dispatch(setLoadingDeleteEmployee(false))
+    }
+  }
+}

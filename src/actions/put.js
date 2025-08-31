@@ -4,6 +4,7 @@ import {
     updateGeneralJournalInternalSlice,
     voidGeneralJournalInternalSlice,
     updatePaymentMethodsInternalSlice,
+    updateEmployeeSlice,
  } from '../reducers/put'
  import {
     getGeneralJournalDrafInternalSlice
@@ -198,4 +199,44 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
     } finally {
         dispatch(setLoadingUpdatePaymentMethodsInternal(false))
     }
+}
+
+const {
+  setSuccessUpdateEmployee,
+  setErrorUpdateEmployee,
+  setLoadingUpdateEmployee,
+} = updateEmployeeSlice.actions
+export const updateEmployee = (formData) => {
+  return async (dispatch) => {
+    dispatch(setLoadingUpdateEmployee(true))
+    try {
+        const response = await axios.put(process.env.REACT_APP_EMPLOYEE, formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+            },
+            withCredentials: true,
+        })
+        dispatch(setSuccessUpdateEmployee(true))
+        return response.data
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+        dispatch(setErrorUpdateEmployee(error?.response?.data?.error || 'Gagal memperbarui employee'))
+    } finally {
+        dispatch(setLoadingUpdateEmployee(false))
+    }
+  }
 }

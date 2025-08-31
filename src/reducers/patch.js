@@ -277,4 +277,32 @@ export const changePasswordInternalSlice = createSlice({
     }
 })
 
+const initialChangePasswordEmployeeStore = {
+    successChangePasswordEmployee: false,
+    errorFieldsChangePasswordEmployee: null,
+    errorChangePasswordEmployee: null,
+    loadingChangePasswordEmployee: false,
+}
+export const changePasswordEmployeeSlice = createSlice({
+    name: 'changePasswordEmployee',
+    initialState: initialChangePasswordEmployeeStore,
+    reducers: {
+        setSuccessChangePasswordEmployee: (state, action) => {
+            state.successChangePasswordEmployee = action.payload
+        },
+        setErrorChangePasswordEmployee: (state, action) => {
+            state.errorFieldsChangePasswordEmployee = action.payload.errorField
+            state.errorChangePasswordEmployee = action.payload.error
+        },
+        setLoadingChangePasswordEmployee: (state, action) => {
+            state.loadingChangePasswordEmployee = action.payload
+        },
+        resetChangePasswordEmployee: (state) => {
+            state.errorFieldsChangePasswordEmployee = null
+            state.errorChangePasswordEmployee = null
+            state.successChangePasswordEmployee = false
+        }
+    }
+})
+
 

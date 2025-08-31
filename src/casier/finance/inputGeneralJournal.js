@@ -10,6 +10,7 @@ import {inputGeneralJournalInternalSlice, getJournalDrafByJsonInternalSlice} fro
 import {updateGeneralJournalInternalSlice} from '../../reducers/put'
 import {inputGeneralJournalInternal, getJournalDrafByJsonInternal} from '../../actions/post'
 import {UpdateGeneralJournalInternal} from '../../actions/put'
+import { AccessDeniedModal } from '../../component/model';
 
 export function GeneralJournalForm() {
   const navigate = useNavigate()
@@ -37,6 +38,14 @@ export function GeneralJournalForm() {
   const [requiredOptionMethodSale, setRequiredOptionMethodSale] = useState(false)
   const [requiredMetodeAmortisasi, setRequiredMetodeAmortisasi] = useState(false)
   const [toast, setToast] = useState(null);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+
+  const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  useEffect(() => {
+    if (dataEmployeeInternal?.position === "Staff") {
+      setShowAccessDenied(true)
+    }
+  }, [dataEmployeeInternal])
   
   const loadStateRequired = () => {
     setRequiredDate(false)
@@ -551,6 +560,7 @@ export function GeneralJournalForm() {
 
     const commonFields = (
       <>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1143,6 +1153,14 @@ export function GeneralJournalForm() {
           </div>
         </ToastPortal>
       )}
+
+      <AccessDeniedModal
+          isOpen={showAccessDenied}
+          onClose={() => setShowAccessDenied(true)}
+          title='Akses Ditolak'
+          message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+          buttonText='Mengerti'
+      />
 
       { (loadingUpdateGeneralJournalInternal || loadingInputGeneralJournal || loadingGetJournalByJson)  && (
         <SpinnerFixed colors={'fill-gray-800'}/>

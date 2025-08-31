@@ -51,6 +51,8 @@ import {
   loginStatusInternalSlice,
   loginStatusCustomerSlice,
 } from './reducers/get'
+import EmployeeManagement from './casier/employee'
+import CreateEmployee from './casier/createEmployee'
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -223,6 +225,8 @@ function AppContent() {
             <Route path="/internal/admin/products" element={<KasirProducts/>}/>
             <Route path="/internal/admin/tables" element={<KasirTables/>}/>
             <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
+            <Route path="/internal/admin/employees" element={<EmployeeManagement/>}/>
+            <Route path="/internal/admin/employee/create" element={<CreateEmployee/>}/>
           </Route>
         </Route>
       </Routes>

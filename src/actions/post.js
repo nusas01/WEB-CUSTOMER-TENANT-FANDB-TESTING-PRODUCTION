@@ -20,6 +20,7 @@ import axiosInstance from "./axiosInstance.js";
     createTableInternalSlice,
     createQROrderTypeTakeAwaySlice,
     getJournalDrafByJsonInternalSlice,
+    createEmployeeSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice,
@@ -651,4 +652,48 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
     } finally {
         dispatch(setLoadingCreateQROrderTypeTakeAway(false))
     }
+}
+
+const {
+  setSuccessCreateEmployee,
+  setErrorCreateEmployee,
+  setLoadingCreateEmployee,
+} = createEmployeeSlice.actions
+export const createEmployee = (formData) => {
+  return async (dispatch) => {
+    dispatch(setLoadingCreateEmployee(true))
+    try {
+      const response = await axios.post(process.env.REACT_APP_EMPLOYEE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      })
+      dispatch(setSuccessCreateEmployee(true))
+      return response.data
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+          dispatch(setStatusServiceMaintenance(true));
+        }
+        
+        dispatch(setErrorCreateEmployee({
+            error: error?.response?.data?.error || 'Gagal membuat employee', 
+            errorField: error?.response?.data?.ErrorField[0],
+        }))
+    } finally {
+      dispatch(setLoadingCreateEmployee(false))
+    }
+  }
 }

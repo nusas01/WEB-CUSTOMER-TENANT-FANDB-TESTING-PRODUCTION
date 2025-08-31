@@ -49,12 +49,20 @@ import {
 import {formatCurrency, useInfiniteScroll, useFullscreen, useElementHeight} from '../../helper/helper'
 import {DateFilterComponent,validateDateRange} from '../../helper/formatdate';
 import { set } from 'date-fns';
-
+import { AccessDeniedModal } from '../../component/model.js';
  
 export default function GeneralJournalDashboard() {
     const activeMenu = "general-journal"
     const dispatch = useDispatch()
     const [toast, setToast] = useState(null);
+    const [showAccessDenied, setShowAccessDenied] = useState(false);
+
+    const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+    useEffect(() => {
+      if (dataEmployeeInternal?.position === "Staff") {
+        setShowAccessDenied(true)
+      }
+    }, [dataEmployeeInternal])
 
     // maxsimaz minimaz layar
     const contentRef = useRef(null);
@@ -103,6 +111,14 @@ export default function GeneralJournalDashboard() {
             </div>
           </ToastPortal>
         )}
+
+        <AccessDeniedModal
+            isOpen={showAccessDenied}
+            onClose={() => setShowAccessDenied(true)}
+            title='Akses Ditolak'
+            message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+            buttonText='Mengerti'
+        />        
 
         {/* Sidebar - Fixed width */}
         {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (

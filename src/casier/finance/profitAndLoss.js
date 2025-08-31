@@ -9,6 +9,7 @@ import { ToastPortal, Toast } from '../../component/alert';
 import { SpinnerRelative } from '../../helper/spinner';
 import { getLabaRugiInternalSlice } from '../../reducers/get'
 import { useNavigate } from 'react-router-dom';
+import { AccessDeniedModal } from '../../component/model';
 
 const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
@@ -16,6 +17,14 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
   const [spinner, setSpinner] = useState(false)
   const [dateRangeError, setDateRangeError] = useState("");
   const [toast, setToast] = useState(null);
+  const [showAccessDenied, setShowAccessDenied] = useState(false);
+
+  const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  useEffect(() => {
+    if (dataEmployeeInternal?.position === "Staff") {
+      setShowAccessDenied(true)
+    }
+  }, [dataEmployeeInternal])
 
   // handle sidebar and elemant header yang responsice
   const { ref: headerRef, height: headerHeight } = useElementHeight();
@@ -222,6 +231,14 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
             </div>
           </ToastPortal>
         )}
+
+        <AccessDeniedModal
+            isOpen={showAccessDenied}
+            onClose={() => setShowAccessDenied(true)}
+            title='Akses Ditolak'
+            message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+            buttonText='Mengerti'
+        />
  
         {/* Header */}
         <div

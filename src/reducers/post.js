@@ -455,3 +455,31 @@ export const createQROrderTypeTakeAwaySlice = createSlice({
         }
     }
 })
+
+const initialCreateEmployeeState = {
+  successCreateEmployee: false,
+  errorCreateEmployee: null,
+  ErrorFieldCreateEmployee: null,
+  loadingCreateEmployee: false,
+}
+export const createEmployeeSlice = createSlice({
+  name: 'createEmployee',
+  initialState: initialCreateEmployeeState,
+  reducers: {
+    setSuccessCreateEmployee: (state, action) => {
+      state.successCreateEmployee = action.payload
+    },
+    setErrorCreateEmployee: (state, action) => {
+      state.errorCreateEmployee = action.payload.error || null
+      state.ErrorFieldCreateEmployee = action.payload.errorField || null
+    },
+    setLoadingCreateEmployee: (state, action) => {
+      state.loadingCreateEmployee = action.payload
+    },
+    resetCreateEmployee: (state) => {
+      state.successCreateEmployee = false
+      state.errorCreateEmployee = null
+      state.ErrorFieldCreateEmployee = null
+    },
+  },
+})

@@ -9,6 +9,7 @@ import axiosInstance from "./axiosInstance.js";
     toFinishedOrderInternalSlice,
     updateDataEmployeeSlice,
     changePasswordInternalSlice,
+    changePasswordEmployeeSlice,
  } from "../reducers/patch"
   import {
     statusExpiredTokenSlice, 
@@ -395,6 +396,44 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
         }));
     } finally {
         dispatch(setLoadingChangePasswordInternal(false))
+    }
+}
+
+const {setSuccessChangePasswordEmployee, setErrorChangePasswordEmployee, setLoadingChangePasswordEmployee} = changePasswordEmployeeSlice.actions
+export const changePasswordEmployee = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingChangePasswordEmployee(true))
+    try {
+        const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_EMPLOYEE}`, data, config)
+        dispatch(setSuccessChangePasswordEmployee(response?.data?.success))
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
+        dispatch(setErrorChangePasswordEmployee({ 
+            error: error?.response?.data?.error,
+            errorField: error?.response?.data?.ErrorField,
+        }))
+    } finally {
+        dispatch(setLoadingChangePasswordEmployee(false))
     }
 }
 

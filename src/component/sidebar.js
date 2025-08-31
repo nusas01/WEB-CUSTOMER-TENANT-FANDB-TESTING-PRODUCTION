@@ -14,6 +14,7 @@ import {
   X,
   Home,
   ChevronDown,
+  User,
   Lock,
 } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -23,7 +24,6 @@ import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
 import {useDeviceDetection} from "../helper/helper"
 import {navbarInternalSlice} from "../reducers/reducers"
-import { AccessDeniedModal } from "./model"
 
 const menuItems = [
   { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: true },
@@ -32,6 +32,7 @@ const menuItems = [
   { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product', requiresManager: false },
   { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table', requiresManager: false },
   { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics', requiresManager: true },
+  { Icon: User, title: "Employees", path: '/internal/admin/employees', key: 'Employees', requiresManager: true},
   { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings', requiresManager: false }
 ];
 
