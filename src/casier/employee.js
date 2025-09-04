@@ -584,7 +584,7 @@ const EmployeeManagement = () => {
                                 <div className="relative">
                                     {employee.image && employee.image !== "" ? (
                                     <img 
-                                        src={employee.image} 
+                                        src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${employee.image}`} 
                                         alt={employee.name}
                                         className="w-16 h-16 rounded-full object-cover shadow-md"
                                     />

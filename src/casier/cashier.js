@@ -697,7 +697,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                                 <tr key={index} className="text-black hover:bg-gray-50 transition-colors duration-150">
                                     <td className="py-3 px-4">
                                         <div className="w-[62px] h-auto aspect-[4/3]">
-                                            <img src={`/image/${t.image}`} alt={t.name} className="w-full h-full object-cover rounded-md" />
+                                            <img src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${t.image}`} alt={t.name} className="w-full h-full object-cover rounded-md" />
                                         </div>
                                     </td>
                                     <td className="py-3 px-4 text-sm font-medium text-gray-800">{t.name}</td>
@@ -974,7 +974,7 @@ const ProductCashier = ({onClose}) => {
                                                         className={`h-32 mx-auto w-40 object-cover rounded-md mb-3 transition-all duration-200 ${
                                                             !isAvailable ? 'grayscale brightness-75' : ''
                                                         }`}
-                                                        src={`/image/${prd.image}`}
+                                                        src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${prd.image}`}
                                                         alt={prd.name}
                                                     />
 

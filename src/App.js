@@ -1,4 +1,3 @@
-import logo from './logo.svg'
 import Cart from './component/cart'
 import './App.css'
 import Home from './component/home'
@@ -17,7 +16,6 @@ import KasirProducts from './casier/product'
 import KasirStatistik from './casier/statistik'
 import KasirSettings from './casier/settings'
 import KasirTables from './casier/table'
-import CreateTransaction from './casier/createTransaction'
 import { 
   loginStatusInternal, 
   loginStatusCustomer, 

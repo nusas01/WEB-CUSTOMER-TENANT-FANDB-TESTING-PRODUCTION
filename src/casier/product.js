@@ -619,7 +619,7 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
                                     src={
                                       product.image instanceof File
                                         ? URL.createObjectURL(product.image) 
-                                        : `/image/${product.image}`         
+                                        : `https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${product.image}`         
                                     }
                                     alt={product.name}
                                     className="w-full h-[20vh] object-cover"
@@ -1503,7 +1503,7 @@ const EditProductModal = ({
                       src={
                         formData.image instanceof File
                           ? URL.createObjectURL(formData.image) 
-                          : `/image/${formData.image}`         
+                          : `https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${formData.image}`         
                       }
                       alt="Preview" 
                       className="w-full h-full object-cover rounded-xl" 

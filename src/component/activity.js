@@ -276,7 +276,7 @@ export default function Activity() {
                                                         <div key={idx} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
                                                             <div className="relative">
                                                                 <img
-                                                                    src={`/image/${item.product.image}`}
+                                                                    src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${item.product.image}`}
                                                                     className="w-20 h-20 object-cover rounded-lg shadow-sm"
                                                                     alt={item.product.name}
                                                                 />
