@@ -1,6 +1,6 @@
 import React from "react";
 import { useOutsideClick } from "../helper/helper";
-import { X, AlertTriangle } from "lucide-react"
+import { X, AlertTriangle, Trash2 } from "lucide-react"
 import { useRef } from "react";
 
 export const ModalConfirm = ({ isOpen, onClose, onConfirm, message }) => {

@@ -663,7 +663,7 @@ export const createEmployee = (formData) => {
   return async (dispatch) => {
     dispatch(setLoadingCreateEmployee(true))
     try {
-      const response = await axios.post(process.env.REACT_APP_EMPLOYEE, formData, {
+      const response = await axiosInstance.post(process.env.REACT_APP_EMPLOYEE, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

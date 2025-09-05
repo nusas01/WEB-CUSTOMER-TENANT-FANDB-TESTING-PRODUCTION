@@ -200,3 +200,13 @@ export const useOutsideClick = ({ref, callback, isActive = true}) => {
         };
     }, [ref, callback, isActive]);
 }
+
+export const formatDateTime = (dateString) => {
+  return new Date(dateString).toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};

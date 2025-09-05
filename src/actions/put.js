@@ -210,7 +210,7 @@ export const updateEmployee = (formData) => {
   return async (dispatch) => {
     dispatch(setLoadingUpdateEmployee(true))
     try {
-        const response = await axios.put(process.env.REACT_APP_EMPLOYEE, formData, {
+        const response = await axiosInstance.put(process.env.REACT_APP_EMPLOYEE, formData, {
             headers: {
             'Content-Type': 'multipart/form-data',
             },

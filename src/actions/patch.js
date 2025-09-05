@@ -409,7 +409,7 @@ export const changePasswordEmployee = (data) => async (dispatch) => {
     }
     dispatch(setLoadingChangePasswordEmployee(true))
     try {
-        const response = await axios.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_EMPLOYEE}`, data, config)
+        const response = await axiosInstance.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_EMPLOYEE}`, data, config)
         dispatch(setSuccessChangePasswordEmployee(response?.data?.success))
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {

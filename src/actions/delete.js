@@ -113,7 +113,7 @@ export const deleteEmployee = (id) => {
   return async (dispatch) => {
     dispatch(setLoadingDeleteEmployee(true))
     try {
-        const response = await axios.delete(process.env.REACT_APP_EMPLOYEE, {
+        const response = await axiosInstance.delete(process.env.REACT_APP_EMPLOYEE, {
             params: { id: id },
             withCredentials: true,
         })
