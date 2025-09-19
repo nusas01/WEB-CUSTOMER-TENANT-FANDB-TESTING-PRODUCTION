@@ -400,7 +400,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
         if (errorCreateTransactionInternal) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+                message: errorCreateTransactionInternal,
             })
 
             const timer = setTimeout(() => {
@@ -486,7 +486,6 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
         }        
 
         dispatch(createTransactionInternal(data))
-        console.log("create transaction: ", data)
     }
 
     const closeModalDetailResponse = () => {

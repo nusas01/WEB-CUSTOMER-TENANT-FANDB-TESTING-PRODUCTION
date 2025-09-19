@@ -1,7 +1,7 @@
 import Cart from './component/cart'
 import './App.css'
 import Home from './component/home'
-import { BrowserRouter as Router, Routes, Route, useNavigate} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate} from 'react-router-dom'
 import RegisterPage from './component/loginSignup'
 import Profile from './component/profile'
 import ChangePassword from './component/changePassword'
@@ -120,7 +120,8 @@ function CustomerWrapper() {
     }
   }, [])
 
-  return <Outlet />; // render semua child route customer
+  // return loggedInCustomer ? <Outlet /> : <Navigate to="/access" />
+  return <Outlet/>
 }
 
 function AppContent() {
@@ -198,7 +199,7 @@ function AppContent() {
         <Route path='/verification' element={<Verification/>}/>
         <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
         <Route path='/maintenance' element={<MaintenanceComponent/>}/>
-        <Route element={<PrivateRouteCustomer/>}>
+        {/* <Route element={<PrivateRouteCustomer/>}> */}
           <Route element={<CustomerWrapper/>}>
             <Route path='/profile' element={<Profile/>}/>
             <Route path='/changepassword' element={<ChangePassword/>}/> 
@@ -207,7 +208,7 @@ function AppContent() {
             <Route path='/activity/detail' element={<DetailActivity/>}/> 
             <Route path='/activity/pembayaran' element={<Buy/>}/> 
           </Route>
-        </Route>
+        {/* </Route> */}
 
         <Route path='/internal/access' element={<RegisterPage/>}/>
         <Route element={<PrivateRouteInternal/>}>

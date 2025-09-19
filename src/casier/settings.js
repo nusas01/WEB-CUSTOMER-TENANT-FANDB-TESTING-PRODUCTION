@@ -240,9 +240,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     }
   }, [dataPaymentMethodInternal, taxRateInternal, paymentMethodCash, dispatch]);
 
-  console.log("data payment settings: ", dataPaymentMethodInternal)
-  console.log("data tax rate: ", taxRateInternal)
-
   // Payment Settings State
   const isEmptyVA = !paymentSettings?.virtualAccountFees || Object.keys(paymentSettings.virtualAccountFees).length === 0;
   const isEmptyEwallet = !paymentSettings?.ewalletFees || Object.keys(paymentSettings.ewalletFees).length === 0;
@@ -308,9 +305,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     }
   }, [])
 
-  console.log("data employee: ", dataEmployeeInternal)
-  console.log("update status image: ", updateStatus)
-
   // Handlers
  const handleProfileUpdate = (field, value) => {
     if (field === 'email' || field === 'gender' || field === 'position') return;
@@ -362,9 +356,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     confirmPassword: ''
   });
 
-  console.log("data change password: ", passwordData)
-  console.log("error change password: ", passwordErrors)
-
    const handlePasswordChange = (field, value) => {
     setPasswordData(prev => ({ ...prev, [field]: value }));
   };
@@ -374,8 +365,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
     const errors = validatePassword(passwordData.newPassword, passwordData.confirmPassword);
     setPasswordErrors(errors);
-
-    console.log("error change password: ", errors); 
 
     let currentPasswordValid = true; 
     if (passwordData.currentPassword === '') {
@@ -394,8 +383,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
       new_password: passwordData.newPassword,
       last_password: passwordData.currentPassword
     }));
-
-    console.log("dispatch executed");
   };
 
   // handle loading update data employee

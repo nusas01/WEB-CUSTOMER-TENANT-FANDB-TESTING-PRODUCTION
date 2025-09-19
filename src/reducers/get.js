@@ -209,7 +209,8 @@ export const logoutCustomerSlice = createSlice({
 
 
 const initialLoginStatusCustomer = {
-    loggedIn: false,
+    loggedIn: null,
+    loading: true,
 }
 export const loginStatusCustomerSlice = createSlice({
     name: 'loginStatusCustomerSlice',
@@ -218,6 +219,9 @@ export const loginStatusCustomerSlice = createSlice({
         setLoginStatusCustomer: (state, action) => {
             state.loggedIn = action.payload
         },
+        setLoadingLoginStatusCustomer: (state, action) => {
+            state.loading = action.payload
+        }
     }
 })
 
@@ -511,10 +515,8 @@ export const getAllCreateTransactionInternalSlice = createSlice({
             state.dataGetAllCreateTransactionInternal.push(action.payload)
         }, 
         removeGetAllCreateTransactionById: (state, action) => {
-            console.log("apakah ini tidak dijalankan: ", action.payload)
             state.dataGetAllCreateTransactionInternal = state.dataGetAllCreateTransactionInternal.filter(
                 (item) => {
-                    console.log("Item ID:", item.transaction_id, "==>", item.transaction_id === action.payload)
                     return item.transaction_id !== action.payload;
                 }
             )
@@ -666,7 +668,6 @@ export const getCategoryAndProductInternalSlice = createSlice({
             state.filteredProduct = []
         },
         updateProductInCategory: (state, action) => {
-            console.log("Reducer dijalankan", action.payload);
             const { categoryId, productId, updatedProduct } = action.payload;
 
             for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
@@ -710,7 +711,6 @@ export const getCategoryAndProductInternalSlice = createSlice({
         },
         deleteProductById: (state, action) => {
             const productId = action.payload;
-            console.log("Reducer deleteProductById dijalankan dengan id:", productId);
 
             for (let i = 0; i < state.dataCategoryAndProduct.length; i++) {
                 const category = state.dataCategoryAndProduct[i];
@@ -997,8 +997,6 @@ export const getGeneralJournalDrafInternalSlice = createSlice({
         // },
         removeGeneralJournalDrafInternalByAccountId: (state, action) => {
             const targetIds = Object.values(action.payload.detail.data_general_journal)
-            console.log("reducers draf data: ", state.dataGeneralJournalDrafInternal)
-            console.log("reducers payload draf data: ", action.payload)
             state.dataGeneralJournalDrafInternal = state.dataGeneralJournalDrafInternal.filter((entry) => {
                 // Cek apakah semua id dalam `accounts` tidak ada di targetIds
                 const hasMatchingAccount = entry.accounts.some(account => targetIds.includes(account.id))

@@ -16,7 +16,6 @@ export const orderTypeSlice = createSlice({
     initialState: initialOrderTypeState,
     reducers: {
         setOrderTypeContext: (state, action) => {
-            console.log('Dispatching setOrderTypeContext with:', action.payload);
             state.orderTakeAway = action.payload.orderTakeAway
             state.tableId = action.payload.tableId
         }
@@ -186,8 +185,6 @@ export const loadMoreTransactionHistory = () => {
             page: nextPage
         };
 
-        console.log("Loading more data for page:", nextPage);
-        
         return dispatch(fetchTransactionHistory(data, true));
     }
 }
@@ -202,12 +199,10 @@ export const loadMoreOrderFinished = () => {
     if (!dataOrdersFinishedInternal?.hasMore || 
         dataOrdersFinishedInternal?.isLoadMore ||
         dataOrdersFinishedInternal?.loadingOrdersFinishedInternal) {
-      console.log("Cannot load more - conditions not met");
       return;
     }
     
     const nextPage = (dataOrdersFinishedInternal?.page || 1) + 1;
-    console.log("Loading more data for page:", nextPage);
     
     return dispatch(fetchOrdersFinishedInternal(
       filterOrderInternal.startDate,
@@ -231,7 +226,6 @@ export const loadMoreSearchOrderInternal = (keyword) => {
         }
 
         const nextPage = (searchOrderInternalState.page || 1) + 1;
-        console.log("Loading more data for page:", nextPage);
 
         return dispatch(fetchSearchOrderInternal(keyword, nextPage, true));
     }
@@ -246,16 +240,10 @@ export const loadMoreGeneralJournalNonAgregasi = () => {
         if (!getGeneralJournalByEventPerDayInternal?.hasMore || 
             getGeneralJournalByEventPerDayInternal?.isLoadMore ||
             getGeneralJournalByEventPerDayInternal?.loadingGeneralJournalByEventPerDayInternal) {
-            console.log("Cannot load more - conditions not met", {
-                hasMore: getGeneralJournalByEventPerDayInternal?.hasMore,
-                isLoadMore: getGeneralJournalByEventPerDayInternal?.isLoadMore,
-                loading: getGeneralJournalByEventPerDayInternal?.loadingGeneralJournalByEventPerDayInternal
-            });
             return;
         }
         
         const nextPage = (getGeneralJournalByEventPerDayInternal?.page || 1) + 1;
-        console.log("Loading more data for page:", nextPage);
         
         return dispatch(fetchGeneralJournalByEventPerDayInternal(
             filterGeneralJournalInternal.startDate,
@@ -276,16 +264,10 @@ export const loadMoreGeneralJournalVoidInternal = () => {
       getGeneralJournalVoidInternal?.isLoadMore ||
       getGeneralJournalVoidInternal?.loadingGeneralJournalVoidInternal
     ) {
-      console.log("Cannot load more - conditions not met", {
-        hasMore: getGeneralJournalVoidInternal?.hasMore,
-        isLoadMore: getGeneralJournalVoidInternal?.isLoadMore,
-        loading: getGeneralJournalVoidInternal?.loadingGeneralJournalVoidInternal,
-      });
       return;
     }
 
     const nextPage = (getGeneralJournalVoidInternal?.page || 1) + 1;
-    console.log("Loading more data (Void) for page:", nextPage);
 
     return dispatch(
       fetchGeneralJournalVoidInternal(

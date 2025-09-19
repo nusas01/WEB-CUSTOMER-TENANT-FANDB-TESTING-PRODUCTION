@@ -32,7 +32,6 @@ export default function Profile() {
 
     // data customer
     const {data, loading} = useSelector((state) => state.persisted.dataCustomer)
-    console.log("data customer:", data)
     useEffect(() => {
         if (!data || Object.keys(data).length === 0) {
           dispatch(fetchGetDataCustomer())

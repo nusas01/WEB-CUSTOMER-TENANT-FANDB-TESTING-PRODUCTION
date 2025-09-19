@@ -19,7 +19,7 @@ export default function KasirTransaction() {
       setToast({
         show: true,
         type: 'error',
-        message: 'Terjadi kesalahan saat memeriksa status transaksi. Silakan coba kembali.'
+        message: errorCheckTransactionNonCash,
       });
 
       const timer = setTimeout(() => {

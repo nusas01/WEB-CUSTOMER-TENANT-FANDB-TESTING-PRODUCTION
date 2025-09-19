@@ -10,7 +10,6 @@ function Navbar({onCart, closeCart, statusCart}) {
     const containerClass = UseResponsiveClass()
     const cartItems = useSelector((state) => state.persisted.cart.items)
     const {loggedIn} = useSelector((state) => state.persisted.loginStatusCustomer)
-    console.log(loggedIn)
     // const handleShowCart = () => {
     //     if (statusCart) {
     //         closeCart();

@@ -63,8 +63,6 @@ function Cart({ closeCart }) {
         product: []
     })
 
-    console.log("pajak yang harus dibayarkan: ", taxRate)
-
     const handleCloseModel = () => {
         setIsModelInputNumberEwallet(false)
         setPaymentMethod(null)
@@ -141,11 +139,10 @@ function Cart({ closeCart }) {
         if (paymentMethod === "EWALLET" || paymentMethod === "QR") {
             const rawFee = fee * (subTotal + tax)
             feeRate = Math.floor(rawFee)
-            console.log("pencarian fee rate dari penjualan: ", fee * (subTotal +  tax))
         } else {
             feeRate = fee
         }
-        console.log("berapa ini tax rate:", tax)
+
         setFeeTransaction(feeRate)
         setTaxTransaction(tax)
         setTotalTransaction(subTotal + tax + feeRate)
@@ -161,8 +158,6 @@ function Cart({ closeCart }) {
             product: mappedProducts,
         }))
     }, [subTotal, taxRate])
-
-    console.log("data fee dan sub total: ", fee, subTotal)
 
     useEffect(() => {
         const mappedProducts = items.map((item) => ({
@@ -329,7 +324,7 @@ function Cart({ closeCart }) {
         if (error) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+                message: error,
             })
 
             const timer = setTimeout(() => {
@@ -431,11 +426,7 @@ function Cart({ closeCart }) {
         EWALLET: dataPaymentMethodCustomer?.filter((m) => m.type === "EWALLET"),
         QR: dataPaymentMethodCustomer?.filter((m) => m.type === "QR"),
     }
-
-    console.log(dataPaymentMethodCustomer)
-
-    console.log(groupedMethods)
-
+    
     useEffect(() => {
         setSpinner(loadingPaymentMethodsCustomer)
     }, [loadingPaymentMethodsCustomer])

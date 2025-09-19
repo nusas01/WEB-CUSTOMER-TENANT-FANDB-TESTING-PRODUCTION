@@ -34,7 +34,7 @@ export default function SetUsername() {
         if (errorSetUsername) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami. Silakan coba lagi nanti.',
+                message: errorSetUsername,
             })
 
             const timer = setTimeout(() => {
@@ -49,7 +49,7 @@ export default function SetUsername() {
         if (successSetUsername) {
             setToast({
                 type: 'success',
-                message: 'Username berhasil diatur. Sekarang akan digunakan dalam setiap pesanan kamu.',
+                message: successSetUsername,
             })
 
             setData({
@@ -71,7 +71,6 @@ export default function SetUsername() {
         setUsername(null)
         dispatch(setUsernameCustomer(data))
     }
-
 
     // alert invalid type order
     const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)

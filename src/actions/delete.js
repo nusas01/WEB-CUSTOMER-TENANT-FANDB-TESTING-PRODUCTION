@@ -116,6 +116,9 @@ export const deleteEmployee = (id) => {
         const response = await axiosInstance.delete(process.env.REACT_APP_EMPLOYEE, {
             params: { id: id },
             withCredentials: true,
+            headers: {
+                "API_KEY": process.env.REACT_APP_API_KEY,
+            },
         })
         dispatch(setSuccessDeleteEmployee(true))
         return response.data

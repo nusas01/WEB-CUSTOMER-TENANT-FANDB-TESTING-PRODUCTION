@@ -39,51 +39,80 @@ import {
     statusServiceMaintenanceSlice,
  } from "../reducers/expToken.js"
  import {groupByDate} from "../helper/groupData.js"
+import { data } from "react-router-dom";
+import { customerCollectFingerprintAsync } from "../helper/fp.js";
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
 const {setStatusExpiredUserToken} = statusExpiredUserTokenSlice.actions
 const {setStatusServiceMaintenance} = statusServiceMaintenanceSlice.actions
 
+export const fetchNonceCustomer = async () => {
+  try {
+    const response = await  axiosInstance.get(
+      `${process.env.REACT_APP_NONCE_CUSTOMER_URL}`,
+      {
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY
+        },
+        withCredentials: true,
+      }
+    );
+
+    return { data: response?.data, error: null };
+  } catch (error) {
+    return { data: null, error: error.response?.data?.error || "Unexpected error" };
+  }
+};
+
+
 const {setLoadingProducts, successFetchProducts, errorFetchProducts} = getProductsCustomerSlice.actions;
 export const fetchProductsCustomer = () => {
     return async (dispatch, getState) => {
       const { statusExpiredToken } = getState().statusExpiredTokenState;
       if (statusExpiredToken) return; 
-
         dispatch(setLoadingProducts(true))
         try {
-            const response = await axiosInstance.get(`${process.env.REACT_APP_PRODUCTS_CUSTOMER_URL}`, {
-                withCredentials: true,
-                headers: {
-                    'API_KEY': process.env.REACT_APP_API_KEY
-                },
-            })
-            dispatch(successFetchProducts(response?.data))
+          const nonce_data = await customerCollectFingerprintAsync()
+
+          const params = {
+            nonce: nonce_data.nonce,
+            value: nonce_data.value,
+            iv: nonce_data.iv,
+          }
+
+          const response = await axiosInstance.get(`${process.env.REACT_APP_PRODUCTS_CUSTOMER_URL}`, {
+              withCredentials: true,
+              headers: {
+                  'API_KEY': process.env.REACT_APP_API_KEY
+              },
+              params: params,
+          })
+          dispatch(successFetchProducts(response?.data))
         } catch(error) {
-            if (error.response?.data?.code === "TOKEN_EXPIRED") {
-                dispatch(setStatusExpiredToken(true))
-            }
+          if (error.response?.data?.code === "TOKEN_EXPIRED") {
+              dispatch(setStatusExpiredToken(true))
+          }
 
-            if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
-              dispatch(setStatusExpiredInternalToken(true));
-            }
+          if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+            dispatch(setStatusExpiredInternalToken(true));
+          }
 
-            if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
-              dispatch(setStatusExpiredUserToken(true));
-            }
+          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+          }
 
-            if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
-              dispatch(setStatusServiceMaintenance(true));
-            }
+          if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+          }
 
-            const message = {
-                message: error.response?.data?.message,
-                status: error.response?.status,
-            }
-            dispatch(errorFetchProducts(message))
+          const message = {
+              message: error.response?.data?.error,
+              status: error.response?.status,
+          }
+          dispatch(errorFetchProducts(message))
         } finally {
-            dispatch(setLoadingProducts(false))
+          dispatch(setLoadingProducts(false))
         }
     }
 }
@@ -121,7 +150,7 @@ export const fetchGetDataCustomer = () => {
             }
 
             const message = {
-                message: error.response.message,
+                message: error.response?.data?.error,
                 status: error.response.status,
             }
             dispatch(fetchErrorGetDataCustomer(message))
@@ -164,7 +193,7 @@ export const fetchTransactionOnGoingCustomer = () => {
             }
 
             const message = {
-                error: error.response.message,
+                error: error.response?.data?.error,
                 statusCode: error.response.status,
             }
             dispatch(fetchErrorGetTransactionOnGoingCustomer(message))
@@ -188,7 +217,6 @@ export const fetchTransactionHistoryCustomer = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log()
         const grouped = groupByDate(response?.data || []);
   
         dispatch(fetchSuccessGetTransactionHistoryCustomer(grouped))
@@ -209,7 +237,7 @@ export const fetchTransactionHistoryCustomer = () => {
           dispatch(setStatusServiceMaintenance(true));
         }
         const message = {
-          error: error.response?.data?.message || "Unknown error",
+          error: error.response?.data?.error,
           statusCode: error.response?.status || 500,
         }
         dispatch(fetchErrorGetTransactionHistoryCustomer(message))
@@ -236,7 +264,6 @@ export const fetchDetailTransactionHistoryCustomer = (id) => {
             id: id,
           },
         })
-        console.log("daya res[[seponse: ", response)
         dispatch(fetchSuccessDetailTransactionHistoryCustomer(response?.data || null))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -256,8 +283,8 @@ export const fetchDetailTransactionHistoryCustomer = (id) => {
         }
 
         const message = {
-          error: error.response?.data?.message || "Unknown error",
-          statusCode: error.response?.status || 500,
+          error: error.response?.data?.error,
+          statusCode: error.response?.status,
         }
         dispatch(fetchErrorDetailTransactionHistoryCustomer(message))
       } finally {
@@ -301,7 +328,7 @@ export const fetchSearchTransactionInternal = (id_transaction) => {
         dispatch(setStatusServiceMaintenance(true));
       }
       
-      dispatch(fetchErrorSearchTransactionInternal(error.response.data?.error))
+      dispatch(fetchErrorSearchTransactionInternal(error.response?.data?.error))
     } finally {
       dispatch(setLoadingSearchTransactionInternal(false))
     }
@@ -322,7 +349,6 @@ export const fetchPaymentMethodsCustomer = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log(response)
         dispatch(fetchSuccessGetPaymentMethodsCustomer(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -342,8 +368,8 @@ export const fetchPaymentMethodsCustomer = () => {
         }
 
         const message = {
-          error: error.response?.data?.error || "Unknown error",
-          statusCode: error.response?.status || 500,
+          error: error.response?.data?.error,
+          statusCode: error.response?.status,
         }
         dispatch(fetchErrorGetPaymentMethodsCustomer(message))
       } finally {
@@ -353,7 +379,7 @@ export const fetchPaymentMethodsCustomer = () => {
 }
   
 
-const {setLoginStatusCustomer} = loginStatusCustomerSlice.actions
+const {setLoginStatusCustomer, setLoadingLoginStatusCustomer} = loginStatusCustomerSlice.actions
 const {logoutSuccessCustomer, logoutErrorCustomer, setLoadingLogoutCustomer } = logoutCustomerSlice.actions
 export const logoutCustomer = () => {
     return async (dispatch, getState) => {
@@ -388,7 +414,7 @@ export const logoutCustomer = () => {
             dispatch(setStatusServiceMaintenance(true));
           }
           
-          dispatch(logoutErrorCustomer(error.response))
+          dispatch(logoutErrorCustomer(error.response?.data?.error))
       } finally {
           dispatch(setLoadingLogoutCustomer(true))
       }
@@ -400,6 +426,7 @@ export const loginStatusCustomer = () => {
       const { statusExpiredToken } = getState().statusExpiredTokenState;
       if (statusExpiredToken) return; 
 
+      dispatch(setLoadingLoginStatusCustomer(true))
       try {
         const response = await axiosInstance.get(`${process.env.REACT_APP_LOGIN_STATUS_CUSTOMER}`, {
             withCredentials: true,
@@ -408,7 +435,6 @@ export const loginStatusCustomer = () => {
             }
         })
         dispatch(setLoginStatusCustomer(response?.data.loggedIn))
-        console.log("status login customer: ", response.data)
       } catch (error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
@@ -427,10 +453,29 @@ export const loginStatusCustomer = () => {
           }
 
           dispatch(setLoginStatusCustomer(false))
-          console.log(error)
+      } finally {
+        dispatch(setLoadingLoginStatusCustomer(false))
       }
     }
 }
+
+export const fetchNonceInternal = async () => {
+  try {
+    const response = await  axiosInstance.get(
+      `${process.env.REACT_APP_NONCE_INTERNAL_URL}`,
+      {
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY
+        },
+        withCredentials: true,
+      }
+    );
+
+    return { data: response?.data, error: null };
+  } catch (error) {
+    return { data: null, error: error.response?.data?.error || "Unexpected error" };
+  }
+};
 
 const {setLoginStatusInternal} = loginStatusInternalSlice.actions
 export const loginStatusInternal = () => {
@@ -464,7 +509,6 @@ export const loginStatusInternal = () => {
           }
 
           dispatch(setLoginStatusInternal(false))
-          console.log(error)
       }
     }
 }
@@ -483,10 +527,8 @@ export const logoutInternal = () => {
                   "API_KEY": process.env.REACT_APP_API_KEY,
               }
           })
-          console.log(response)
           dispatch(logoutSuccessInternal(response?.data.success))
           dispatch(setLoginStatusInternal(false))
-          // reset data customer ketika sudah di buat endpoint
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
@@ -504,7 +546,7 @@ export const logoutInternal = () => {
             dispatch(setStatusServiceMaintenance(true));
           }
           
-          dispatch(logoutErrorInternal(error.response))
+          dispatch(logoutErrorInternal(error.response?.data?.error))
       } finally {
           dispatch(setLoadingLogoutInternal(false))
       }
@@ -544,7 +586,7 @@ export const fetchTransactionCashOnGoingInternal = () => {
           }
 
           const message = {
-              error: error.response.message,
+              error: error.response.data?.error,
               statusCode: error.response.status,
           }
           dispatch(fetchErrorTransactionCashInternal(message))
@@ -569,7 +611,6 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
                 },
           })
           dispatch(fetchSuccessTransactionNonCashInternal(response?.data || []))
-          console.log("apa yang terjadi ini di transaction non cash: ", response)
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
@@ -588,7 +629,7 @@ export const fetchTransactionNonCashOnGoingInternal = () => {
           }
           
           const message = {
-              error: error.response?.message,
+              error: error.response?.data?.error,
               statusCode: error.response?.status,
           }
           dispatch(fetchErrorTransactionNonCashInternal(message))
@@ -642,14 +683,6 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
             };
             
             dispatch(fetchSuccessTransactionHistoryInternal(responseData))
-            
-            console.log("Transaction history response: ", {
-                currentPage: data.page,
-                hasMore: response.data?.hasMore,
-                dataLength: response.data?.data?.length,
-                totalCount: response.data?.totalCount
-            })
-            
         } catch(error) {
             if (error.response?.data?.code === "TOKEN_EXPIRED") {
                 dispatch(setStatusExpiredToken(true))
@@ -671,8 +704,8 @@ export const fetchTransactionHistory = (data, isLoadMore = false) => {
                 return
             } else {
                 const errorData = {
-                    error: error.response?.data?.error || error.message || 'Unknown error',
-                    statusCode: error.response?.status || 500
+                    error: error.response?.data?.error,
+                    statusCode: error.response?.status,
                 }
                 dispatch(fetchErrorTransactionHistoryInternal(errorData))
             }
@@ -737,7 +770,6 @@ export const fetchGetAllCreateTransactionInternal = () => {
                 }
           })
           dispatch(fetchSuccessGetAllCreateTransactionInternal(response.data))
-          console.log("apa yang terjadi ini di history vhoufvhouf: ", response.data)
       } catch(error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
@@ -759,8 +791,8 @@ export const fetchGetAllCreateTransactionInternal = () => {
               return
           } else {
               const data = {
-                  error: error.response?.data?.error || error.message || 'Unknown error',
-                  statusCode: error.response?.status || 500
+                  error: error.response?.data?.error,
+                  statusCode: error.response?.status,
               }
               dispatch(fetchErrorGetAllCreateTransactionInternal(data))
           }
@@ -786,7 +818,6 @@ export const fetchPaymentMethodsInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("data response payment method kenapa tidak: ", response)
         dispatch(fetchSuccessGetPaymentMethodsInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -806,7 +837,7 @@ export const fetchPaymentMethodsInternal = () => {
         }
 
         const message = {
-          error: error.response?.data?.error || "Unknown error",
+          error: error.response?.data?.error,
         }
         dispatch(fetchErrorGetPaymentMethodsInternal(message))
       } finally {
@@ -830,7 +861,6 @@ export const fetchCategoryInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessCategoryInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -871,7 +901,6 @@ export const fetchCategoryAndProductInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         const message = {
             amountCategory: response?.data?.result?.jumlah_category,
             amountProduct: response?.data?.result?.jumlah_product,
@@ -920,7 +949,6 @@ export const fetchLabaRugiInternal = (startDate, endDate) => {
             end_date: endDate,
           }
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessLabaRugiInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -964,7 +992,6 @@ export const fetchNeracaInternal = (startDate, endDate) => {
             end_date: endDate,
           }
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessNeracaInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -1008,7 +1035,6 @@ export const fetchGeneralJournalByEventAllInternal = (startDate, endDate) => {
             end_date: endDate
           }
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessGeneralJournalByEventAllInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -1044,15 +1070,11 @@ export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, pag
         
         // ✅ Fix: Pengecekan kondisi yang lebih baik
         if (currentState.isLoadMore && isLoadMore) {
-            console.log("Already loading more, skipping...");
             return
         }      
         if (currentState.loadingGeneralJournalByEventPerDayInternal && !isLoadMore) {
-            console.log("Already loading, skipping...");
             return
         }
-        
-        console.log("Starting fetch:", { startDate, endDate, page, isLoadMore });
         
         dispatch(setLoadingGeneralJournalByEventPerDayInternal({loading: true, isLoadMore}))
         
@@ -1068,13 +1090,7 @@ export const fetchGeneralJournalByEventPerDayInternal = (startDate, endDate, pag
                     page: page,
                 }
             })
-            
-            console.log("Fetch response:", {
-                dataLength: response?.data?.data?.length,
-                hasNext: response?.data?.has_next,
-                page: page
-            });
-            
+          
             dispatch(fetchSuccessGeneralJournalByEventPerDayInternal({
                 data: response?.data?.data || [],
                 hasMore: response?.data?.has_next || false,
@@ -1115,12 +1131,10 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, is
     const currentState = getState().persisted.getGeneralJournalVoidInternal;
 
     if (currentState.isLoadMore && isLoadMore) {
-      console.log("Already loading more, skipping request");
       return;
     }
 
     if (currentState.loadingGeneralJournalVoidInternal && !isLoadMore) {
-      console.log("Already loading initial data, skipping request");
       return;
     }
 
@@ -1138,8 +1152,6 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, is
           page: page,
         },
       });
-
-      console.log("Fetch response (Void):", response.data);
 
       dispatch(fetchSuccessGeneralJournalVoidInternal({
         data: response?.data?.data || [],
@@ -1163,7 +1175,7 @@ export const fetchGeneralJournalVoidInternal = (startDate, endDate, page = 1, is
         dispatch(setStatusServiceMaintenance(true));
       }
 
-      dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error || "Unknown error"));
+      dispatch(fetchErrorGeneralJournalVoidInternal(error.response?.data?.error));
     }
   };
 };
@@ -1223,7 +1235,6 @@ export const fetchAssetsStoreInternal = (data) => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessAssetsStoreInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -1264,12 +1275,7 @@ export const fetchOrdersInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           }
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
-        // if (startDate || endDate) {
-        //   dispatch(appendOrdersInternal(response?.data?.data))
-        // } else {
-          dispatch(fetchSuccessOrdersInternal(response?.data?.data))
-        // }
+        dispatch(fetchSuccessOrdersInternal(response?.data?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -1304,12 +1310,10 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
     
     // Prevent multiple simultaneous requests
     if (currentState.isLoadMore && isLoadMore) {
-      console.log("Already loading more, skipping request");
       return;
     }
     
     if (currentState.loadingOrdersFinishedInternal && !isLoadMore) {
-      console.log("Already loading initial data, skipping request");
       return;
     }
 
@@ -1328,8 +1332,6 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
           page: page,
         }
       })
-      
-      console.log("Fetch response:", response.data);
       
       dispatch(fetchSuccessOrdersFinishedInternal({
         data: response?.data?.data || [],
@@ -1354,7 +1356,7 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
         dispatch(setStatusServiceMaintenance(true));
       }
 
-      dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error || 'Unknown error'))
+      dispatch(fetchErrorOrdersFinishedInternal(error.response?.data?.error))
     }
   }
 }
@@ -1412,7 +1414,7 @@ export const fetchSearchOrderInternal = (searchQuery, currentPage, isLoadMore = 
       dispatch(setStatusServiceMaintenance(true));
     }
 
-    dispatch(fetchErrorSearchOrder(error.response?.data?.error || 'Error fetching search data'));
+    dispatch(fetchErrorSearchOrder(error.response?.data?.error));
   }
 };
 
@@ -1431,7 +1433,6 @@ export const fetchTablesInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessTablesInternal({ 
           tables: response?.data?.tables, 
           orderTypeTakeAway: response?.data?.order_type_take_away,
@@ -1475,7 +1476,6 @@ export const fetchDataEmployeeInternal = () => {
             'API_KEY': process.env.REACT_APP_API_KEY
           },
         })
-        console.log("kenapa ini tidaj di ajalankan: ", response)
         dispatch(fetchSuccessDataEmployeeInternal(response?.data))
       } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -1532,7 +1532,7 @@ export const fetchAllEmployees = (storeId) => {
           dispatch(setStatusServiceMaintenance(true));
         }
         
-        dispatch(setErrorGetEmployees(error?.response?.data?.error || 'Gagal memuat daftar employee'))
+        dispatch(setErrorGetEmployees(error?.response?.data?.error))
     } finally {
         dispatch(setLoadingGetEmployees(false))
     }

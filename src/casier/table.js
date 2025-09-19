@@ -118,7 +118,6 @@ export default function ModernKasirDashboard() {
     const { resetErrorTablesInternal } = getTablesInternalSlice.actions
     const {dataTablesInternal, orderTypeTakeAway, errorTablesInternal, loadingTablesInternal} = useSelector((state) => state.persisted.getTablesInternal)
     
-    console.log("data table: ", dataTablesInternal)
     useEffect(() => {
       if (dataTablesInternal.length === 0) {
           dispatch(fetchTablesInternal())
@@ -132,7 +131,7 @@ export default function ModernKasirDashboard() {
     useEffect(() => {
       if (errorTablesInternal) {
           setToast({
-            message: "Terjadi kesalahan yang tidak terduga. Silakan coba beberapa saat lagi.",
+            message: errorTablesInternal,
             type: 'error'
           });
           

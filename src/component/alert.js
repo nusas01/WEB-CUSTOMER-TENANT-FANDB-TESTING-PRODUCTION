@@ -82,7 +82,7 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="w-full">
+        {/* <div className="w-full">
           <button
             onClick={onClose}
             className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-2xl text-base font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
@@ -90,7 +90,7 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
             <CheckCircle className="w-5 h-5" />
             Baiklah
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   )

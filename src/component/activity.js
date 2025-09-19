@@ -9,7 +9,7 @@ import {OrderTypeInvalidAlert} from "./alert"
 import { useSelector, useDispatch } from "react-redux"
 import historyIcon from "../image/nota.png"
 import { CountDown } from "../helper/countDown"
-import {fetchDetailTransactionHistoryCustomer, fetchTransactionHistoryCustomer} from "../actions/get"
+import {fetchDetailTransactionHistoryCustomer, fetchTransactionHistoryCustomer, loginStatusCustomer} from "../actions/get"
 import { SpinnerRelative } from "../helper/spinner"
 import { buttonActivityCustomerSlice } from "../reducers/reducers"
 import { da } from "date-fns/locale"
@@ -33,18 +33,25 @@ export default function Activity() {
     const buttonstatus = location.state || "on going"
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [spinner, setSpinner] = useState(false)
-   
+
+    useEffect(() => {
+        dispatch(loginStatusCustomer())
+    }, [])
+
+    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer)
+    useEffect(() => {
+        if (!loggedIn) {
+        } 
+    }, [loggedIn])
     
     // get data transaction on goin 
     const {dataTransactionOnGoing, lengthTransactionOnGoing, loading} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
     useEffect(() => {
         setSpinner(loading)
     }, [loading])
-    console.log("data transaction on goin: ", dataTransactionOnGoing)
 
     // get data transaction history or finished
     const {dataTransactionHistory, loadingHistory, lengthTransactionProses} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
-    console.log("apa yang terjadi terjadi: ", dataTransactionHistory)
     useEffect(() => {
         setSpinner(loadingHistory)
     }, [loadingHistory])

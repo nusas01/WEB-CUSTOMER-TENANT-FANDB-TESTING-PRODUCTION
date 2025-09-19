@@ -65,6 +65,8 @@ import {
   createQROrderTypeTakeAwaySlice,
   getJournalDrafByJsonInternalSlice,
   createEmployeeSlice,
+  forgotPasswordCustomerSlice,
+  forgotPasswordInternalSlice,
 } from './post'
 import {
   updateInternalSlice,
@@ -100,7 +102,6 @@ import {
   deleteCategoryInternalSlice,
   deleteEmployeeSlice,
 } from './delete'
-
 
 // 1. Reducer yang ingin dipersist
 const persistedReducers = combineReducers({
@@ -197,6 +198,8 @@ const nonPersistedReducers = {
   updateEmployeeState: updateEmployeeSlice.reducer,
   changePasswordEmployeeState: changePasswordEmployeeSlice.reducer,
   deleteEmployeeState: deleteEmployeeSlice.reducer,
+  forgotPasswordCustomerState: forgotPasswordCustomerSlice.reducer,
+  forgotPasswordInternalState: forgotPasswordInternalSlice.reducer,
 }
 
 const rootReducer = combineReducers({

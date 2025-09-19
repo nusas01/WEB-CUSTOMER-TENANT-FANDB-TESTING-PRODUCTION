@@ -41,9 +41,7 @@ const useSSE = (url, onMessage) => {
             try {
                 const data = JSON.parse(event.data);
                 onMessage(data);
-                console.log("SSE data received:", data);
             } catch (err) {
-                console.error("SSE JSON parse error:", err);
             }
         };
 
@@ -72,8 +70,6 @@ const SSETransactionOnGoingCustomer = () => {
         dispatch(updateTransactionOnGoingStatusById(data))
     })
 
-    console.log("SSETransactionOnGoingCustomer rendered", { url })
-
     return null
 }
 
@@ -88,8 +84,6 @@ const SSETransactionCashOnGoingInternal = () => {
         dispatch(addTransactionCashOnGoingInternal(data))
     })
 
-    console.log("SSETransactionCashOnGoingInternal rendered", { url })
-
     return null
 }
 
@@ -102,7 +96,6 @@ const SSETransactionNonCashOnGoingInternal = () => {
 
     useSSE(url, (data) => {
         dispatch(addTransactionNonCashOnGoingInternal(data))
-        console.log("SSETransactionNonCashOnGoingInternal rendered", data)
     })
 
 
@@ -129,8 +122,6 @@ const SSEOrderInternal = () => {
             dispatch(removeTransactionNonCashOnGoingInternalById(data.id))
         }
     })
-
-    console.log("SSEOrderInternal rendered", { url })
 
     return null
 }

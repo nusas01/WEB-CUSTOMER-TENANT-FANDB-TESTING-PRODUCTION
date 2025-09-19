@@ -42,7 +42,7 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
   useEffect(() => {
     if (errorLabaRugiIntenal) {
       setToast({
-        message: "Terjadi kesalahan pada sistem saat mengambil data laba rugi. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi.",
+        message: errorLabaRugiIntenal,
         type: 'error'
       });
         
@@ -98,8 +98,6 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
       }
     }
   }, [startDate, endDate]);
-
-  console.log(dataLabaRugiInternal)
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -214,7 +212,6 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
     </div>
   );
 
-  console.log(dataLabaRugiInternal)
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-2 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">

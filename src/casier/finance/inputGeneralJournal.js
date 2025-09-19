@@ -84,7 +84,6 @@ export function GeneralJournalForm() {
     loadingGetJournalByJson, 
   } = useSelector((state) => state.persisted.getJournalDrafByJsonInternal)
 
-  console.log('data update general journal: ', journalData)
   const {
     selectedAccount: journalDataSelectedAccount,
     selectedType: journalDataSelectedType,
@@ -98,9 +97,6 @@ export function GeneralJournalForm() {
       setFormData(journalDataFormData);
     }
   }, [journalData, journalDataSelectedAccount, journalDataSelectedType, journalDataFormData]);
-  console.log("data selected account: ", selectedAccount)
-  console.log("data selected type: ", selectedType)
-  console.log("data form date: ", formData)
   
   useEffect(() => {
   
@@ -487,8 +483,6 @@ export function GeneralJournalForm() {
     }
   }, [])
 
-  console.log("data assets: ", dataAssetsStoreInternal)
-
   const handleSubmitJournal = (action) => {
     const data = {
       account_name: selectedAccount,
@@ -498,7 +492,6 @@ export function GeneralJournalForm() {
       },
     }
 
-    console.log('kenapa data null:', data)
     if (journalData !== null) {
     // update Journal 
       dispatch(UpdateGeneralJournalInternal(data))
@@ -514,7 +507,6 @@ export function GeneralJournalForm() {
   const {successUpdateGeneralJournalInternal, errorUpdateGeneralJournalInternal, loadingUpdateGeneralJournalInternal} = useSelector((state) => state.updateGeneralJournalInternalState)
 
   useEffect(() => {
-    console.log("succesUpdatetGeneralJournal changed: ", successUpdateGeneralJournalInternal)
     if (successUpdateGeneralJournalInternal) {
       navigate("/internal/admin/general-journal")
       dispatch(resetUpdateGeneralJournalInternal())
@@ -528,7 +520,6 @@ export function GeneralJournalForm() {
   const {successInputGeneralJournal, errorInputGeneralJournal, loadingInputGeneralJournal} = useSelector((state) => state.inputGeneralJournalInternalState)
 
   useEffect(() => {
-    console.log("successInputGeneralJournal changed: ", successInputGeneralJournal)
     if (successInputGeneralJournal) {
       navigate("/internal/admin/general-journal")
       dispatch(resetInputGeneralJournalInternal())
@@ -539,7 +530,7 @@ export function GeneralJournalForm() {
   useEffect(() => {
     if (errorGetJournalByJsonJournal || errorInputGeneralJournal || errorUpdateGeneralJournalInternal) {
       setToast({
-        message: "There was an error on the internal server, we are fixing it.",
+        message: errorGetJournalByJsonJournal || errorInputGeneralJournal || errorUpdateGeneralJournalInternal,
         type: 'error'
       });
         

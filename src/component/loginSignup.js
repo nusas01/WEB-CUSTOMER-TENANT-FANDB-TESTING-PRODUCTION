@@ -4,6 +4,7 @@
 // import { BsMicrosoft } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import "../style/loginSignup.css";
+import { LogIn } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { signupCustomer, loginCustomer, loginGoogleCustomer, loginInternal } from "../actions/post";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ export default function RegisterPage() {
   const [toast, setToast] = useState(null)
   const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
   const location = useLocation()
+  const [showPassword, setShowPassword] = useState(false);
 
   const isInternal = location.pathname.startsWith('/internal')
 
@@ -92,14 +94,8 @@ export default function RegisterPage() {
     if (error) {
       setToast({
         type: 'error',
-        message: 'Terjadi kesalahan saat mendaftarkan akun. Silakan coba lagi nanti.',
+        message: error,
       })
-
-      const timer = setTimeout(() => {
-        dispatch(resetSignupCustomer())
-      }, 3000)
-
-      return () => clearTimeout(timer)
     }
   }, [error])
 
@@ -132,7 +128,6 @@ export default function RegisterPage() {
   useEffect(() => {
     setSpinner(loadingLogin)
   }, [loadingLogin])  
-
 
   useEffect(() => {
     if (messageLoginSuccess) {
@@ -187,7 +182,7 @@ export default function RegisterPage() {
     if (signup) {
       // validasi simple
       setRepeatPassword(false)
-      if (formSignup.password !== formSignup.repeatPassword) {
+      if (formSignup?.password !== formSignup?.repeatPassword) {
         setRepeatPassword(true)
         return
       }
@@ -270,16 +265,8 @@ export default function RegisterPage() {
         if (errorLoginGoogleCustomer || errorLoginInternal || errorLogin) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami saat login. Silakan coba lagi nanti.',
+                message: errorLoginGoogleCustomer || errorLoginInternal || errorLogin,
             })
-
-            const timer = setTimeout(() => {
-              dispatch(resetLoginGoogleCustomer())
-              dispatch(setLoginStateNullCustomer())
-              dispatch(setLoginStateNullInternal())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [errorLoginGoogleCustomer, errorLoginInternal, errorLogin])
 
@@ -296,183 +283,295 @@ export default function RegisterPage() {
   }, [tableId, orderTakeAway]) 
 
 
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  // Determine current password value
+  const passwordValue = signup ? formSignup?.password : formLogin?.password;
+
+  // Determine if field has error
+  const hasError = !signup
+    ? (isInternal ? !!errPassInternal : !!errPass)
+    : !!passwordErrSign;
+
+  // Get error message
+  const errorMessage = !signup
+    ? (isInternal ? errPassInternal : errPass)
+    : passwordErrSign;
+
+
   return (
-    <div className="container">
-      <div className="card">
-        {toast && (
-            <ToastPortal> 
-                <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
-                <Toast 
-                message={toast.message} 
-                type={toast.type} 
-                onClose={() => setToast(null)} 
-                duration={3000}
-                />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center sm:p-4">
+      {/* Toast Container */}
+      {toast && (
+        <ToastPortal> 
+          <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-50'>
+            <Toast 
+              message={toast.message} 
+              type={toast.type} 
+              onClose={() => {
+                setToast(null)
+                dispatch(resetSignupCustomer())
+                dispatch(resetLoginGoogleCustomer())
+                dispatch(setLoginStateNullCustomer())
+                dispatch(setLoginStateNullInternal())
+              }} 
+              duration={3000}
+            />
+          </div>
+        </ToastPortal>
+      )}
+
+      {/* Order Type Invalid Alert */}
+      {orderTypeInvalid && (
+        <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+      )}
+
+      {/* Main Card Container */}
+      <div className="w-full max-w-lg">
+        <div className="bg-white rounded-3xl shadow-2xl px-8 py-16">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              {signup ? 'Create Account' : 'Welcome Back'}
+            </h1>
+            <p className="text-gray-600">
+              {signup ? 'Create your account' : 'Sign in to your account'}
+            </p>
+          </div>
+
+          {/* Form */}
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  </svg>
                 </div>
-            </ToastPortal>
-        )}
-
-        { orderTypeInvalid && (
-            <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
-        )}
-
-        <h1 className="title">{signup ? 'Create an account' : 'Welcome back'}</h1>
-
-        <form className="form" onSubmit={handleSubmit}>
-           <div style={{ position: 'relative' }} className="mb-10">
-            <input
-              type="email"
-              placeholder=""
-              name="email"
-              value={signup ? formSignup.email : formLogin.email}
-              onChange={handleChange}
-              className="input"
-              required
-              style={{
-                borderColor: !signup
-                  ? (isInternal ? (errEmailInternal ? 'red' : '') : (errUsername ? 'red' : ''))
-                  : (emailErrSign ? 'red' : '')
-              }}
-            />
-
-            <label
-              className="input-label"
-              style={{
-                color: !signup
-                  ? (isInternal ? (errEmailInternal ? 'red' : '') : (errUsername ? 'red' : ''))
-                  : (emailErrSign ? 'red' : '')
-              }}
-            >
-              Email Address
-            </label>
-
-            {!signup ? (
-              <p className="text-start mt-1" style={{ color: 'red', fontSize: '13px' }}>
-                {isInternal ? errEmailInternal : errUsername}
-              </p>
-            ) : (
-              <p className="text-start mt-1" style={{ color: 'red', fontSize: '13px' }}>
-                {emailErrSign}
-              </p>
-            )}
-          </div>
-
-          {signup && (
-            <div style={{ position: 'relative' }} className="mb-10">
-              <input
-                type="text"
-                placeholder=""
-                name="username"
-                value={formSignup.username}
-                onChange={handleChange}
-                className="input"
-                style={ usernameErrSign ? {borderColor: 'red'} : {}}
-                required
-              />
-              <label className="input-label" style={usernameErrSign && {color: 'red'}}>Username</label>
-              <p className="text-start mt-1" style={{color: 'red', fontSize: '13px'}}>{usernameErrSign}</p>
-            </div>
-          )}
-
-          <div style={{ position: 'relative' }} className="mb-10">
-            <input
-              type="password"
-              placeholder=""
-              name="password"
-              value={signup ? formSignup.password : formLogin.password}
-              onChange={handleChange}
-              className="input"
-              required
-              style={{
-                borderColor: !signup
-                  ? (isInternal ? (errPassInternal ? 'red' : '') : (errPass ? 'red' : ''))
-                  : (passwordErrSign ? 'red' : '')
-              }}
-            />
-            
-            <label
-              className="input-label"
-              style={{
-                color: !signup
-                  ? (isInternal ? (errPassInternal ? 'red' : '') : (errPass ? 'red' : ''))
-                  : (passwordErrSign ? 'red' : '')
-              }}
-            >
-              Password
-            </label>
-
-            {!signup ? (
-              <p className="text-start" style={{ color: 'red', fontSize: '13px' }}>
-                {isInternal ? errPassInternal : errPass}
-              </p>
-            ) : (
-              <p className="text-start" style={{ color: 'red', fontSize: '13px' }}>
-                {passwordErrSign}
-              </p>
-            )}
-          </div>
-
-
-          {signup && (
-            <div style={{ position: 'relative' }} className="mb-10">
-              <input
-                type="password"
-                placeholder=""
-                name="repeatPassword"
-                value={formSignup.repeatPassword}
-                onChange={handleChange}
-                className="input"
-                required
-               style={ repeatPassword ? {borderColor: 'red'} : {}}
-              />
-              <label className="input-label" style={repeatPassword ? { color: 'red' } : undefined}>Repeat Password</label>
-              { repeatPassword && (
-                <p className="text-start" style={{color: 'red', fontSize: '13px'}}>Password dan repeat password tidak sama</p>
+                <input
+                  type="email"
+                  name="email"
+                  value={signup ? formSignup.email : formLogin.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  className={`w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
+                    (!signup
+                      ? (isInternal ? (errEmailInternal ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-500 focus:border-gray-500') : (errUsername ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'))
+                      : (emailErrSign ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'))
+                  }`}
+                  required
+                />
+              </div>
+              {(!signup ? (isInternal ? errEmailInternal : errUsername) : emailErrSign) && (
+                <p className="text-red-500 text-sm">
+                  {!signup ? (isInternal ? errEmailInternal : errUsername) : emailErrSign}
+                </p>
               )}
             </div>
-          )}
 
-          <button type="submit" className="button">
-            {signup ? 'Sign Up' : 'Login'}
-          </button>
-        </form>
+            {/* Username Field (Signup only) */}
+            {signup && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formSignup.username}
+                    onChange={handleChange}
+                    placeholder="Enter your username"
+                    className={`w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
+                      usernameErrSign ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                    }`}
+                    required
+                  />
+                </div>
+                {usernameErrSign && (
+                  <p className="text-red-500 text-sm">{usernameErrSign}</p>
+                )}
+              </div>
+            )}
 
-        <p className="text">
-          {signup ? (
-            <>
-              Already have an account?{' '}
-              <a onClick={toggleSignup} className="link">
-                Login
-              </a>
-            </>
-          ) : (
-            <>
-              Don’t have an account?{' '}
-              <a onClick={toggleSignup} className="link">
-                Sign Up
-              </a>
-            </>
-          )}
-        </p>
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  value={signup ? formSignup?.password : formLogin?.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
+                    (!signup
+                      ? (isInternal ? (errPassInternal ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-gray-900 focus:border-gray-900') : (errPass ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'))
+                      : (passwordErrSign ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'))
+                  }`}
+                  required
+                />
+              </div>
+              {(!signup ? (isInternal ? errPassInternal : errPass) : passwordErrSign) && (
+                <p className="text-red-500 text-sm">
+                  {!signup ? (isInternal ? errPassInternal : errPass) : passwordErrSign}
+                </p>
+              )}
+            </div>
 
-        <div className="divider">
-          <hr className="line" />
-          <span className="or-text">OR</span>
-          <hr className="line" />
-        </div>
+            {/* Repeat Password Field (Signup only) */}
+            {signup && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="password"
+                    name="repeatPassword"
+                    value={formSignup.repeatPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm your password"
+                    className={`w-full pl-10 pr-3 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
+                      repeatPassword ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'
+                    }`}
+                    required
+                  />
+                </div>
+                {repeatPassword && (
+                  <p className="text-red-500 text-sm">
+                    Password dan repeat password tidak sama
+                  </p>
+                )}
+              </div>
+            )}
 
-        <div className="social-buttons">
-            <button onClick={() => handleLoginAndSignupGoogle()} className="social-button">
-                <span className="icon"/><img className="icon-img" src={require("../image/google.png")}/> Continue with Google
+            {/* Remember Me & Forgot Password (Login only) */}
+            {!signup && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                    Remember me
+                  </label>
+                </div>
+                <div className="text-sm">
+                  <button type="button" 
+                  className={`font-medium ${
+                    isInternal ? 'text-gray-900 hover:text-gray-700' : 'text-green-600 hover:text-green-500'
+                  }`}>
+                    Forgot password?
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              className={`w-full flex justify-center items-center py-3 px-4 rounded-xl text-white font-semibold transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 ${
+                isInternal 
+                  ? 'bg-gray-900 hover:bg-gray-800 focus:ring-gray-900 shadow-lg' 
+                  : 'bg-green-500 hover:bg-green-600 focus:ring-green-500 shadow-lg'
+              }`}
+            >
+              {signup ? (
+                <>
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Create Account
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-5 w-5 mr-2" />
+                  Sign In
+                </>
+              )}
             </button>
-        </div>
+          </form>
 
-        {/* spinner */}
-          {spinner && (
-            <SpinnerFixed colors={isInternal ? 'fill-gray-900' : 'fill-green-500'} />
+          {/* Toggle Login/Signup */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              {signup ? (
+                <>
+                  Already have an account?{' '}
+                  <button onClick={toggleSignup} className="font-semibold text-green-600 hover:text-green-500 transition-colors duration-200">
+                    Login
+                  </button>
+                </>
+              ) : (
+                <>
+                  {location.pathname !== '/internal/access' && (
+                    <>
+                      Don't have an account?{' '}
+                      <button onClick={toggleSignup} className="font-semibold text-green-600 hover:text-green-500 transition-colors duration-200">
+                        Sign Up
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Social Login */}
+          {location.pathname !== '/internal/access' && (
+            <>
+              <div className="mt-8 flex items-center">
+                <hr className="flex-1 border-gray-300" />
+                <span className="px-4 text-sm text-gray-500 bg-white">OR</span>
+                <hr className="flex-1 border-gray-300" />
+              </div>
+
+              <div className="mt-6">
+                <button 
+                  onClick={() => handleLoginAndSignupGoogle()} 
+                  className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                >
+                  <img className="h-5 w-5 mr-3" src={require("../image/google.png")} alt="Google" />
+                  Continue with Google
+                </button>
+              </div>
+            </>
           )}
+        </div>
       </div>
+
+      {/* Loading Spinner */}
+      {spinner && (
+        <SpinnerFixed colors={isInternal ? 'fill-gray-900' : 'fill-green-500'} />
+      )}
     </div>
   );
 }
-

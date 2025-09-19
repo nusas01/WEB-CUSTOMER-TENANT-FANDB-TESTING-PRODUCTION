@@ -59,9 +59,9 @@ export const changePasswordCustomer = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
         const message = {
-            errorField: error.response?.data.ErrorFields, 
-            errorMessage: error.response?.data.message,
-            error: error.response?.data.error,
+            errorField: error.response?.data?.ErrorFields, 
+            errorMessage: error.response?.data?.message,
+            error: error.response?.data?.error,
         };
         dispatch(changePassErrorCustomer(message));
     } finally {
@@ -141,10 +141,9 @@ export const setUsernameCustomer = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log(error.response)
         const message = {
-            errorField: error.response?.data.ErrorFields, 
-            error: error.response?.data.error,
+            errorField: error.response?.data?.ErrorFields, 
+            error: error.response?.data?.error,
         };
         dispatch(setUsernameErrorCustomer(message));
     } finally {
@@ -165,7 +164,6 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
     try {
         const response = await axiosInstance.patch(`${process.env.REACT_APP_BUY_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}`, data, config)
         dispatch(setSuccessBuyTransactionCashOnGoingInternal(response.data))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -183,10 +181,9 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log(error.response)
         const message = {
-            errorField: error.response?.data?.ErrorFields || "something error in our server", 
-            error: error.response?.data.error || "something error in our server",
+            errorField: error.response?.data?.ErrorFields, 
+            error: error.response?.data?.error,
         };
         dispatch(setErrorBuyTransactionCashOnGoinInternal(message));
     } finally {
@@ -197,7 +194,6 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
 const {toggleProductAvailability} = getCategoryAndProductInternalSlice.actions
 const {setSuccessAvailableProduct, setErrorAvailableProduct}  = availbaleProductlSlice.actions
 export const availableProductInternal = (data) => async (dispatch) => {
-    console.log("Clicked", data.id);
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
@@ -209,7 +205,6 @@ export const availableProductInternal = (data) => async (dispatch) => {
         const response = await axiosInstance.patch(`${process.env.REACT_APP_AVAILABLE_PRODUCT_INTERNAL_URL}`, data, config)
         dispatch(setSuccessAvailableProduct(response.data?.success))
         dispatch(toggleProductAvailability(data.id))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -227,7 +222,6 @@ export const availableProductInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorAvailableProduct(error.response?.data?.error));
     } 
 }
@@ -247,7 +241,6 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
         const response = await axiosInstance.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
         dispatch(setSuccessToProgressOrder(response.data?.data))
         dispatch(appendOrdersInternal(response.data?.data))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -265,7 +258,6 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorToProgressOrder(error.response?.data?.error));
     } finally {
         dispatch(setLoadingToProgressOrder(false))
@@ -291,7 +283,6 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         dispatch(setSuccessToFinishedOrder(response.data?.data))
         // dispatch(addOrderFinishedInternal(data))
         dispatch(appendOrdersInternal(response.data?.data))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -309,7 +300,6 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorToFinishedOrder(error.response?.data?.error));
     } finally {
         dispatch(setLoadingToFinishedOrder(false))
@@ -328,10 +318,8 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingUpdateDataEmployee(true))
     try {
-        console.log("data update employee hehehe: ", data);
         const response = await axiosInstance.patch(`${process.env.REACT_APP_GET_PATCH_DATA_EMPLOYEE_INTERNAL_URL}`, data, config)
         dispatch(setSuccessUpdateDataEmployee(response.data?.success))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -349,7 +337,6 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
         dispatch(setErrorUpdateDataEmployee(error.response?.data?.error));
     } finally {
         dispatch(setLoadingUpdateDataEmployee(false))
@@ -367,10 +354,8 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoadingChangePasswordInternal(true))
     try {
-        console.log("data update employee hehehe: ", data);
         const response = await axiosInstance.patch(`${process.env.REACT_APP_CHANGE_PASSWORD_INTERNAL_URL}`, data, config)
         dispatch(setSuccessChangePasswordInternal(response.data?.success))
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", response)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -387,12 +372,11 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
         if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
             dispatch(setStatusServiceMaintenance(true));
         }
-        
-        console.log("response buy transaction cash vnfoifbuofbvoufb: ", error.response.data)
+
         dispatch(setErrorChangePasswordInteral({
-            error: error.response.data.error,
-            password: error.response.data.ErrorFields.Password,
-            newPassword: error.response.data.ErrorFields.NewPassword
+            error: error.response?.data?.error,
+            password: error.response?.data?.ErrorFields?.Password,
+            newPassword: error.response?.data?.ErrorFields?.NewPassword
         }));
     } finally {
         dispatch(setLoadingChangePasswordInternal(false))
@@ -404,6 +388,7 @@ export const changePasswordEmployee = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
     }

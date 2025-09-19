@@ -33,7 +33,7 @@ export default function SetPassword() {
         if (successSetPass) {
             setToast({
                 type: 'success',
-                message: 'Password Berhasil di Terapkan.',
+                message: successSetPass,
             })
             
             setData({
@@ -56,7 +56,7 @@ export default function SetPassword() {
         if (errorSetPass) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami. Silakan coba lagi nanti.',
+                message: errorSetPass,
             })
 
             const timer = setTimeout(() => {

@@ -116,7 +116,7 @@ const EmployeeManagement = () => {
         if (errorGetEmployees) {
         setToast({
             type: "error",
-            message: "Terjadi kesalahan saat memuat karyawan store, silahkan coba lagi nanti"
+            message: errorGetEmployees
         })
         }
     }, [errorGetEmployees])
@@ -128,7 +128,7 @@ const EmployeeManagement = () => {
         if (successCreateEmployee) {
         setToast({
             type: "success",
-            message: "Berhasil menambahkan karyawan baru"
+            message: successCreateEmployee
         })
         if (store_id) {
             dispatch(fetchAllEmployees(store_id))
@@ -143,7 +143,7 @@ const EmployeeManagement = () => {
         if (successUpdateEmployee) {
         setToast({
             type: "success",
-            message: "Berhasil memperbaruhi data karyawan"
+            message: successUpdateEmployee
         })
         if (store_id) {
             dispatch(fetchAllEmployees(store_id))
@@ -162,7 +162,7 @@ const EmployeeManagement = () => {
         if (successChangePasswordEmployee) {
         setToast({
             type: "success",
-            message: "Berhasil memperbaruhi password karyawan id: " + expandedPassword
+            message: successChangePasswordEmployee
         })
         setPasswordData({});
         setExpandedPassword(null);
@@ -174,7 +174,7 @@ const EmployeeManagement = () => {
         if (errorChangePasswordEmployee) {
         setToast({
             type: "error",
-            message: "Terjadi kesalahan saat memperbaruhi password karyawan, silahkan coba lagi nanti"
+            message: errorChangePasswordEmployee
         })
         }
     }, [errorChangePasswordEmployee])
@@ -299,7 +299,7 @@ const EmployeeManagement = () => {
         if (successDeleteEmployee) {
         setToast({
             type: "success",
-            message: "Berhasil menghapus karyawan id: " + deleteEmployeeId
+            message: successDeleteEmployee
         })
         setDeleteEmployeeId(null)
         if (store_id) {
@@ -312,7 +312,7 @@ const EmployeeManagement = () => {
         if (errorDeleteEmployee) {
         setToast({
             type: "error",
-            message: "Terjadi kesalahan saat menghapus karyawan, silahkan coba lagi nanti"
+            message: errorDeleteEmployee
         })
         setDeleteEmployeeId(null)
         }

@@ -74,7 +74,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
       setInitialFetchDone(prev => ({...prev, cash: true}));
     }
   }, [dataTransactionCashInternal, loadingTransactionCashInternal, initialFetchDone.cash]);
-  console.log("data transaction cash: ", dataTransactionCashInternal)
 
     // get transaction non cash on going
     const { removeTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
@@ -93,7 +92,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         setInitialFetchDone(prev => ({...prev, nonCash: true}));
         }
     }, [filterTransaction, dataTransactionNonCashInternal, loadingTransactionNonCashInternal, initialFetchDone.nonCash]);
-    console.log("data transaction non cash:", dataTransactionNonCashInternal)
 
 
     // buy transaction cash on going
@@ -238,7 +236,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
   const observer = new IntersectionObserver(
     ([entry]) => {
-      console.log("entry.isIntersecting:", entry.isIntersecting); // Debug log
       if (entry.isIntersecting) {
         loadMoreCallback();
       }
@@ -452,8 +449,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
           data = dataTransactionHistoryInternal || []
       }
 
-      console.log(dataTransactionHistoryInternal)
-
       // Filter data berdasarkan kata kunci
       const lowercasedSearch = searchTerm.toLowerCase()
       return data.filter(item => 
@@ -542,8 +537,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
       dispatch(fetchTransactionHistory(data))
     }
   }
-
-  console.log("data history search: ", dataSearchTransactionInternal)
   
   // handle sidebar dan element header yang responsive 
   const { ref: headerRef, height: headerHeight } = useElementHeight();

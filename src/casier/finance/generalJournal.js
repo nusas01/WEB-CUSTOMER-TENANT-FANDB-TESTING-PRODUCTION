@@ -85,7 +85,7 @@ export default function GeneralJournalDashboard() {
     useEffect(() => {
       if (errorVoidGeneralJournal) {
         setToast({
-          message: "There was an error on the internal server, we are fixing it.",
+          message: errorVoidGeneralJournal,
           type: 'error'
         });
          
@@ -295,7 +295,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
         if (eventFilter === 'Agregasi') {
             dispatch(fetchGeneralJournalByEventAllInternal(startDate, endDate))
         } else if (eventFilter === 'Non Agregasi') {
-          console.log("apakah ini yang dilakukan fetching: ")
             dispatch(fetchGeneralJournalByEventPerDayInternal(startDate, endDate, 1, false))
         }
       }
@@ -315,9 +314,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
     dispatch(setStartDate(''))
   }
 
-  console.log(journalDataAgregasi)
-  console.log('non:', journalDataNonAgregasi)
-
   // handle load more data non agregasi
   const handleLoadMoreJournalNonAgregasiCallback = useCallback(() => {
     // ✅ Fix: Kondisi yang lebih sederhana dan jelas
@@ -325,8 +321,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
         hasMoreJournalNonAgregasi && 
         !isLoadMoreNonAgregasi && 
         !loadingGeneralJournalByEventPerDayInternal) {
-        
-        console.log("Triggering load more from useEffect");
         dispatch(loadMoreGeneralJournalNonAgregasi());
     }
   }, [eventFilter, hasMoreJournalNonAgregasi, isLoadMoreNonAgregasi, loadingGeneralJournalByEventPerDayInternal, dispatch])
@@ -376,11 +370,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
   let totalDebit = 0;
   let totalKredit = 0;
   
-  // Debug: tambahkan console.log untuk melihat data
-  console.log('eventFilter:', eventFilter);
-  console.log('journalDataNonAgregasi length:', journalDataNonAgregasi?.length || 0);
-  console.log('journalDataAgregasi length:', journalDataAgregasi?.length || 0);
-  
   if (eventFilter === 'Non Agregasi') {
     totalDebit = totalDebetNonAgregasi
     totalKredit = totalKreditNonAgregasi
@@ -398,9 +387,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
       });
     });
   }
-  
-  // Debug: tampilkan hasil perhitungan
-  console.log('Final totals:', { totalDebit, totalKredit });
   
   return { totalDebit, totalKredit };
 }, [journalDataNonAgregasi, journalDataAgregasi, eventFilter]);
@@ -468,9 +454,6 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
   const handeSubmitVoid = () => { 
     dispatch(voidGeneralJournalInternal(dataDrafToVoid))
   }
-
-  console.log("data voidddd: ", dataDrafToVoid)
-
  
   useEffect(() => {
     if (errorVoidGeneralJournal) {

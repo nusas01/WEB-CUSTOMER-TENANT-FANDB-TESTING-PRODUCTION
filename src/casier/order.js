@@ -84,7 +84,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'error',
-        message: 'Terjadi kesalahan saat memuat data pesanan. Kami sudah menerima laporan ini dan sedang memperbaikinya.'
+        message: errorOrdersInternal
       });
 
       const timer = setTimeout(() => {
@@ -105,7 +105,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'error',
-        message: 'Terjadi kesalahan saat memuat data pesanan yang sudah selesai. Kami sudah menerima laporan ini dan sedang memperbaikinya.'
+        message: errorOrdersFinishedInternal
       });
 
       const timer = setTimeout(() => {
@@ -126,7 +126,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'error',
-        message: 'Gagal memperbarui status pesanan menjadi Received. Silakan coba lagi atau hubungi admin jika masalah terus berlanjut.'
+        message: errorToProgressOrder
       });
 
       const timer = setTimeout(() => {
@@ -143,7 +143,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'success',
-        message: 'Status pesanan berhasil diperbarui menjadi sedang diproses.'
+        message: successToProgressOrder
       });
 
       const timer = setTimeout(() => {
@@ -164,7 +164,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'error',
-        message: 'Gagal menyelesaikan pesanan. Silakan coba kembali atau laporkan ke admin jika masalah masih terjadi.'
+        message: errorToFinishedOrder
       });
 
       const timer = setTimeout(() => {
@@ -181,7 +181,7 @@ export default function KasirOrders() {
       setToast({
         show: true,
         type: 'success',
-        message: 'Pesanan berhasil diselesaikan.'
+        message: successToFinishedOrder
       });
 
       const timer = setTimeout(() => {
@@ -280,8 +280,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   // Order process and progress
   // const { deleteOrdersExceptToday } = getOrdersInternalSlice.actions
   const { dataOrdersInternal, loadingOrdersInternal } = useSelector((state) => state.persisted.dataOrdersInternal)
-  console.log("data orders: ", dataOrdersInternal)
-  
+
   useEffect(() => {
     if (!dataOrdersInternal || dataOrdersInternal.length === 0) {
       dispatch(fetchOrdersInternal())
@@ -310,13 +309,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
     totalCount: totalCountOrderFinished = 0,
     totalRevenue: totalRevenueOrderFinished = 0,
   } = finishedOrdersState || {}
-
-  console.log("Finished orders state:", {
-    dataOrdersFinished,
-    hasMoreOrderFinished,
-    isLoadMoreOrderFinished,
-    pageOrderFinished
-  });
 
   // Get finished orders
   const dataOrdersFinishedInternal = useMemo(() => {
@@ -397,14 +389,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // Load more callback - diperbaiki
   const loadMoreFinishedOrdersCallback = useCallback(() => {
-    console.log("Load more callback triggered:", {
-      statusFilter,
-      hasMoreOrderFinished,
-      isLoadMoreOrderFinished
-    });
-    
     if (statusFilter === 'FINISHED' && hasMoreOrderFinished && !isLoadMoreOrderFinished) {
-      console.log("Dispatching loadMoreOrderFinished");
       dispatch(loadMoreOrderFinished());
     }
   }, [statusFilter, hasMoreOrderFinished, isLoadMoreOrderFinished, dispatch])
@@ -447,7 +432,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   const { loadingToFinishedOrder } = useSelector((state) => state.toFinishedOrderInternalState)
   
   const handleFinishOrder = (data) => {
-    console.log("data finished order: ", data)
     dispatch(toFinishedOrderInternal(data))
   };
 
@@ -520,7 +504,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // Handle search dengan reset page
   const handleSearch = () => {
-    console.log("key nya apa kawan: ", searchQuery)
     setHasInitializedSearch(true);
     dispatch(resetSearchOrder());
     dispatch(fetchSearchOrderInternal(searchQuery, pageSearchOrder, false));
@@ -528,7 +511,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
   const loadMoreSearchOrderCallback = useCallback(() => {
     if (searchQuery !== '' && hasMoreSearchOrder && !isLoadMoreSearchOrder) {
-      console.log("Dispatching loadMoreSearchOrderInternal");
       dispatch(loadMoreSearchOrderInternal(searchQuery));
     }
   }, [searchQuery, hasMoreSearchOrder, isLoadMoreSearchOrder])

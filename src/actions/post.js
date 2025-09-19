@@ -21,6 +21,8 @@ import axiosInstance from "./axiosInstance.js";
     createQROrderTypeTakeAwaySlice,
     getJournalDrafByJsonInternalSlice,
     createEmployeeSlice,
+    forgotPasswordCustomerSlice,
+    forgotPasswordInternalSlice,
  } from "../reducers/post"
 import {
     statusExpiredTokenSlice,
@@ -39,6 +41,7 @@ import {
     getTablesInternalSlice
  } from '../reducers/get.js'
 import store from "../reducers/state"
+import { internalCollectFingerprintAsync, customerCollectFingerprintAsync } from '../helper/fp.js'
 
 const {setStatusExpiredToken} = statusExpiredTokenSlice.actions
 const {setStatusExpiredInternalToken} = statusExpiredInternalTokenSlice.actions
@@ -56,7 +59,14 @@ export const signupCustomer = (data) => async (dispatch) => {
     };
     dispatch(setLoadingSignCustomer(true))
     try {
-        const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, data, config);
+        const nonce_data = await customerCollectFingerprintAsync()
+
+        const formData = {
+            ...data,
+            nonce_data,
+        }
+
+        const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, formData, config);
         dispatch(signupSuccessCustomer(response?.data.success));
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -76,7 +86,7 @@ export const signupCustomer = (data) => async (dispatch) => {
         }
 
         const response = {
-            error: error,
+            error: error.response?.data?.error,
             errorObject: error.response?.data,
         }
         dispatch(signupErrorCustomer(response));
@@ -117,9 +127,9 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
         }
     
         const message = {
-            error: error.response?.data.error,
-            errorField: error.response?.data.ErrorField,
-            message: error.response?.data.message,
+            error: error.response?.data?.error,
+            errorField: error.response?.data?.ErrorField,
+            message: error.response?.data?.message,
         };
         dispatch(signupVerificationFailsCustomer(message));
     } finally {
@@ -140,7 +150,16 @@ export const loginCustomer = (data) => async (dispatch) => {
     }
     dispatch(setLoginLoadingCustomer(true));
     try {
-        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, data, configJson)
+        const nonce_data = await customerCollectFingerprintAsync();
+
+        const formData = {
+            ...data,
+            nonce: nonce_data.nonce,
+            value: nonce_data.value,
+            iv: nonce_data.iv,
+        }
+
+        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, formData, configJson)
         const message = {
             messageLoginSuccess: response?.data,
             statusCodeSuccess: response?.status,
@@ -165,9 +184,9 @@ export const loginCustomer = (data) => async (dispatch) => {
         }
         
         const message = {
-            errorLogin: error.response?.data.error,
-            errPass: error.response?.data.ErrorFields.password, 
-            errUsername: error.response?.data.ErrorFields.email,
+            errorLogin: error.response?.data?.error,
+            errPass: error.response?.data?.ErrorFields?.password, 
+            errUsername: error.response?.data?.ErrorFields?.email,
         }
         dispatch(loginErrorCustomer(message));
     }finally {
@@ -175,10 +194,56 @@ export const loginCustomer = (data) => async (dispatch) => {
     }
 }
 
+const {setSuccessForgotPasswordCustomer, setErrorForgotPasswordCustomer, setLoadingForgotPasswordCustomer} = forgotPasswordCustomerSlice.actions
+export const forgotPasswordCustomer = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingForgotPasswordCustomer(true))
+    try {
+        const nonce_data = await customerCollectFingerprintAsync();
+
+        const formData = {
+            ...data,
+            nonce: nonce_data.nonce,
+            value: nonce_data.value, 
+            iv: nonce_data.iv,
+        }
+
+        const response = await axiosInstance.post(`${process.env.REACT_APP_FORGOT_PASSWORD_CUSTOMER_URL}`, formData, config)
+        dispatch(setSuccessForgotPasswordCustomer(response?.data?.success))
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
+        dispatch(setErrorForgotPasswordCustomer({
+            error: error?.response?.data?.error,
+            errorField: error?.response?.data?.ErrorField,
+        }))
+    } finally {
+        dispatch(setLoadingForgotPasswordCustomer(false))
+    }
+}
+
 const { successCreateTransactionCustomer, errorCreateTransactionCustomer, setLoadingCreateTransactionCustomer } = createTransactionCustomerSlice.actions;
 export const createTransactionCustomer = (data) => async (dispatch) => {
     const state = store.getState().persisted.orderType
-    console.log("store create transaction customer: ", state)
     const configJson = {
         headers: {
             "Content-Type": "application/json",
@@ -193,7 +258,6 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_TRANSACTION_CUSTOMER_URL}`, data, configJson)
         dispatch(successCreateTransactionCustomer(response?.data));
-        console.log("response data create transacrion: ", response?.data)
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -276,12 +340,21 @@ export const loginInternal = (data) => async (dispatch) => {
     }
     dispatch(setLoginLoadingInternal(true))
     try {
-        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_INTERNAL_URL}`, data, configJson)
+        const nonce_data = await internalCollectFingerprintAsync()
+
+        const formData = {
+            ...data,
+            nonce: nonce_data.nonce, 
+            value: nonce_data.value,
+            iv: nonce_data.iv
+        } 
+
+        const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_INTERNAL_URL}`, formData, configJson)
         const message = {
             messageLoginSuccess: response?.data,
             statusCodeSuccess: response?.status,
         }
-        console.log(response)
+
         dispatch(loginSuccessInternal(message))
         dispatch(setLoginStatusInternal(true))
     } catch(error) {
@@ -302,13 +375,60 @@ export const loginInternal = (data) => async (dispatch) => {
         }
 
         const message = {
-            errorLogin: error.response?.data.error,
-            errPass: error.response?.data.ErrorFields.password, 
-            errEmail: error.response?.data.ErrorFields.email,
+            errorLogin: error.response?.data?.error,
+            errPass: error.response?.data?.ErrorFields?.password, 
+            errEmail: error.response?.data?.ErrorFields?.email,
         }
         dispatch(loginErrorInternal(message))
     }finally {
         dispatch(setLoginLoadingInternal(false))
+    }
+}
+
+const {setSuccessForgotPasswordInternal, setErrorForgotPasswordInternal, setLoadingForgotPasswordInternal} = forgotPasswordInternalSlice.actions
+export const forgotPasswordInternal = (data) => async (dispatch) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+    }
+    dispatch(setLoadingForgotPasswordInternal(true))
+    try {
+        const nonce_data = await customerCollectFingerprintAsync();
+
+        const formData = {
+            ...data,
+            nonce: nonce_data.nonce,
+            value: nonce_data.value, 
+            iv: nonce_data.iv,
+        }
+
+        const response = await axiosInstance.post(`${process.env.REACT_APP_FORGOT_PASSWORD_INTERNAL_URL}`, formData, config)
+        dispatch(setSuccessForgotPasswordInternal(response?.data?.success))
+    } catch (error) {
+        if (error.response?.data?.code === "TOKEN_EXPIRED") {
+            dispatch(setStatusExpiredToken(true))
+        }
+
+        if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+          dispatch(setStatusExpiredInternalToken(true));
+        }
+
+        if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+            dispatch(setStatusExpiredUserToken(true));
+        }
+
+        if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+            dispatch(setStatusServiceMaintenance(true));
+        }
+
+        dispatch(setErrorForgotPasswordInternal({
+            error: error?.response?.data?.error,
+            errorField: error?.response?.data?.ErrorField,
+        }))
+    } finally {
+        dispatch(setLoadingForgotPasswordInternal(false))
     }
 }
 
@@ -325,7 +445,6 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     dispatch(setLoadingCreateTransactionInternal(true))
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
         const message = {
             data: response.data?.data,
             success: response.data?.success,
@@ -530,7 +649,6 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
     dispatch(setLoadingInputGeneralJournalInternal(true))
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
-        console.log("response data create transacrion internal: ", response)
         dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
         if (response.status === 200 || response.status === 201) {
             const state = getState();
@@ -689,7 +807,7 @@ export const createEmployee = (formData) => {
         }
         
         dispatch(setErrorCreateEmployee({
-            error: error?.response?.data?.error || 'Gagal membuat employee', 
+            error: error?.response?.data?.error, 
             errorField: error?.response?.data?.ErrorField[0],
         }))
     } finally {

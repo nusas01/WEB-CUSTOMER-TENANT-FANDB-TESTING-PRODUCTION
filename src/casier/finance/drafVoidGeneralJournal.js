@@ -28,8 +28,6 @@ export const DrafVoidDataComponent = ({
       dispatch(getJournalDrafByJsonInternal(data))
     }
 
-    console.log("draf data tidak terprint: ", drafData)
-
     const handleVoidJournal = () => {
     }
 
@@ -121,11 +119,9 @@ export const DrafVoidDataComponent = ({
 
     const {setDataDrafToVoid} = dataDrafToVoidInternalSlice.actions
     const handleNewVoid = (entry) => {
-      console.log("Original entry:", entry);
       
       // Validasi entry
       if (!entry || !entry.accounts || !Array.isArray(entry.accounts)) {
-        console.error("Invalid entry data:", entry);
         return;
       }
       
@@ -156,8 +152,6 @@ export const DrafVoidDataComponent = ({
           data_general_journal: dataGeneralJournal // Semua account_id dari event ini
         }
       };
-
-      console.log("Transformed void data:", voidData);
 
       dispatch(setDataDrafToVoid(voidData))
       handleConfirmModelVoid()

@@ -7,19 +7,17 @@ export default function BottomNavbar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer)
-
     const handleActivity = () => {
-        loggedIn ? navigate('/activity') : navigate('/access')
+        navigate('/activity')
     }
 
     const handleProfile = () => {
-        loggedIn ? navigate('/profile') : navigate('/access')
+       navigate('/profile')
     }
 
     const { lengthTransactionOnGoing } = useSelector((state) => state.persisted.transactionOnGoingCustomer)
     const { lengthTransactionProses } = useSelector((state) => state.persisted.transactionsHistoryCustomer)
-    console.log(lengthTransactionOnGoing + lengthTransactionProses)
+    
     return (
         <div className="bottom-navbar">
             <div 

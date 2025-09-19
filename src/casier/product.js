@@ -75,7 +75,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (successCreateProductInternal) {
             setToast({
-                message: "Berhasil menambahkan product baru",
+                message: successCreateProductInternal,
                 type: 'success'
             });
             
@@ -96,7 +96,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (successCreateCategoryInternal) {
             setToast({
-                message: "Berhasil Menambahkan Category Baru",
+                message: successCreateCategoryInternal,
                 type: 'success'
             });
             
@@ -115,7 +115,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (successUpdateProductInternal) {
             setToast({
-                message: "Berhasil Mengupdate Produk",
+                message: successUpdateProductInternal,
                 type: 'success'
             });
             
@@ -143,7 +143,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (successDeleteProductInternal) {
            setToast({
-                message: "Berhasil Menghapus Produk",
+                message: successDeleteProductInternal,
                 type: 'success'
             });
             
@@ -161,7 +161,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (successDeleteCategory) {
             setToast({
-                message: "Berhasil menghapus category",
+                message: successDeleteCategory,
                 type: 'success'
             });
             
@@ -192,7 +192,7 @@ export default function KasirProducts() {
     useEffect(() => {
         if (errorDeleteProductInternal || errorDeleteCategory || errorAvailableProduct || errorUpdateProductInternal || errorCreateCategoryInternal || errorCategoyAndProductIntenal || errorCreateProductInternal) {
             setToast({
-                message: "there was an error on our server, we are fixing it",
+                message: errorDeleteProductInternal || errorDeleteCategory || errorAvailableProduct || errorUpdateProductInternal || errorCreateCategoryInternal || errorCategoyAndProductIntenal || errorCreateProductInternal,
                 type: 'error'
             });
             
@@ -338,8 +338,6 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
       dispatch(setHeaderHidden(loadingCreateCategoryInternal))
     }, [loadingCreateCategoryInternal])
 
-
-    console.log(dataCategoryAndProduct)
     // handle loading update product
     const {loadingUpdateProductInternal} = useSelector((state) => state.updateInternalState)
     useEffect(() => {
@@ -360,12 +358,6 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
         const extension = dataTempUpdateProduct.image?.name
         ? image = dataTempUpdateProduct.id + '.' + dataTempUpdateProduct.image.name.split('.').pop().toLowerCase()
         : image = dataTempUpdateProduct.image
-
-        console.log("DISPATCH dipanggil", {
-          categoryId: dataTempUpdateProduct.category_id,
-          previousCategoryId: dataTempUpdateProduct.previous_category_id,
-          productId: dataTempUpdateProduct.id,
-        })
 
         dispatch(updateProductInCategory({
           categoryId: dataTempUpdateProduct.category_id,
@@ -393,7 +385,6 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
 
   // handle delete product
   const handleDeleteProduct = () => {
-    console.log("oyyy kenapa perr ini: ", productIdDelete)
     dispatch(DeleteProductInternal({id: productIdDelete}))
     setModelConfirmDeleteProduct(false)
     dispatch(setHeaderHidden(false))
@@ -418,8 +409,6 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
       dispatch(fetchCategoryInternal())
     }
   }, [])
-
-  console.log("data category ini adalah: ", dataCategory)
 
   const { loadingDeleteCategory } = useSelector((state) => state.deleteCategoryInternalState)
   const handleDeleteCategory = (id) => {

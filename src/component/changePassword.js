@@ -42,7 +42,7 @@ export default function ChangePassword() {
         if (responseSucces) {
             setToast({
                 type: 'success',
-                message: 'Password Berhasil di Perbaruhi',
+                message: responseSucces,
             })
 
             setData({
@@ -67,7 +67,7 @@ export default function ChangePassword() {
         if (errorCP) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami saaat membuat transaksi. Silakan coba lagi nanti.',
+                message: errorCP,
             })
 
             const timer = setTimeout(() => {
@@ -108,13 +108,6 @@ export default function ChangePassword() {
 
         dispatch(resetChangePasswordCustomer())
     }, [errorField])
-
-    useEffect(() => {
-        console.log("reponseSucces", responseSucces)
-        console.log("errorField", errorField)
-        console.log("errorMessage", errorMessage)
-        console.log("errorCP", errorCP)
-    }, [responseSucces, errorField, errorMessage, errorCP])
 
     const handleChangePassword = (e) => {
         e.preventDefault()

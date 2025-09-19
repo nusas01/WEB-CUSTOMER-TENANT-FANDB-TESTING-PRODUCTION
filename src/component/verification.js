@@ -21,18 +21,12 @@ export default function Verification() {
         e.preventDefault()
         dispatch(verificationSignupCustomer({code: codeInput}))
     }
-
-    useEffect(() => {
-        console.log(error)
-        console.log(ErrorField)
-        console.log(message)
-    }, [succes, error, ErrorField, loading])
-
+    
     useEffect(() => {
         if(succes) {
             navigate('/access', {
                 state: {
-                    data: 'Verification Berhasil, Silahkan login'
+                    data: succes
                 }
             })
             dispatch(resetSignupVerificationCustomer()) 
@@ -63,7 +57,7 @@ export default function Verification() {
         if (error) {
             setToast({
                 type: 'error',
-                message: 'Terjadi kesalahan di server kami saat verifikasi. Silakan coba lagi nanti.',
+                message: error,
             })
 
             const timer = setTimeout(() => {

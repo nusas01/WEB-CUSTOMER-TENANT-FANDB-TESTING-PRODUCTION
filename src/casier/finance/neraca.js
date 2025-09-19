@@ -53,7 +53,7 @@ export default function NeracaDashboard() {
    useEffect(() => {
     if (errorNeracaIntenal) {
       setToast({
-          message: "Terjadi kesalahan pada sistem saat mengambil data neraca. Kami sedang melakukan perbaikan. Silakan coba beberapa saat lagi.",
+          message: errorNeracaIntenal,
           type: 'error'
         });
          

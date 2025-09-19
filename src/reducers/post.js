@@ -68,7 +68,6 @@ export const verificationSignupCustomerSlice = createSlice({
     }
 })
 
-
 const initialLoginCustomerState = {
     messageLoginSuccess: null,
     loadingLogin: false,
@@ -110,6 +109,33 @@ export const loginCustomerSlice = createSlice({
     }
 })
 
+const initialForgotPasswordCustomer = {
+    succesForgotPasswordCustomer: null,
+    errorForgotPasswordCustomer: null, 
+    errorFieldForgotPasswordCustomer: null,
+    loadingForgotPasswordCustomer: false,
+}
+export const forgotPasswordCustomerSlice = createSlice({
+    name: "forgotPassword",
+    initialState: initialForgotPasswordCustomer,
+    reducers: {
+        setLoadingForgotPasswordCustomer: (state, action) => {
+            state.loadingForgotPasswordCustomer = action.payload
+        },
+        setSuccessForgotPasswordCustomer: (state, action) => {
+            state.succesForgotPasswordCustomer = action.payload
+        },
+        setErrorForgotPasswordCustomer: (state, action) => {
+            state.errorForgotPasswordCustomer = action.payload.error
+            state.errorFieldForgotPasswordCustomer = action.payload.errorField
+        },
+        resetForgotPasswordCustomer: (state) => {
+            state.errorForgotPasswordCustomer = null
+            state.errorFieldForgotPasswordCustomer = null
+            state.succesForgotPasswordCustomer = false
+        }
+    }
+})
 
 const initialLoginGoogleCustomerState = {
     errorLoginGoogleCustomer: null,
@@ -214,6 +240,34 @@ export const loginInternalSlice = createSlice({
             state.errorLoginInternal = null;
             state.errPassInternal = null;
             state.errEmailInternal = null;
+        }
+    }
+})
+
+const initialForgotPasswordInternal = {
+    succesForgotPasswordInternal: null,
+    errorForgotPasswordInternal: null, 
+    errorFieldForgotPasswordInternal: null,
+    loadingForgotPasswordInternal: false,
+}
+export const forgotPasswordInternalSlice = createSlice({
+    name: "forgotPassword",
+    initialState: initialForgotPasswordInternal,
+    reducers: {
+        setLoadingForgotPasswordInternal: (state, action) => {
+            state.loadingForgotPasswordInternal = action.payload
+        },
+        setSuccessForgotPasswordInternal: (state, action) => {
+            state.succesForgotPasswordInternal = action.payload
+        },
+        setErrorForgotPasswordInternal: (state, action) => {
+            state.errorForgotPasswordInternal = action.payload.error
+            state.errorFieldForgotPasswordInternal = action.payload.errorField
+        },
+        resetForgotPasswordInternal: (state) => {
+            state.errorForgotPasswordInternal = null
+            state.errorFieldForgotPasswordInternal = null
+            state.succesForgotPasswordInternal = false
         }
     }
 })
