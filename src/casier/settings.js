@@ -423,19 +423,11 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
 
       { spinnerFixed && (
         <SpinnerFixed colors={"fill-gray-900"}/>
       )}
-
-      <AccessDeniedModal 
-        isOpen={showAccessDenied}
-        onClose={() => setShowAccessDenied(false)}
-        title='Akses Ditolak'
-        message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
-        buttonText='Mengerti'
-      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -485,6 +477,14 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
           </div>
         </div>
 
+        <AccessDeniedModal 
+          isOpen={showAccessDenied}
+          onClose={() => setShowAccessDenied(false)}
+          title='Akses Ditolak'
+          message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+          buttonText='Mengerti'
+        />
+
         {/* Success Message */}
         {savedStatus && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
@@ -518,7 +518,8 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   label="Pengaturan Payment"
                   icon={CreditCard}
                   isActive={activeTab === 'payment'}
-                  onClick={() => setActiveTab('payment')}
+                  onClick={() => dataEmployeeInternal?.position !== "Manager" ?
+                    setShowAccessDenied(true) : setActiveTab('payment') }
                 />
               </div>
             </div>

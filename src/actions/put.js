@@ -212,7 +212,8 @@ export const updateEmployee = (formData) => {
     try {
         const response = await axiosInstance.put(process.env.REACT_APP_EMPLOYEE, formData, {
             headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
             },
             withCredentials: true,
         })

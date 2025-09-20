@@ -15,7 +15,7 @@ import OrderDetails from './casier/orderdetails'
 import KasirProducts from './casier/product'
 import KasirStatistik from './casier/statistik'
 import KasirSettings from './casier/settings'
-import KasirTables from './casier/table'
+import ModernKasirDashboard from './casier/table'
 import { 
   loginStatusInternal, 
   loginStatusCustomer, 
@@ -51,6 +51,7 @@ import {
 } from './reducers/get'
 import EmployeeManagement from './casier/employee'
 import CreateEmployee from './casier/createEmployee'
+import ForgotPasswordComponent from './component/forgotPassword'
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -196,6 +197,7 @@ function AppContent() {
         <Route path='/' element={<Home/>}/>
         <Route path='/cart' element={<Cart/>}/>
         <Route path='/access' element={<RegisterPage/>}/>
+        <Route path='/forgot/password' element={<ForgotPasswordComponent type={"customer"}/>}/>
         <Route path='/verification' element={<Verification/>}/>
         <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
         <Route path='/maintenance' element={<MaintenanceComponent/>}/>
@@ -211,6 +213,7 @@ function AppContent() {
         {/* </Route> */}
 
         <Route path='/internal/access' element={<RegisterPage/>}/>
+        <Route path='/internal/forgot/password' element={<ForgotPasswordComponent type={"internal"}/>}/>
         <Route element={<PrivateRouteInternal/>}>
           <Route element={<InternalWrapper/>}>
             <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
@@ -222,7 +225,7 @@ function AppContent() {
             <Route path="/internal/admin/transaction" element={<KasirTransaction/>}/>
             <Route path='/internal/admin/cashier' element={<Cashier/>}/>
             <Route path="/internal/admin/products" element={<KasirProducts/>}/>
-            <Route path="/internal/admin/tables" element={<KasirTables/>}/>
+            <Route path="/internal/admin/tables" element={<ModernKasirDashboard/>}/>
             <Route path="/internal/admin/settings" element={<KasirSettings/>}/>
             <Route path="/internal/admin/employees" element={<EmployeeManagement/>}/>
             <Route path="/internal/admin/employee/create" element={<CreateEmployee/>}/>

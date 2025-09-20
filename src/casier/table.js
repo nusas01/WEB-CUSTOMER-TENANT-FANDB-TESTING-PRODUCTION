@@ -74,7 +74,6 @@ export default function ModernKasirDashboard() {
     // data employee
     const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
 
-
     // maxsimaz minimaz layar
     const contentRef = useRef(null);
     const { isFullScreen, toggleFullScreen } = useFullscreen(contentRef);
@@ -248,7 +247,7 @@ export default function ModernKasirDashboard() {
     const { setIsOpen } = navbarInternalSlice.actions
 
     return (
-      <div>
+      <div className='flex relative bg-gray-50'>
         {toast && (
           <ToastPortal> 
             <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
@@ -262,38 +261,25 @@ export default function ModernKasirDashboard() {
           </ToastPortal>
         )}
 
-        <AccessDeniedModal
-          isOpen={showAccessDenied}
-          onClose={() => setShowAccessDenied(false)}
-          title='Akses Ditolak'
-          message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
-          buttonText='Mengerti'
-        />
+        {/* Sidebar - Fixed width */}
+          {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
+            <div className="w-1/10 z-50 min-w-[290px]">
+                <Sidebar 
+                activeMenu={activeMenu}
+                />
+            </div>
+          )}
 
-        <div className='flex relative'>
-          {/* Sidebar - Fixed width */}
-            {(!isFullScreen && (!isMobileDeviceType || (isOpen && isMobileDeviceType))) && (
-              <div className="w-1/10 z-50 min-w-[290px]">
-                  <Sidebar 
-                  activeMenu={activeMenu}
-                  />
-              </div>
+        <div
+          ref={contentRef}
+          className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+        >
+          <div className='relative'>
+
+            { spinnerFixed && (
+              <SpinnerFixed colors={"fill-gray-800"}/>
             )}
 
-
-          { spinnerFixed && (
-            <SpinnerFixed colors={"fill-gray-800"}/>
-          )}
-
-          { confirmModel && (
-            <DeleteConfirmationModalTable submit={handleDeleteLastTable} onClose={() => setConfirmModel(false)}/>
-          )}
-
-          {/* Main Content */}
-          <div
-            ref={contentRef}
-            className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
-          >
             {/* Header */}
             <div
               ref={headerRef}
@@ -348,6 +334,18 @@ export default function ModernKasirDashboard() {
                 </div>
                 </div>
             </div>
+
+            { confirmModel && (
+              <DeleteConfirmationModalTable submit={handleDeleteLastTable} onClose={() => setConfirmModel(false)}/>
+            )}
+
+            <AccessDeniedModal
+              isOpen={showAccessDenied}
+              onClose={() => setShowAccessDenied(false)}
+              title='Akses Ditolak'
+              message='Role anda tidak memiliki izin untuk mengakses fitur ini.'
+              buttonText='Mengerti'
+            />
 
             <div className="flex flex-col gap-6 max-w-7xl mx-auto p-4" style={{marginTop: headerHeight}}>
               {/* Take Away Section */}

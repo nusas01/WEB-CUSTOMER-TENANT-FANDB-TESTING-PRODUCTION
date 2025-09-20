@@ -1,6 +1,6 @@
 import Sidebar from "../component/sidebar"
-import { useEffect, useRef, useState } from "react"
-import {Plus, Search, Eye, X, CheckCircle, Menu, Settings, RefreshCw, Maximize, Minimize, Monitor} from "lucide-react"
+import { useEffect, useRef, useState, useCallback } from "react"
+import {Plus, Search, Eye, X, CheckCircle, Menu, Settings, RefreshCw, FileText, Maximize, Minimize, Monitor} from "lucide-react"
 import {
     fetchPaymentMethodsInternal, 
     fetchProductsCustomer,
@@ -46,6 +46,23 @@ import { CountDownRemoveData } from '../helper/countDown'
 import { paymentSuccessTransactionCashierSlice } from '../reducers/notif'
 import { useNavigate } from "react-router-dom"
 import { useFullscreen, useElementHeight } from "../helper/helper.js"
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 
 export default function Cashier() {
     const dispatch = useDispatch()
@@ -162,6 +179,8 @@ export default function Cashier() {
 } 
 
 const ComponentCartCashier = ({cartRef, isFullScreen}) => {
+    const [notesState, setNotesState] = useState({});
+    const [expandedNotes, setExpandedNotes] = useState({});
     const [eventNotes, setEventNotes] = useState(0)
     const dispatch = useDispatch()
     const dropdownRef = useRef(null)
@@ -355,6 +374,45 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
         setEventNotes(eventNotes + 1)
     }
 
+    // Initialize notes state dari items
+    useEffect(() => {
+        const initialNotes = {};
+        items.forEach(item => {
+        initialNotes[item.id] = item.notes || '';
+        });
+        setNotesState(initialNotes);
+    }, [items]);
+
+    // Handle perubahan notes secara lokal
+    const handleNotesChange = useCallback((productId, value) => {
+        setNotesState(prev => ({
+        ...prev,
+        [productId]: value
+        }));
+    }, []);
+
+    // Debounce untuk setiap product notes
+    const debouncedNotes = useDebounce(notesState, 800);
+
+    // Effect untuk update notes ke parent/store ketika debounced value berubah
+    useEffect(() => {
+        Object.entries(debouncedNotes).forEach(([productId, notes]) => {
+        const currentItem = items.find(item => item.id === productId);
+        
+        // Hanya update jika notes berbeda dengan yang ada di store
+        if (currentItem && currentItem.notes !== notes) {
+            handleUpdateNotes(notes, productId);
+        }
+        });
+    }, [debouncedNotes, items, handleUpdateNotes]);
+
+    // Toggle expand notes
+    const toggleNotesExpand = useCallback((productId) => {
+        setExpandedNotes(prev => ({
+        ...prev,
+        [productId]: !prev[productId]
+        }));
+    }, []);
 
     const handleChangeMoneyReceved = (e) => {
         const raw = e.target.value.replace(/\./g, '')
@@ -607,7 +665,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                     {/* Payment Method Dropdown */}
                     <div className="relative" ref={dropdownRef}>
                         <button
-                            className="flex items-center justify-between w-full md:w-56 px-4 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
+                            className="flex items-center justify-between w-full md:w-56 px-8 py-1 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200"
                             onClick={() => setOpenPaymentMethod((prev) => !prev)}
                         >
                             <span>{dataCart.channel_code === '' ? 'Choose Payment Method' : dataCart.channel_code}</span>
@@ -681,98 +739,154 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
             <div className="overflow-x-auto mt-5 rounded-lg border border-gray-200">
                 <table className="min-w-full text-left divide-y divide-gray-200">
                     <thead className="bg-gray-100">
-                        <tr>
-                            {["Image", "Product", "Quantity", "Price", "Amount"].map((header) => (
-                                <th key={header} className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">
-                                    {header}
-                                </th>
-                            ))}
-                            <th className="py-3 px-4 font-medium text-sm text-gray-600"></th> {/* For delete icon */}
-                        </tr>
+                    <tr>
+                        {["Image", "Product", "Quantity", "Price", "Amount", "Notes"].map((header) => (
+                        <th key={header} className="py-3 px-4 font-medium text-sm text-gray-600 whitespace-nowrap">
+                            {header}
+                        </th>
+                        ))}
+                        <th className="py-3 px-4 font-medium text-sm text-gray-600"></th> {/* For delete icon */}
+                    </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {items.length > 0 ? (
-                            items.map((t, index) => (
-                                <tr key={index} className="text-black hover:bg-gray-50 transition-colors duration-150">
-                                    <td className="py-3 px-4">
-                                        <div className="w-[62px] h-auto aspect-[4/3]">
-                                            <img src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${t.image}`} alt={t.name} className="w-full h-full object-cover rounded-md" />
-                                        </div>
-                                    </td>
-                                    <td className="py-3 px-4 text-sm font-medium text-gray-800">{t.name}</td>
-                                    <td className="py-3 px-4 align-middle">
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center rounded-sm"
-                                                onClick={() => handleUpdateDecrement(t.id, t.harga, t.quantity)}
-                                                disabled={t.quantity === 1}
-                                                aria-label="Decrease quantity"
-                                            >
-                                                <span className="text-sm font-semibold">−</span>
-                                            </button>
+                    {items.length > 0 ? (
+                        items.map((t, index) => (
+                        <tr key={index} className="text-black hover:bg-gray-50 transition-colors duration-150">
+                            <td className="py-3 px-4">
+                            <div className="w-[62px] h-auto aspect-[4/3]">
+                                <img 
+                                src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${t.image}`} 
+                                alt={t.name} 
+                                className="w-full h-full object-cover rounded-md" 
+                                />
+                            </div>
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-gray-800">{t.name}</td>
+                            <td className="py-3 px-4 align-middle">
+                            <div className="flex items-center gap-2">
+                                <button
+                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center rounded-sm"
+                                onClick={() => handleUpdateDecrement(t.id, t.harga, t.quantity)}
+                                disabled={t.quantity === 1}
+                                aria-label="Decrease quantity"
+                                >
+                                <span className="text-sm font-semibold">−</span>
+                                </button>
 
-                                            <input
-                                                type="number"
-                                                className="w-8 h-6 text-center text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                value={t.quantity}
-                                                onChange={(e) => handleQuantityChange(Number(e.target.value), t.id, t.harga)}
-                                                min="1"
-                                                aria-label="Product quantity"
-                                            />
+                                <input
+                                type="number"
+                                className="w-8 h-6 text-center text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                value={t.quantity}
+                                onChange={(e) => handleQuantityChange(Number(e.target.value), t.id, t.harga)}
+                                min="1"
+                                aria-label="Product quantity"
+                                />
 
-                                            <button
-                                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 flex items-center justify-center rounded-sm"
-                                                onClick={() => handleUpdateIncerement(t.id, t.harga, t.quantity)}
-                                                aria-label="Increase quantity"
-                                            >
-                                                <span className="text-sm font-semibold">+</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td className="py-3 px-4 text-sm text-gray-700">Rp {t.harga.toLocaleString("id-ID")}</td>
-                                    <td className="py-3 px-4 text-sm font-medium text-gray-800">Rp {t.amountPrice.toLocaleString("id-ID")}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <button
-                                            onClick={() => handleDeleteItem(t.id)}
-                                            className="text-red-500 hover:text-red-700 transition-colors duration-150"
-                                            aria-label="Delete item"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="6" className="px-6 py-12 text-center bg-white">
-                                    <div className="flex flex-col items-center justify-center">
-                                        <div className="mb-5 text-gray-300">
-                                            <i className="fas fa-shopping-bag text-6xl"></i>
-                                        </div>
-                                        <h3 className="text-xl font-medium text-gray-800 mb-2">Keranjang Belanja Kosong</h3>
-                                        <p className="text-gray-500 max-w-md mb-6 text-sm">
-                                            Tambahkan produk ke keranjang Anda untuk memulai belanja.
-                                        </p>
-                                        <div
-                                            onClick={() => setOpenModelAddProduct(true)}
-                                            className="rounded-lg px-5 flex items-center space-x-2 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors duration-200"
-                                        >
-                                            <p className="text-base">Lihat Product</p>
-                                        </div>
+                                <button
+                                className="w-6 h-6 border border-gray-400 hover:bg-gray-100 flex items-center justify-center rounded-sm"
+                                onClick={() => handleUpdateIncerement(t.id, t.harga, t.quantity)}
+                                aria-label="Increase quantity"
+                                >
+                                <span className="text-sm font-semibold">+</span>
+                                </button>
+                            </div>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-700">
+                            Rp {t.harga.toLocaleString("id-ID")}
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-gray-800">
+                            Rp {t.amountPrice.toLocaleString("id-ID")}
+                            </td>
+                            <td className="py-3 px-4">
+                            <div className="relative">
+                                {/* Notes Input */}
+                                <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <textarea
+                                    value={notesState[t.id] || ''}
+                                    onChange={(e) => handleNotesChange(t.id, e.target.value)}
+                                    placeholder="Tambah catatan..."
+                                    className="w-full min-w-[120px] h-8 px-2 py-1 text-xs border border-gray-300 rounded-sm resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                    style={{ 
+                                        height: expandedNotes[t.id] ? 'auto' : '32px',
+                                        minHeight: '32px'
+                                    }}
+                                    onFocus={() => setExpandedNotes(prev => ({ ...prev, [t.id]: true }))}
+                                    rows={expandedNotes[t.id] ? 3 : 1}
+                                    />
+                                    
+                                    {/* Notes indicator */}
+                                    {(notesState[t.id] || '').trim() && (
+                                    <div className="absolute -top-1 -right-1">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                     </div>
-                                </td>
-                            </tr>
-                        )}
+                                    )}
+                                </div>
+                                
+                                {/* Toggle button untuk expand/collapse notes */}
+                                {(notesState[t.id] || '').trim() && (
+                                    <button
+                                    onClick={() => toggleNotesExpand(t.id)}
+                                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label={expandedNotes[t.id] ? "Collapse notes" : "Expand notes"}
+                                    >
+                                    <FileText size={14} />
+                                    </button>
+                                )}
+                                </div>
+
+                                {/* Preview notes ketika collapsed dan ada text */}
+                                {!expandedNotes[t.id] && (notesState[t.id] || '').trim() && (notesState[t.id] || '').length > 15 && (
+                                <div className="mt-1">
+                                    <p className="text-xs text-gray-500 truncate max-w-[120px]" title={notesState[t.id]}>
+                                    {(notesState[t.id] || '').substring(0, 15)}...
+                                    </p>
+                                </div>
+                                )}
+                            </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                            <button
+                                onClick={() => handleDeleteItem(t.id)}
+                                className="text-red-500 hover:text-red-700 transition-colors duration-150"
+                                aria-label="Delete item"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                            </td>
+                        </tr>
+                        ))
+                    ) : (
+                        <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center bg-white">
+                            <div className="flex flex-col items-center justify-center">
+                            <div className="mb-5 text-gray-300">
+                                <i className="fas fa-shopping-bag text-6xl"></i>
+                            </div>
+                            <h3 className="text-xl font-medium text-gray-800 mb-2">Keranjang Belanja Kosong</h3>
+                            <p className="text-gray-500 max-w-md mb-6 text-sm">
+                                Tambahkan produk ke keranjang Anda untuk memulai belanja.
+                            </p>
+                            <div
+                                onClick={() => setOpenModelAddProduct(true)}
+                                className="rounded-lg px-5 flex items-center space-x-2 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors duration-200"
+                            >
+                                <p className="text-base">Lihat Product</p>
+                            </div>
+                            </div>
+                        </td>
+                        </tr>
+                    )}
                     </tbody>
                     <tfoot>
-                        <tr className="border-t border-gray-300">
-                            <td colSpan="4" className="py-3 px-4 font-medium text-gray-700 text-base">Subtotal</td>
-                            <td className="font-medium text-gray-800 text-base">Rp {subTotal.toLocaleString("id-ID")}</td>
-                            <td></td> {/* Empty cell for alignment */}
-                        </tr>
+                    <tr className="border-t border-gray-300">
+                        <td colSpan="5" className="py-3 px-4 font-medium text-gray-700 text-base">Subtotal</td>
+                        <td className="font-medium text-gray-800 text-base">Rp {subTotal.toLocaleString("id-ID")}</td>
+                        <td></td> {/* Empty cell for alignment */}
+                    </tr>
                     </tfoot>
                 </table>
-            </div>
+                </div>
 
             <div className="flex flex-col md:flex-row justify-between mt-5">
                 <p className="text-lg font-medium mb-2 md:mb-0 md:mr-4">Fulfillment Cost</p>

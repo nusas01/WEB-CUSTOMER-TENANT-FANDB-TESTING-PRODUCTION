@@ -161,7 +161,7 @@ export const loginCustomer = (data) => async (dispatch) => {
 
         const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_CUSTOMER_URL}`, formData, configJson)
         const message = {
-            messageLoginSuccess: response?.data,
+            messageLoginSuccess: response?.data?.success,
             statusCodeSuccess: response?.status,
         }
         dispatch(loginSuccessCustomer(message));
@@ -199,6 +199,7 @@ export const forgotPasswordCustomer = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
     }
@@ -390,6 +391,7 @@ export const forgotPasswordInternal = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
+            "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
     }
@@ -783,7 +785,8 @@ export const createEmployee = (formData) => {
     try {
       const response = await axiosInstance.post(process.env.REACT_APP_EMPLOYEE, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
+          "API_KEY": process.env.REACT_APP_API_KEY,
         },
         withCredentials: true,
       })

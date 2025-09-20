@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use, useRef } from "react"
 import { 
   ScanBarcode, 
   Ticket, 
@@ -16,6 +16,7 @@ import {
   ChevronDown,
   User,
   Lock,
+  Construction,
 } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
@@ -26,7 +27,7 @@ import {useDeviceDetection} from "../helper/helper"
 import {navbarInternalSlice} from "../reducers/reducers"
 
 const menuItems = [
-  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: true },
+  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: false },
   { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier', requiresManager: false },
   { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders', requiresManager: false },
   { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product', requiresManager: false },
@@ -37,10 +38,74 @@ const menuItems = [
 ];
 
 const financeSubItems = [
-  { title: "Store 1", path: '/internal/admin/general-journal', key: 'general-journal' },
-  { title: "Store 2", path: '/internal/admin/profit-and-loss', key: 'profit-and-loss' },
-  { title: "Store 3", path: '/internal/admin/neraca', key: 'neraca' }
+  { title: "General Journal", path: '/internal/admin/general-journal', key: 'general-journal', inDevelopment: true },
+  { title: "Profit And Loss", path: '/internal/admin/profit-and-loss', key: 'profit-and-loss', inDevelopment: true },
+  { title: "Neraca", path: '/internal/admin/neraca', key: 'neraca', inDevelopment: true }
 ];
+
+// Tooltip Component
+const Tooltip = ({ children, content, show, position = "right" }) => {
+  const [tooltipStyle, setTooltipStyle] = useState({});
+  const [showTooltip, setShowTooltip] = useState(false);
+  const menuRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    if (!show || !content) return;
+    
+    const rect = menuRef.current?.getBoundingClientRect();
+    if (rect) {
+      const style = position === "right" 
+        ? {
+            position: 'fixed',
+            left: `${rect.right + 8}px`,
+            top: `${rect.top + rect.height / 2}px`,
+            transform: 'translateY(-50%)',
+            zIndex: 2000
+          }
+        : {
+            position: 'fixed',
+            left: `${rect.left + rect.width / 2}px`,
+            top: `${rect.top - 8}px`,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 2000
+          };
+      
+      setTooltipStyle(style);
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  if (!show || !content) return children;
+  
+  return (
+    <>
+      <div 
+        ref={menuRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div 
+          style={tooltipStyle}
+          className="px-3 py-2 text-xs text-white bg-gray-800 rounded-lg shadow-lg whitespace-nowrap pointer-events-none transition-opacity duration-200"
+        >
+          {content}
+          <div className={`absolute w-2 h-2 bg-gray-800 rotate-45 ${
+            position === "right" 
+              ? "-left-1 top-1/2 -translate-y-1/2" 
+              : "top-full -translate-x-1/2 left-1/2 -mt-1"
+          }`} />
+        </div>
+      )}
+    </>
+  );
+};
 
 const Sidebar = ({activeMenu}) => {
   const navigate = useNavigate()
@@ -59,10 +124,15 @@ const Sidebar = ({activeMenu}) => {
   const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
   const isManager = dataEmployeeInternal?.position === 'Manager';
 
-  const handleNavigate = (value, requiresManager = false) => {
+  const handleNavigate = (value, requiresManager = false, inDevelopment = false) => {
     // Check if the menu requires manager role and user is not a manager
     if (requiresManager && !isManager) {
       return; // Don't navigate if access is denied
+    }
+
+    // Check if the menu is in development
+    if (inDevelopment) {
+      return; // Don't navigate if in development
     }
 
     navigate(value)
@@ -116,7 +186,7 @@ const Sidebar = ({activeMenu}) => {
   }, [error])
 
   const handleOverlayClick = () => {
-    setIsOpen(false);
+    dispatch(setIsOpen(false));
   };
 
   // Render Desktop Sidebar
@@ -125,7 +195,7 @@ const Sidebar = ({activeMenu}) => {
       {/* Desktop Header */}
       <div className="flex items-center px-4 py-2 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center shadow-sm">
             <Home className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -140,9 +210,10 @@ const Sidebar = ({activeMenu}) => {
         <div className="space-y-2">
           {menuItems.map((item) => {
             const isDisabled = item.requiresManager && !isManager;
+            const tooltipContent = isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
             
             return (
-              <div key={item.key}>
+              <Tooltip key={item.key} content={tooltipContent} show={isDisabled} position="right">
                 <div
                   onClick={() => handleNavigate(item.path, item.requiresManager)}
                   className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
@@ -167,12 +238,7 @@ const Sidebar = ({activeMenu}) => {
                     }`} />
                   )}
                 </div>
-                {isDisabled && (
-                  <p className="text-xs text-red-500 mt-1 ml-3 px-3">
-                    Role Anda tidak dapat mengakses fitur ini
-                  </p>
-                )}
-              </div>
+              </Tooltip>
             );
           })}
 
@@ -196,19 +262,30 @@ const Sidebar = ({activeMenu}) => {
 
             {openFinance && (
               <div className="ml-8 mt-2 space-y-1">
-                {financeSubItems.map((subItem) => (
-                  <div
-                    key={subItem.key}
-                    onClick={() => handleNavigate(subItem.path)}
-                    className={`flex items-center cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors ${
-                      activeMenu === subItem.key 
-                        ? 'bg-gray-100 text-gray-950 font-medium' 
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-700'
-                    }`}
-                  >
-                    <span>{subItem.title}</span>
-                  </div>
-                ))}
+                {financeSubItems.map((subItem) => {
+                  const isDisabled = subItem.inDevelopment;
+                  const tooltipContent = isDisabled ? "Fitur ini sedang dalam pengembangan" : null;
+
+                  return (
+                    <Tooltip key={subItem.key} content={tooltipContent} show={isDisabled} position="right">
+                      <div
+                        onClick={() => handleNavigate(subItem.path, false, subItem.inDevelopment)}
+                        className={`flex items-center justify-between cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors ${
+                          isDisabled
+                            ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                            : activeMenu === subItem.key 
+                              ? 'bg-gray-100 text-gray-950 font-medium' 
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-700'
+                        }`}
+                      >
+                        <span>{subItem.title}</span>
+                        {isDisabled && (
+                          <Construction className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+                    </Tooltip>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -238,7 +315,7 @@ const Sidebar = ({activeMenu}) => {
         <h1 className="text-xl font-bold text-gray-900">Kasir</h1>
       </div>
       <button 
-        onClick={() => setIsOpen(true)}
+        onClick={() => dispatch(setIsOpen(true))}
         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
       >
         <Menu className="w-6 h-6 text-gray-700" />
@@ -285,9 +362,10 @@ const Sidebar = ({activeMenu}) => {
           <div className="space-y-3">
             {menuItems.map((item) => {
               const isDisabled = item.requiresManager && !isManager;
+              const tooltipContent = isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
               
               return (
-                <div key={item.key}>
+                <Tooltip key={item.key} content={tooltipContent} show={isDisabled} position="top">
                   <div
                     onClick={() => handleNavigate(item.path, item.requiresManager)}
                     className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
@@ -312,12 +390,7 @@ const Sidebar = ({activeMenu}) => {
                       }`} />
                     )}
                   </div>
-                  {isDisabled && (
-                    <p className="text-xs text-red-500 mt-1 ml-6 px-4">
-                      Role Anda tidak dapat mengakses fitur ini
-                    </p>
-                  )}
-                </div>
+                </Tooltip>
               );
             })}
 
@@ -343,19 +416,30 @@ const Sidebar = ({activeMenu}) => {
 
               {openFinance && (
                 <div className="ml-8 mt-3 space-y-2">
-                  {financeSubItems.map((subItem) => (
-                    <div
-                      key={subItem.key}
-                      onClick={() => handleNavigate(subItem.path)}
-                      className={`flex items-center cursor-pointer rounded-lg px-4 py-3 transition-colors ${
-                        activeMenu === subItem.key 
-                          ? 'bg-blue-50 text-blue-700 font-medium' 
-                          : 'text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span>{subItem.title}</span>
-                    </div>
-                  ))}
+                  {financeSubItems.map((subItem) => {
+                    const isDisabled = subItem.inDevelopment;
+                    const tooltipContent = isDisabled ? "Fitur ini sedang dalam pengembangan" : null;
+
+                    return (
+                      <Tooltip key={subItem.key} content={tooltipContent} show={isDisabled} position="top">
+                        <div
+                          onClick={() => handleNavigate(subItem.path, false, subItem.inDevelopment)}
+                          className={`flex items-center justify-between cursor-pointer rounded-lg px-4 py-3 transition-colors ${
+                            isDisabled
+                              ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                              : activeMenu === subItem.key 
+                                ? 'bg-blue-50 text-blue-700 font-medium' 
+                                : 'text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span>{subItem.title}</span>
+                          {isDisabled && (
+                            <Construction className="w-4 h-4 text-gray-400" />
+                          )}
+                        </div>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
               )}
             </div>

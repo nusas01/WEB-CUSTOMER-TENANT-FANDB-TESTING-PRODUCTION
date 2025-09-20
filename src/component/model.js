@@ -48,40 +48,40 @@ export const AccessDeniedModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50" />
-
-      {/* Modal Content */}
-      <div
-        ref={modalRef}
-        className="relative bg-white rounded-lg shadow-xl max-w-sm w-full mx-4"
-      >
-        <div className="p-6">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          {/* Content */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {title}
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">{message}</p>
+    <div className="fixed inset-0 z-[9999] flex bg-gray-900 bg-opacity-50 items-center justify-center">
+      {/* Backdrop - perlu positioning yang benar */}
+      <div className="shadow-sm w-full max-w-md">
+        {/* Modal Content - perlu z-index lebih tinggi dari backdrop */}
+        <div
+          ref={modalRef}
+          className="relative z-10 bg-white rounded-lg shadow-xl max-w-sm w-full mx-4"
+        >
+          <div className="p-6">
+            {/* Close Button */}
             <button
               onClick={onClose}
-              className="w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close modal"
             >
-              {buttonText}
+              <X className="h-5 w-5" />
             </button>
+            
+            {/* Content */}
+            <div className="flex flex-col items-center text-center">
+              <div className="flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {title}
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">{message}</p>
+              <button
+                onClick={onClose}
+                className="w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              >
+                {buttonText}
+              </button>
+            </div>
           </div>
         </div>
       </div>

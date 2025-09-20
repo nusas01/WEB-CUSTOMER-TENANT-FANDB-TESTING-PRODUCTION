@@ -302,6 +302,14 @@ export default function RegisterPage() {
     : passwordErrSign;
 
 
+  const handleToForgotPassword = () => {
+    if (isInternal) {
+      navigate("/internal/forgot/password")
+    } else {
+      navigate("/forgot/password")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center sm:p-4">
       {/* Toast Container */}
@@ -486,6 +494,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="text-sm">
                   <button type="button" 
+                  onClick={() => handleToForgotPassword()}
                   className={`font-medium ${
                     isInternal ? 'text-gray-900 hover:text-gray-700' : 'text-green-600 hover:text-green-500'
                   }`}>

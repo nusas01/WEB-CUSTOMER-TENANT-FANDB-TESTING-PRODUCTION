@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import {forgotPasswordSlice} from '../reducers/post'
-import {forgotPassword} from '../actions/post'
+import {
+  forgotPasswordCustomerSlice,
+  forgotPasswordInternalSlice,
+} from '../reducers/post'
+import {
+  forgotPasswordCustomer,
+  forgotPasswordInternal,
+} from '../actions/post'
 import {
   Toast, 
   ToastPortal
 } from './alert'
 import { useDispatch, useSelector } from 'react-redux';
 
-const ForgotPasswordComponent = () => {
+const ForgotPasswordComponent = ({type}) => {
   const dispatch = useDispatch()
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,7 +28,62 @@ const ForgotPasswordComponent = () => {
     return emailRegex.test(email);
   };
 
+  const {resetForgotPasswordCustomer} = forgotPasswordCustomerSlice.actions
+  const {
+    succesForgotPasswordCustomer,
+    errorForgotPasswordCustomer, 
+    errorFieldForgotPasswordCustomer,
+    loadingForgotPasswordCustomer,
+  } = useSelector((state) => state.forgotPasswordCustomerState)
+
+  const {resetForgotPasswordInternal} = forgotPasswordInternalSlice.actions
+  const {
+    succesForgotPasswordInternal,
+    errorForgotPasswordInternal, 
+    errorFieldForgotPasswordInternal,
+    loadingForgotPasswordInternal,
+  } = useSelector((state) => state.forgotPasswordInternalState)
+
+  useEffect(() => {
+    if (succesForgotPasswordInternal || succesForgotPasswordCustomer) {
+      setToast({
+        type: 'success',
+        message: succesForgotPasswordInternal || succesForgotPasswordCustomer
+      })
+
+      setIsSubmitted(true)
+      dispatch(resetForgotPasswordInternal())
+      dispatch(resetForgotPasswordCustomer())
+    }
+  }, [succesForgotPasswordCustomer, succesForgotPasswordInternal])
+
+  useEffect(() => {
+    if (errorForgotPasswordInternal || errorForgotPasswordCustomer) {
+      setToast({
+        type: 'error',
+        message: errorForgotPasswordInternal || errorForgotPasswordCustomer,
+      })
+    }
+  }, [errorForgotPasswordInternal || errorForgotPasswordCustomer])
+
+  useEffect(() => {
+    dispatch(resetForgotPasswordInternal())
+    dispatch(resetForgotPasswordCustomer())
+  }, [])
+
+  const handleBackToLogin = () => {
+    if (type === "customer") {
+      navigate("/access")
+    }
+
+    if (type === "internal") {
+      navigate("/internal/access")
+    }
+  }
+
   const handleSubmit = () => {
+    dispatch(resetForgotPasswordInternal())
+    dispatch(resetForgotPasswordCustomer())
     setError('');
 
     if (!email) {
@@ -34,36 +95,14 @@ const ForgotPasswordComponent = () => {
       setError('Please enter a valid email address');
       return;
     }
-    
-    dispatch(forgotPassword({email: email}))
+
+    if (type === "customer") {
+      dispatch(forgotPasswordCustomer({email: email}))
+    } else {
+      dispatch(forgotPasswordInternal({email: email}))
+    }
+
   };
-
-  const {resetForgotPassword} = forgotPasswordSlice.actions
-  const {succesForgotPassword, errorForgotPassword, errorFieldForgotPassword, loadingForgotPassword} = useSelector((state) => state.forgotPasswordState)
-
-  useEffect(() => {
-    if (succesForgotPassword) {
-      setToast({
-        type: 'success',
-        message: succesForgotPassword
-      })
-      setIsSubmitted(true)
-      dispatch(resetForgotPassword())
-    }
-  }, [succesForgotPassword])
-
-  useEffect(() => {
-    if (errorForgotPassword) {
-      setToast({
-        type: 'error',
-        message: errorForgotPassword
-      })
-    }
-  }, [errorForgotPassword])
-
-  useEffect(() => {
-    dispatch(resetForgotPassword())
-  }, [])
 
   if (isSubmitted) {
     return (
@@ -72,8 +111,8 @@ const ForgotPasswordComponent = () => {
         <div className="mt-20 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-12 px-8 shadow-lg sm:rounded-2xl border border-gray-100">
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className={`mx-auto flex items-center justify-center h-16 w-16 rounded-full ${ type === "customer" ? 'bg-green-100' : 'bg-gray-100' }  mb-6`}>
+                <CheckCircle className={`h-8 w-8 ${ type === "customer" ? 'text-green-500' : 'text-gray-900'}`} />
               </div>
               
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -84,7 +123,7 @@ const ForgotPasswordComponent = () => {
                 We've sent a password reset link to
               </p>
               
-              <p className="text-green-600 font-semibold mb-8">
+              <p className={` ${ type === "customer" ? 'text-green-600' : 'text-gray-900'} font-semibold mb-8`}>
                 {email}
               </p>
               
@@ -93,8 +132,8 @@ const ForgotPasswordComponent = () => {
               </p>
               
               <button
-                onClick={() => navigate('/login')}
-                className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                onClick={() => handleBackToLogin()}
+                className={`w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 ${ type === 'customer' ? 'focus:ring-green-500' : 'focus:ring-gray-900'} focus:ring-offset-2 transition-colors duration-200`}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to login
@@ -117,7 +156,8 @@ const ForgotPasswordComponent = () => {
               type={toast.type} 
               onClose={() => { 
                 setToast(null)
-                dispatch(resetForgotPassword())
+                dispatch(resetForgotPasswordInternal())
+                dispatch(resetForgotPasswordCustomer())
               }} 
               duration={3000}
               />
@@ -152,7 +192,7 @@ const ForgotPasswordComponent = () => {
                   autoComplete="email"
                   required
                   className={`w-full pl-10 pr-4 py-3.5 border rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${
-                    ( error || errorFieldForgotPassword?.email) ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
+                    ( error || errorFieldForgotPasswordInternal?.email || errorFieldForgotPasswordCustomer?.email) ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
                   }`}
                   placeholder="Enter your email"
                   value={email}
@@ -162,21 +202,21 @@ const ForgotPasswordComponent = () => {
                   }}
                 />
               </div>
-              {(error || errorFieldForgotPassword?.email) && (
+              {(error || errorFieldForgotPasswordInternal?.email || errorFieldForgotPasswordCustomer?.email) && (
                 <div className="mt-2 flex items-center text-sm text-red-600">
                   <AlertCircle className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                  {error || errorFieldForgotPassword?.email}
+                  {error || errorFieldForgotPasswordInternal?.email || errorFieldForgotPasswordCustomer?.email}
                 </div>
               )}
             </div>
 
             <button
               type="submit"
-              disabled={loadingForgotPassword}
+              disabled={loadingForgotPasswordInternal || loadingForgotPasswordCustomer}
               onClick={() => handleSubmit()}
-              className="w-full flex justify-center items-center px-4 py-3.5 border border-transparent rounded-lg text-base font-semibold text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              className={`w-full flex justify-center items-center px-4 py-3.5 border border-transparent rounded-lg text-base font-semibold text-white ${ type === "customer" ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-900 hover:bg-gray-700'}  focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]`}
             >
-              {loadingForgotPassword ? (
+              {(loadingForgotPasswordInternal || loadingForgotPasswordCustomer) ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   Sending reset link...
@@ -189,8 +229,8 @@ const ForgotPasswordComponent = () => {
 
           <div className="mt-4 text-center">
             <button
-              onClick={() => navigate('/login')}
-              className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-green-600 transition-colors duration-200"
+              onClick={() => handleBackToLogin()}
+              className={`inline-flex items-center text-sm font-medium text-gray-600 ${type==="customer" ? 'hover:text-green-600' : 'hover:text-gray-900'} transition-colors duration-200`}
             >
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               Back to login

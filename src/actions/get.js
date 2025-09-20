@@ -1513,6 +1513,9 @@ export const fetchAllEmployees = (storeId) => {
       const response = await axiosInstance.get(process.env.REACT_APP_EMPLOYEE, {
         params: { store_id: storeId },
         withCredentials: true,
+        headers: {
+          'API_KEY': process.env.REACT_APP_API_KEY
+        },
       })
       dispatch(setEmployees(response?.data || []))
     } catch (error) {
