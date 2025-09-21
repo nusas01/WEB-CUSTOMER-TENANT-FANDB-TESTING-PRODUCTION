@@ -202,15 +202,30 @@ const nonPersistedReducers = {
   forgotPasswordInternalState: forgotPasswordInternalSlice.reducer,
 }
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   persisted: persistReducer(persistConfig, persistedReducers), 
   ...nonPersistedReducers,
 })
+
+const rootReducer = (state, action) => {
+  if (action.type === "RESET_ALL") {
+    state = undefined
+  }
+  return appReducer(state, action)
+}
 
 export const store = configureStore({
   reducer: rootReducer,
 })
 
 export const persistor = persistStore(store)
+
+export const resetApp = () => {
+  persistor.purge()
+
+  window.sessionStorage.clear()
+
+  store.dispatch({ type: "RESET_ALL" })
+}
 
 export default store

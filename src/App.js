@@ -214,7 +214,6 @@ function AppContent() {
 
         <Route path='/internal/access' element={<RegisterPage/>}/>
         <Route path='/internal/forgot/password' element={<ForgotPasswordComponent type={"internal"}/>}/>
-        <Route element={<PrivateRouteInternal/>}>
           <Route element={<InternalWrapper/>}>
             <Route path="/internal/admin/general-journal/form" element={<GeneralJournalForm/>}/>
             <Route path='/internal/admin/general-journal' element={<GeneralJournalDashboard/>}/>
@@ -230,7 +229,6 @@ function AppContent() {
             <Route path="/internal/admin/employees" element={<EmployeeManagement/>}/>
             <Route path="/internal/admin/employee/create" element={<CreateEmployee/>}/>
           </Route>
-        </Route>
       </Routes>
 
       { data.username === "" && statusCode === 200 && (

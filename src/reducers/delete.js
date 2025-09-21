@@ -57,7 +57,7 @@ export const deleteCategoryInternalSlice = createSlice({
 
 
 const initialDeleteEmployeeState = {
-  successDeleteEmployee: false,
+  successDeleteEmployee: null,
   errorDeleteEmployee: null,
   loadingDeleteEmployee: false,
 }
@@ -75,7 +75,7 @@ export const deleteEmployeeSlice = createSlice({
       state.loadingDeleteEmployee = action.payload
     },
     resetDeleteEmployee: (state) => {
-      state.successDeleteEmployee = false
+      state.successDeleteEmployee = null
       state.errorDeleteEmployee = null
     },
   },

@@ -22,7 +22,10 @@ import {
 } from '../component/alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { fetchAllEmployees } from '../actions/get'
+import { 
+  fetchAllEmployees,
+  fetchDataEmployeeInternal,
+} from '../actions/get'
 
 const CreateEmployee = () => {
   const navigate = useNavigate()
@@ -30,13 +33,9 @@ const CreateEmployee = () => {
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
   const location = useLocation()
-
   
-  // handle get store_id 
-  const store_id = location.state?.store_id
-
   const [formData, setFormData] = useState({
-    id: store_id,
+    id: '',
     name: '',
     email: '',
     password: '',
@@ -65,8 +64,9 @@ const CreateEmployee = () => {
 
     useEffect(() => {
       if (successUpdateEmployee) {
-        navigate('/store')
-        dispatch(fetchAllEmployees(employeUpdateState.store_id))
+        navigate('/internal/admin/employees')
+        dispatch(fetchAllEmployees())
+        dispatch(fetchDataEmployeeInternal())
       } 
     }, [successUpdateEmployee])
 
@@ -91,8 +91,8 @@ const CreateEmployee = () => {
 
     useEffect(() => {
       if (successCreateEmployee) {
-          navigate('/store')
-          dispatch(fetchAllEmployees(store_id))
+          navigate('/internal/admin/employees')
+          dispatch(fetchAllEmployees())
       }
     }, [successCreateEmployee])
 
@@ -464,7 +464,6 @@ const CreateEmployee = () => {
         position: '',
         gender: '',
         date_of_birth: '',
-        store_id: '',
         salery: '',
         image: null
       })

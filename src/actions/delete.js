@@ -33,7 +33,7 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
     try {
         const response = await axiosInstance.delete(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, config);
         if (response.status === 200) {
-            dispatch(setSuccessDeleteTableInternal(response?.data.success));
+            dispatch(setSuccessDeleteTableInternal(response?.data?.success));
             dispatch(deleteTableInternalByNumber())
         }
     } catch(error) {
@@ -75,7 +75,7 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
     try {
         const response = await axiosInstance.delete(`${process.env.REACT_APP_DELETE_GET_CATEGORY_INTERNAL_URL}`, config);
         if (response.status === 200) {
-            dispatch(setSuccessDeleteCategoryInternal(response?.data.success));
+            dispatch(setSuccessDeleteCategoryInternal(response?.data?.success));
             dispatch(deleteCategoryById(id))
         }
     } catch(error) {
@@ -120,8 +120,7 @@ export const deleteEmployee = (id) => {
                 "API_KEY": process.env.REACT_APP_API_KEY,
             },
         })
-        dispatch(setSuccessDeleteEmployee(true))
-        return response.data
+        dispatch(setSuccessDeleteEmployee(response?.data?.success))
     } catch (error) {
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))

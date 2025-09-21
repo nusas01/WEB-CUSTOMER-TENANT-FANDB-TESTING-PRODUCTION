@@ -131,12 +131,12 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (messageLoginSuccess) {
-      navigate('/')
       dispatch(setLoginStateNullCustomer())
       setFormLogin({
-          email: '',
-          password: '',
+        email: '',
+        password: '',
       })
+      navigate('/')
     }
   }, [messageLoginSuccess])
 
@@ -165,12 +165,12 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (messageLoginSuccessInternal) {
-      navigate('/internal/admin/transaction')
       dispatch(setLoginStateNullInternal())
       setFormLogin({
-          email: '',
-          password: '',
+        email: '',
+        password: '',
       })
+      navigate('/internal/admin/transaction')
     }
   }, [messageLoginSuccessInternal])
 

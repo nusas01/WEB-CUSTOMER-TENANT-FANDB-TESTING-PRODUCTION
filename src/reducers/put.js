@@ -110,7 +110,7 @@ export const updatePaymentMethodsInternalSlice = createSlice({
 })
 
 const initialUpdateEmployeeState = {
-  successUpdateEmployee: false,
+  successUpdateEmployee: null,
   errorUpdateEmployee: null,
   loadingUpdateEmployee: false,
 }
@@ -128,7 +128,7 @@ export const updateEmployeeSlice = createSlice({
       state.loadingUpdateEmployee = action.payload
     },
     resetUpdateEmployee: (state) => {
-      state.successUpdateEmployee = false
+      state.successUpdateEmployee = null
       state.errorUpdateEmployee = null
     },
   },

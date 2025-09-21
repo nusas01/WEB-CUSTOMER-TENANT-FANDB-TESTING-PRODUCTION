@@ -67,7 +67,7 @@ export const signupCustomer = (data) => async (dispatch) => {
         }
 
         const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_CUSTOMER_URL}`, formData, config);
-        dispatch(signupSuccessCustomer(response?.data.success));
+        dispatch(signupSuccessCustomer(response?.data?.success));
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -108,7 +108,7 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
     dispatch(setLoadingSignupVerificationCustomer(true));
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_SIGNUP_VERIFICATION_CUSTOMER_URL}`, data, config)
-        dispatch(signupVerificationSuccessCustomer(response?.data.success));
+        dispatch(signupVerificationSuccessCustomer(response?.data?.success));
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -322,7 +322,7 @@ export const loginGoogleCustomer = () => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        dispatch(loginGoogleErrorCustomer(error.response.data.error))
+        dispatch(loginGoogleErrorCustomer(error.response?.data?.error))
     } finally {
         dispatch(setLoadingLoginGoogleCustomer(false))
     }
@@ -448,8 +448,8 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_TRANSACTION_INTERNAL_URL}`, data, configJson)
         const message = {
-            data: response.data?.data,
-            success: response.data?.success,
+            data: response?.data?.data,
+            success: response?.data?.success,
         }
         dispatch(successCreateTransactionInternal(message))
         if (message.data.channel_code !== 'CASH') {
@@ -497,7 +497,7 @@ export const createCategoryInternal = (data) => async (dispatch) => {
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_CATEGORY_INTERNAL_URL}`, data, configJson)
         dispatch(fetchCategoryInternal())
-        dispatch(successCreateCategoryInternal(response.data?.success))
+        dispatch(successCreateCategoryInternal(response?.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -539,7 +539,7 @@ export const createProductInternal = (data) => async (dispatch) => {
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
         dispatch(fetchCategoryAndProductInternal())
-        dispatch(successCreateProductInternal(response.data?.success))
+        dispatch(successCreateProductInternal(response?.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -580,7 +580,7 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
     }
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_DELETE_PRODUCT_INTERNAL_URL}`, data, configJson)
-        dispatch(setSuccessDeleteProductInternal(response.data?.success))
+        dispatch(setSuccessDeleteProductInternal(response?.data?.success))
         dispatch(deleteProductById(data.id))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -615,7 +615,7 @@ export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState)
     dispatch(setLoadingGetJournalByJsonInternal(true))
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_GET_JOURNAL_DRAF_BY_JSON_INTERNAL_URL}`, data, configJson)
-        dispatch(setSuccessGetJournalByJsontInternal(response.data))
+        dispatch(setSuccessGetJournalByJsontInternal(response?.data))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -651,7 +651,7 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
     dispatch(setLoadingInputGeneralJournalInternal(true))
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_INPUT_GENERAL_JOURNAL_INTERNAL_URL}`, data, configJson)
-        dispatch(setSuccessInputGeneralJournalInternal(response.data?.success))
+        dispatch(setSuccessInputGeneralJournalInternal(response?.data?.success))
         if (response.status === 200 || response.status === 201) {
             const state = getState();
             const { dataGeneralJournalByEventPerDayInternal } = state.getGeneralJournalByEventPerDayInternal || {};
@@ -704,10 +704,10 @@ export const createTabelInternal = (data) => async (dispatch) => {
     try {
        const response = await axiosInstance.post(`${process.env.REACT_APP_GET_POST_DELETE_TABLE_INTERNAL_URL}`, data, configJson)
         if (response.status === 200) {
-            dispatch(setSuccessCreateTableInternal(response.data?.success))
+            dispatch(setSuccessCreateTableInternal(response?.data?.success))
             const data = {
-                number_table: response.data?.number,
-                image: response.data?.imageQr 
+                number_table: response?.data?.number,
+                image: response?.data?.imageQr 
             }
             dispatch(addTableInternal(data))
         }
@@ -747,7 +747,7 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
     try {
         const response = await axiosInstance.post(`${process.env.REACT_APP_CREATE_QR_ORDER_TYPE_TAKE_AWAY_INTERNAL_URL}`, {}, configJson)
         if (response.data?.alreadyExists) {
-            dispatch(setAlrdyCreatedQROrderTypeTakeAway(response.data?.success))
+            dispatch(setAlrdyCreatedQROrderTypeTakeAway(response?.data?.success))
         } else {
             dispatch(updateOrderTypeTakeAway(response.data?.imageQr))
         }
@@ -790,8 +790,7 @@ export const createEmployee = (formData) => {
         },
         withCredentials: true,
       })
-      dispatch(setSuccessCreateEmployee(true))
-      return response.data
+      dispatch(setSuccessCreateEmployee(response?.data?.success))
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))

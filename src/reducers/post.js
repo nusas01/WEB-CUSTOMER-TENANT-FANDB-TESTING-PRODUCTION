@@ -511,7 +511,7 @@ export const createQROrderTypeTakeAwaySlice = createSlice({
 })
 
 const initialCreateEmployeeState = {
-  successCreateEmployee: false,
+  successCreateEmployee: null,
   errorCreateEmployee: null,
   ErrorFieldCreateEmployee: null,
   loadingCreateEmployee: false,
@@ -531,7 +531,7 @@ export const createEmployeeSlice = createSlice({
       state.loadingCreateEmployee = action.payload
     },
     resetCreateEmployee: (state) => {
-      state.successCreateEmployee = false
+      state.successCreateEmployee = null
       state.errorCreateEmployee = null
       state.ErrorFieldCreateEmployee = null
     },

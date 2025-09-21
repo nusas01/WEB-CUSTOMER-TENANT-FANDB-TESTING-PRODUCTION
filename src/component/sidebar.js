@@ -17,24 +17,30 @@ import {
   User,
   Lock,
   Construction,
+  Type,
 } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
-import { logoutInternal } from "../actions/get"
+import { 
+  logoutInternal,
+  fetchDataEmployeeInternal,
+} from "../actions/get"
+import {resetApp} from "../reducers/state"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
 import {useDeviceDetection} from "../helper/helper"
 import {navbarInternalSlice} from "../reducers/reducers"
+import {Toast, ToastPortal} from "./alert";
 
 const menuItems = [
-  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: false },
-  { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier', requiresManager: false },
-  { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders', requiresManager: false },
-  { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product', requiresManager: false },
-  { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table', requiresManager: false },
-  { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics', requiresManager: true },
-  { Icon: User, title: "Employees", path: '/internal/admin/employees', key: 'Employees', requiresManager: true},
-  { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings', requiresManager: false }
+  { Icon: ScanBarcode, title: "Transactions", path: '/internal/admin/transaction', key: 'Transaction', requiresManager: false, inDevelopment: false },
+  { Icon: Monitor, title: "Cashier", path: '/internal/admin/cashier', key: 'Cashier', requiresManager: false, inDevelopment: false },
+  { Icon: Ticket, title: "Orders", path: '/internal/admin/orders', key: 'Orders', requiresManager: false, inDevelopment: false },
+  { Icon: Box, title: "Products", path: '/internal/admin/products', key: 'Product', requiresManager: false, inDevelopment: false },
+  { Icon: Database, title: "Tables", path: '/internal/admin/tables', key: 'table', requiresManager: false, inDevelopment: false },
+  { Icon: BarChart3, title: "Statistics", path: '/internal/admin/statistics', key: 'statistics', requiresManager: true, inDevelopment: true },
+  { Icon: User, title: "Employees", path: '/internal/admin/employees', key: 'Employees', requiresManager: true, inDevelopment: false},
+  { Icon: Settings, title: "Settings", path: '/internal/admin/settings', key: 'settings', requiresManager: false, inDevelopment: false }
 ];
 
 const financeSubItems = [
@@ -111,7 +117,7 @@ const Sidebar = ({activeMenu}) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
-  const [showAlertError, setShowAlertError] = useState(false)
+  const [toast, setToast] = useState(false)
   const [openFinance, setOpenFinance] = useState(false);
 
   const location = useLocation()
@@ -161,14 +167,15 @@ const Sidebar = ({activeMenu}) => {
   const {resetLogoutInternal} = logoutInternalSlice.actions
   const {message, error, loadingLogout} = useSelector((state) => state.logoutInternalState)
   
-  const handleLogout = async () => {
-      await dispatch(logoutInternal())
-      window.location.href = "/"
+  const handleLogout = () => {
+      dispatch(logoutInternal())
   }
 
   useEffect(() => {
     if (message) {
       dispatch(resetLogoutInternal())
+      navigate("/internal/access")
+      resetApp()
     }
   }, [message])
 
@@ -178,10 +185,10 @@ const Sidebar = ({activeMenu}) => {
 
   useEffect(() => {
     if (error) {
-      setShowAlertError(true)
-      setTimeout(() => {
-        setShowAlertError(false)
-      }, 2000)
+      setToast({
+        Type: "error",
+        message: error,
+      })
     }
   }, [error])
 
@@ -209,15 +216,15 @@ const Sidebar = ({activeMenu}) => {
       <nav className="flex-1 px-4 py-6 overflow-y-auto">
         <div className="space-y-2">
           {menuItems.map((item) => {
-            const isDisabled = item.requiresManager && !isManager;
-            const tooltipContent = isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
+            const isDisabled = item.requiresManager && !isManager; 
+            const tooltipContent = item.inDevelopment ? "Fitur ini sedang dalam pengembangan" : isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
             
             return (
-              <Tooltip key={item.key} content={tooltipContent} show={isDisabled} position="right">
+              <Tooltip key={item.key} content={tooltipContent} show={isDisabled || item.inDevelopment} position="right">
                 <div
-                  onClick={() => handleNavigate(item.path, item.requiresManager)}
+                  onClick={() => handleNavigate(item.path, item.requiresManager, item.inDevelopment)}
                   className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
-                    isDisabled 
+                    (isDisabled || item.inDevelopment)
                       ? 'opacity-50 cursor-not-allowed bg-gray-50' 
                       : activeMenu === item.key 
                         ? 'bg-gray-100 text-gray-950 shadow-sm hover:bg-gray-100' 
@@ -228,9 +235,11 @@ const Sidebar = ({activeMenu}) => {
                     Icon={item.Icon} 
                     title={item.title}
                     className="flex-1"
-                    isDisabled={isDisabled}
+                    isDisabled={isDisabled || item.inDevelopment}
                   />
-                  {isDisabled ? (
+                  { item.inDevelopment ? (
+                    <Construction className="w-4 h-4 text-gray-400" />
+                  ) : isDisabled ? (
                     <Lock className="w-4 h-4 mr-3 text-gray-400" />
                   ) : (
                     <ChevronRight className={`w-4 h-4 mr-3 transition-colors ${
@@ -362,14 +371,14 @@ const Sidebar = ({activeMenu}) => {
           <div className="space-y-3">
             {menuItems.map((item) => {
               const isDisabled = item.requiresManager && !isManager;
-              const tooltipContent = isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
+              const tooltipContent = item.inDevelopment ? "Fitur ini sedang dalam pengembangan" : isDisabled ? "Role Anda tidak dapat mengakses fitur ini" : null;
               
               return (
-                <Tooltip key={item.key} content={tooltipContent} show={isDisabled} position="top">
+                <Tooltip key={item.key} content={tooltipContent} show={isDisabled || item.inDevelopment} position="top">
                   <div
-                    onClick={() => handleNavigate(item.path, item.requiresManager)}
+                    onClick={() => handleNavigate(item.path, item.requiresManager, item.inDevelopment)}
                     className={`group flex items-center justify-between w-full rounded-xl cursor-pointer transition-all duration-200 ${
-                      isDisabled 
+                      (isDisabled || item.inDevelopment) 
                         ? 'opacity-50 cursor-not-allowed bg-gray-50' 
                         : activeMenu === item.key 
                           ? 'bg-blue-50 text-blue-700 shadow-sm' 
@@ -380,9 +389,11 @@ const Sidebar = ({activeMenu}) => {
                       Icon={item.Icon} 
                       title={item.title}
                       className="flex-1 p-4"
-                      isDisabled={isDisabled}
+                      isDisabled={isDisabled || item.inDevelopment}
                     />
-                    {isDisabled ? (
+                    {item.inDevelopment ? (
+                      <Construction className="w-4 h-4 text-gray-400" />
+                    ) : isDisabled ? (
                       <Lock className="w-4 h-4 mr-4 text-gray-400" />
                     ) : (
                       <ChevronRight className={`w-4 h-4 mr-4 transition-colors ${
@@ -472,11 +483,20 @@ const Sidebar = ({activeMenu}) => {
         </>
       )}
 
-      {/* Error Alert */}
-      {showAlertError && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-red-500 text-white p-4 rounded-xl text-center shadow-lg z-50 animate-bounce">
-          <p className="font-medium">Terjadi error di server kami</p>
-        </div>
+      {toast && (
+          <ToastPortal> 
+              <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
+              <Toast 
+              message={toast.message} 
+              type={toast.type} 
+              onClose={() => { 
+                setToast(null)
+                dispatch(resetLogoutInternal())
+              }} 
+              duration={3000}
+              />
+              </div>
+          </ToastPortal>
       )}
 
       {/* Loading Spinner */}

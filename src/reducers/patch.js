@@ -278,7 +278,7 @@ export const changePasswordInternalSlice = createSlice({
 })
 
 const initialChangePasswordEmployeeStore = {
-    successChangePasswordEmployee: false,
+    successChangePasswordEmployee: null,
     errorFieldsChangePasswordEmployee: null,
     errorChangePasswordEmployee: null,
     loadingChangePasswordEmployee: false,
@@ -300,7 +300,7 @@ export const changePasswordEmployeeSlice = createSlice({
         resetChangePasswordEmployee: (state) => {
             state.errorFieldsChangePasswordEmployee = null
             state.errorChangePasswordEmployee = null
-            state.successChangePasswordEmployee = false
+            state.successChangePasswordEmployee = null
         }
     }
 })

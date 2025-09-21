@@ -41,7 +41,7 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
     dispatch(setLoadingUpdateProductInternal(true))
     try {
         const response = await axiosInstance.put(`${process.env.REACT_APP_INPUT_PRODUCT_INTERNAL_URL}`, data, configJson)
-        dispatch(successUpdateProductInternal(response.data?.success))
+        dispatch(successUpdateProductInternal(response?.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -79,7 +79,7 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
     dispatch(setLoadingUpdateGeneralJournalInternal(true))
     try {
         const response = await axiosInstance.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, configJson)
-        dispatch(successUpdateGeneralJournalInternal(response.data?.success))
+        dispatch(successUpdateGeneralJournalInternal(response?.data?.success))
         if (response.status === 200 || response.status === 201) {
             // const { dataGeneralJournalByEventPerDayInternal } = getState().getGeneralJournalByEventPerDayInternal
 
@@ -140,7 +140,7 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
     dispatch(setLoadingVoidGeneralJournal(true))
     try {
         const response = await axiosInstance.put(`${process.env.REACT_APP_PUT_GENERAL_JOURNAL_UPDATE_AND_VOID_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessVoidGeneralJournal(response.data?.success))
+        dispatch(setSuccessVoidGeneralJournal(response?.data?.success))
         dispatch(removeGeneralJournalDrafInternalByAccountId(data))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -177,7 +177,7 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
     dispatch(setLoadingUpdatePaymentMethodsInternal(true))
     try {
         const response = await axiosInstance.put(`${process.env.REACT_APP_GET_PUT_PAYMENT_METHODS_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessUpdatePaymentMethodsInternal(response.data?.success))
+        dispatch(setSuccessUpdatePaymentMethodsInternal(response?.data?.success))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))
@@ -195,7 +195,7 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
         
-        dispatch(setErrorUpdatePaymentMethodsInteral(error.response.data.error));
+        dispatch(setErrorUpdatePaymentMethodsInteral(error.response?.data?.error));
     } finally {
         dispatch(setLoadingUpdatePaymentMethodsInternal(false))
     }
@@ -217,8 +217,7 @@ export const updateEmployee = (formData) => {
             },
             withCredentials: true,
         })
-        dispatch(setSuccessUpdateEmployee(true))
-        return response.data
+        dispatch(setSuccessUpdateEmployee(response?.data?.success))
     } catch (error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
             dispatch(setStatusExpiredToken(true))

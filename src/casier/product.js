@@ -791,6 +791,7 @@ const AddProductModal = ({
   title = "Tambah Produk Baru",
   submitText = "Simpan Produk",
 }) => {
+  const dispatch = useDispatch()
   const modalContentRef = useRef(null)
   const [spinneCategory, setSpinnerCategory] = useState(false)
   const [formData, setFormData] = useState({
@@ -806,6 +807,7 @@ const AddProductModal = ({
     id: null, 
     name: '',
   })
+  const containerRef = useRef(null);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
   const [errors, setErrors] = useState({})
 
@@ -898,7 +900,6 @@ const AddProductModal = ({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      onClose()
       onSubmit(formData)
     }
   }
@@ -915,9 +916,34 @@ const AddProductModal = ({
     }
   }, [onClose])
 
+  
+  const { resetCreateProductInternal } = createProductInternalSlice.actions
+  const { successCreateProductInternal, errorCreateProductInternal, errorFieldCreateProductInternal } = useSelector((state) => state.createProductInternalState)
+
+  console.log("error field: ", errorFieldCreateProductInternal)
+
+  useEffect(() => {
+    if (Array.isArray(errorFieldCreateProductInternal)) {
+      const mappedErrors = errorFieldCreateProductInternal.reduce((acc, curr) => {
+        const [field, message] = Object.entries(curr)[0]; 
+        acc[field] = message;
+        return acc;
+      }, {});
+      containerRef.current.scrollTop = 0;
+      setErrors(prev => ({ ...prev, ...mappedErrors }));
+      dispatch(resetCreateProductInternal());
+    }
+  }, [errorFieldCreateProductInternal]);
+
+  useEffect(() => {
+    if (successCreateProductInternal || errorCreateProductInternal) {
+      onClose()
+    }
+  }, [successCreateProductInternal, errorCreateProductInternal])
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div ref={modalContentRef} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div ref={modalContentRef}  className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -933,7 +959,7 @@ const AddProductModal = ({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div ref={containerRef} className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {/* Upload Gambar */}
             <div className="space-y-3">
@@ -941,7 +967,7 @@ const AddProductModal = ({
                 Gambar Produk <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center justify-center">
-                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${errors.image ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
+                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${(errors.image || errors.Image || errors.FileSize ||  errors.Ext) ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
                   <input
                     type="file"
                     className="hidden"
@@ -968,7 +994,7 @@ const AddProductModal = ({
                   )}
                 </label>
               </div>
-              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
+              {(errors.image || errors.Image || errors.FileSize ||  errors.Ext) && <p className="text-red-500 text-xs mt-1">{errors.image || errors.Image || errors.FileSize ||  errors.Ext}</p>}
             </div>
 
             {/* Nama Produk */}
@@ -981,14 +1007,14 @@ const AddProductModal = ({
                   type="text"
                   value={formData.name}
                   maxLength={50}
-                  className={`w-full px-4 py-3 border-2 ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  className={`w-full px-4 py-3 border-2 ${(errors.name || errors.Name) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
                   placeholder="Masukkan nama produk..."
                   required
                   onChange={(e) => handleChange("name", e.target.value)}
                 />
                 <Package className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              {(errors.name || errors.Name) && <p className="text-red-500 text-xs mt-1">{errors.name || errors.Name}</p>}
             </div>
 
             {/* Harga Jual */}
@@ -1004,7 +1030,7 @@ const AddProductModal = ({
                   type="text"
                   value={formData.price.toLocaleString("id-ID")}
                   name="price"
-                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.price ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${(errors.price || errors.Price) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
                   placeholder="0"
                   step="0.01"
                   required
@@ -1012,7 +1038,7 @@ const AddProductModal = ({
                 />
                 <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
+              {(errors.price || errors.Price) && <p className="text-red-500 text-xs mt-1">{errors.price || errors.Price}</p>}
             </div>
 
             {/* HPP */}
@@ -1028,7 +1054,7 @@ const AddProductModal = ({
                   type="text"
                   value={formData.hpp.toLocaleString("id-ID")}
                   name="hpp"
-                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.hpp ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${(errors.hpp || errors.HPP) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400`}
                   placeholder="0"
                   step="0.01"
                   required
@@ -1036,7 +1062,7 @@ const AddProductModal = ({
                 />
                 <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.hpp && <p className="text-red-500 text-xs mt-1">{errors.hpp}</p>}
+              {(errors.hpp || errors.HPP) && <p className="text-red-500 text-xs mt-1">{errors.hpp || errors.HPP}</p>}
             </div>
 
             {/* Kategori Dropdown */}
@@ -1048,7 +1074,7 @@ const AddProductModal = ({
                 <button
                   type="button"
                   onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                  className={`w-full px-4 py-3 bg-gray-50 ${errors.category_id ? 'border-red-300' : ''} border-gray-200 rounded-xl text-left flex justify-between items-center hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                  className={`w-full px-4 py-3 bg-gray-50 ${(errors.category_id || errors.CategoryId) ? 'border-red-300' : ''} border-gray-200 rounded-xl text-left flex justify-between items-center hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                 >
                   <span className={category.name ? "text-gray-900" : "text-gray-400"}>
                     {category.name || "Pilih Kategori"}
@@ -1081,7 +1107,7 @@ const AddProductModal = ({
                   </div>
                 )}
               </div>
-              {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
+              {(errors.category_id || errors.CategoryId) && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
             </div>
 
             {/* Deskripsi */}
@@ -1092,7 +1118,7 @@ const AddProductModal = ({
               <div className="relative">
                 <textarea
                   value={formData.desc}
-                  className={`w-full px-4 py-3 border-2 ${errors.desc ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400 resize-none`}
+                  className={`w-full px-4 py-3 border-2 ${(errors.desc || errors.Description) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all placeholder-gray-400 resize-none`}
                   placeholder="Masukkan deskripsi produk..."
                   required
                   maxLength={100}
@@ -1101,7 +1127,7 @@ const AddProductModal = ({
                 />
                 <FileText className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
               </div>
-              {errors.desc && <p className="text-red-500 text-xs mt-1">{errors.desc}</p>}
+              {(errors.desc || errors.Description) && <p className="text-red-500 text-xs mt-1">{errors.desc || errors.Description}</p>}
             </div>
           </div>
         </div>
