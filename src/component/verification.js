@@ -43,13 +43,6 @@ export default function Verification() {
                 type: "success",
                 message: message,
             })
-
-            const timer = setTimeout(() => {
-                dispatch(resetSignupVerificationCustomer()) 
-            }, 3000)
-
-
-            return () => clearTimeout(timer)
         }
     }, [message])
 
@@ -59,12 +52,6 @@ export default function Verification() {
                 type: 'error',
                 message: error,
             })
-
-            const timer = setTimeout(() => {
-                dispatch(resetSignupVerificationCustomer()) 
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [error])
 
@@ -86,8 +73,11 @@ export default function Verification() {
                     <Toast
                         message={toast.message}
                         type={toast.type}
-                        onClose={() => setToast(null)}
-                        duration={3000}
+                        onClose={() => { 
+                            setToast(null)
+                            dispatch(resetSignupVerificationCustomer()) 
+                        }}
+                        duration={5000}
                     />
                     </div>
                 </ToastPortal>

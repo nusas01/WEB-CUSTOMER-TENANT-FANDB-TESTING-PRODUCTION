@@ -45,12 +45,6 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
         message: errorLabaRugiIntenal,
         type: 'error'
       });
-        
-      const timer = setTimeout(() => {
-        dispatch(resetErrorLabaRugiInternal())
-      }, 3000)
-
-      return () => clearTimeout(timer)
     }
   }, [errorLabaRugiIntenal])
 
@@ -222,8 +216,11 @@ const ProfitAndLoss = ({isFullScreen, fullscreenchange}) => {
               <Toast 
               message={toast.message} 
               type={toast.type} 
-              onClose={() => setToast(null)} 
-              duration={3000}
+              onClose={() => { 
+                setToast(null)
+                dispatch(resetErrorLabaRugiInternal())
+              }} 
+              duration={5000}
               />
             </div>
           </ToastPortal>

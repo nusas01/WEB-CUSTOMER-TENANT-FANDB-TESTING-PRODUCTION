@@ -99,36 +99,16 @@ export default function KasirSettings() {
       if (successUpdatePaymentMethods) {
         dispatch(fetchPaymentMethodsInternal())
       }
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' })
-        dispatch(resetUpdateDataEmployee())
-        dispatch(resetChangePasswordInternal())
-        dispatch(resetUpdatePaymentMethodsInternal())
-      }, 3000)
-
-      return () => clearTimeout(timer)
     }
   }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
   
   useEffect(() => {
     if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods) {
-
       setToast({ 
         show: true, 
         type: 'error', 
         message: errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods
       })
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' })
-        dispatch(resetErrorDataEmployeeInternal())
-        dispatch(resetUpdateDataEmployee())
-        dispatch(resetChangePasswordInternal())
-        dispatch(resetUpdatePaymentMethodsInternal())
-      }, 3000)
-
-      return () => clearTimeout(timer)
     }
   }, [errorDataEmployeeInternal, errorUpdateDataEmployee, errorChangePassword, errorUpdatePaymentMethods])
 
@@ -160,7 +140,7 @@ export default function KasirSettings() {
               message={toast.message}
               type={toast.type}
               onClose={handleToastClose}
-              duration={3000}
+              duration={5000}
             />
           </div>
         </ToastPortal>

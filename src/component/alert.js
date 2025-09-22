@@ -920,7 +920,7 @@ export const Toast = ({ message, type, onClose, duration = 3000 }) => {
     <div
       ref={toastRef}
       className={`
-        relative mx-auto w-auto h-auto p-4 rounded-2xl flex items-center gap-3 min-w-80 max-w-md
+        relative mx-auto w-auto h-auto p-4 mt-2 rounded-2xl flex items-center gap-3 min-w-80 max-w-md
         transition-all duration-300 ease-out
         ${getStyles()}
         ${isVisible && !isLeaving ? "translate-x-0 opacity-100 scale-100" : "translate-x-full opacity-0 scale-95"}

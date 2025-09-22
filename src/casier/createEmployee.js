@@ -487,7 +487,7 @@ const CreateEmployee = () => {
               dispatch(resetCreateEmployee())
               dispatch(resetUpdateEmployee())
               }} 
-              duration={3000}
+              duration={5000}
               />
               </div>
           </ToastPortal>

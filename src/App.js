@@ -204,8 +204,8 @@ function AppContent() {
         {/* <Route element={<PrivateRouteCustomer/>}> */}
           <Route element={<CustomerWrapper/>}>
             <Route path='/profile' element={<Profile/>}/>
-            <Route path='/changepassword' element={<ChangePassword/>}/> 
-            <Route path='/setpassword' element={<SetPassword/>}/> 
+            <Route path='/change-password' element={<ChangePassword/>}/> 
+            <Route path='/set-password' element={<SetPassword/>}/> 
             <Route path='/activity' element={<Activity/>}/> 
             <Route path='/activity/detail' element={<DetailActivity/>}/> 
             <Route path='/activity/pembayaran' element={<Buy/>}/> 

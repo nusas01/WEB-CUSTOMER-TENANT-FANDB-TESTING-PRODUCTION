@@ -37,11 +37,11 @@ export default function NeracaDashboard() {
   const {errorNeracaIntenal, loadingNeracaInternal} = useSelector((state) => state.persisted.getNeracaInternal)
 
   const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
-    useEffect(() => {
-      if (dataEmployeeInternal?.position === "Staff") {
-        setShowAccessDenied(true)
-      }
-    }, [dataEmployeeInternal])
+  useEffect(() => {
+    if (dataEmployeeInternal?.position === "Staff") {
+      setShowAccessDenied(true)
+    }
+  }, [dataEmployeeInternal])
 
   // maxsimaz minimaz layar
   const contentRef = useRef(null);
@@ -50,18 +50,12 @@ export default function NeracaDashboard() {
   // handle sidebar and elemant header yang responsice
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-   useEffect(() => {
+  useEffect(() => {
     if (errorNeracaIntenal) {
       setToast({
-          message: errorNeracaIntenal,
-          type: 'error'
-        });
-         
-        const timer = setTimeout(() => {
-            dispatch(resetErrorNeracaInternal())
-        }, 3000)
-
-        return () => clearTimeout(timer)
+        message: errorNeracaIntenal,
+        type: 'error'
+      });
     }
   }, [errorNeracaIntenal])
 
@@ -82,8 +76,11 @@ export default function NeracaDashboard() {
               <Toast 
               message={toast.message} 
               type={toast.type} 
-              onClose={() => setToast(null)} 
-              duration={3000}
+              onClose={() => {
+                setToast(null)
+                dispatch(resetErrorNeracaInternal())
+              }} 
+              duration={5000}
               />
             </div>
           </ToastPortal>

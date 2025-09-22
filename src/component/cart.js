@@ -326,12 +326,6 @@ function Cart({ closeCart }) {
                 type: 'error',
                 message: error,
             })
-
-            const timer = setTimeout(() => {
-                dispatch(resetCreateTransactionCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [error])
 
@@ -342,13 +336,6 @@ function Cart({ closeCart }) {
                 message: errorPhoneNumber,
             })
             setIsModelInputNumberEwallet(true)
-
-
-            const timer = setTimeout(() => {
-                dispatch(resetCreateTransactionCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [errorPhoneNumber])
 
@@ -516,8 +503,12 @@ function Cart({ closeCart }) {
                 <Toast 
                 message={toast.message} 
                 type={toast.type} 
-                onClose={() => setToast(null)} 
-                duration={3000}
+                onClose={() => {
+                    setToast(null)
+                    dispatch(resetCreateTransactionCustomer())
+                    setIsModelInputNumberEwallet(false)
+                }} 
+                duration={5000}
                 />
                 </div>
             </ToastPortal>

@@ -86,13 +86,6 @@ export default function KasirOrders() {
         type: 'error',
         message: errorOrdersInternal
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetErrorOrdersInternal());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [errorOrdersInternal])
 
@@ -107,13 +100,6 @@ export default function KasirOrders() {
         type: 'error',
         message: errorOrdersFinishedInternal
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetErrorOrdersFinishedInternal());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [errorOrdersFinishedInternal])
 
@@ -128,13 +114,6 @@ export default function KasirOrders() {
         type: 'error',
         message: errorToProgressOrder
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetToProgressOrder());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [errorToProgressOrder])
 
@@ -145,13 +124,6 @@ export default function KasirOrders() {
         type: 'success',
         message: successToProgressOrder
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetToProgressOrder());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [successToProgressOrder])
 
@@ -166,13 +138,6 @@ export default function KasirOrders() {
         type: 'error',
         message: errorToFinishedOrder
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetToFinishedOrder());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [errorToFinishedOrder])
 
@@ -183,13 +148,6 @@ export default function KasirOrders() {
         type: 'success',
         message: successToFinishedOrder
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetToFinishedOrder());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [successToFinishedOrder])
 
@@ -213,7 +171,7 @@ export default function KasirOrders() {
               message={toast.message}
               type={toast.type}
               onClose={handleToastClose}
-              duration={3000}
+              duration={5000}
             />
           </div>
         </ToastPortal>

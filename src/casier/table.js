@@ -133,12 +133,6 @@ export default function ModernKasirDashboard() {
             message: errorTablesInternal,
             type: 'error'
           });
-          
-          const timer = setTimeout(() => {
-              dispatch(resetErrorTablesInternal())
-          }, 3000)
-
-          return () => clearTimeout(timer)
       }
     }, [errorTablesInternal])
 
@@ -175,18 +169,9 @@ export default function ModernKasirDashboard() {
     useEffect(() => {
       if (successDeleteTable || successCreateTable) {
         setToast({
-          message: successCreateTable 
-            ? "Meja berhasil ditambahkan ke sistem."
-            : "Meja berhasil dihapus dari sistem.",
+          message: successCreateTable || successDeleteTable,
           type: 'success'
         });
-
-        const timer = setTimeout(() => {
-          dispatch(resetDeleteTableInternal())
-          dispatch(resetCreateTableInternal())
-        }, 3000)
-
-        return () => clearTimeout(timer)
       }
     }, [successDeleteTable, successCreateTable])
 
@@ -194,18 +179,9 @@ export default function ModernKasirDashboard() {
     useEffect(() => {
       if (errorDeleteTable || errorCreateTable) {
         setToast({
-          message: errorCreateTable
-            ? "Terjadi kesalahan saat membuat table. Server kami sedang mengalami gangguan internal. Kami sedang mengatasinya, silakan coba beberapa saat lagi."
-            : "Terjadi kesalahan saat menghapus table. Mohon tunggu sebentar, kami sedang menangani masalah ini.",
+          message: errorCreateTable || errorDeleteTable,
           type: 'error'
         });
-
-        const timer = setTimeout(() => {
-          dispatch(resetDeleteTableInternal())
-          dispatch(resetCreateTableInternal())
-        }, 3000)
-
-        return () => clearTimeout(timer)
       }
     }, [errorDeleteTable, errorCreateTable])
 
@@ -220,17 +196,9 @@ export default function ModernKasirDashboard() {
     useEffect(() => {
       if (errorCreateQROrderTypeTakeAway || alredyCreated) {
         setToast({
-          message: errorCreateQROrderTypeTakeAway
-            ? "Terjadi kesalahan saat membuat QR Code untuk take away. Mohon tunggu sebentar, kami sedang menangani masalah ini."
-            : "QR Code untuk take away sudah ada. Silakan gunakan QR Code yang sudah ada.",
+          message: errorCreateQROrderTypeTakeAway || alredyCreated,
           type: 'error'
         });
-
-        const timer = setTimeout(() => {
-          dispatch(resetCreateQROrderTypeTakeAway())
-        }, 3000)
-
-        return () => clearTimeout(timer)
       }
     }, [errorCreateQROrderTypeTakeAway, alredyCreated])
 
@@ -254,8 +222,14 @@ export default function ModernKasirDashboard() {
               <Toast 
               message={toast.message} 
               type={toast.type} 
-              onClose={() => setToast(null)} 
-              duration={3000}
+              onClose={() => {
+                setToast(null)
+                dispatch(resetErrorTablesInternal())
+                dispatch(resetDeleteTableInternal())
+                dispatch(resetCreateTableInternal())
+                dispatch(resetCreateQROrderTypeTakeAway())
+              }} 
+              duration={5000}
               />
             </div>
           </ToastPortal>

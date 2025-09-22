@@ -460,12 +460,6 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                 type: 'error',
                 message: errorCreateTransactionInternal,
             })
-
-            const timer = setTimeout(() => {
-                dispatch(resetCreateTransactionInternal())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [errorCreateTransactionInternal])
 
@@ -645,8 +639,11 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                         <Toast 
                         message={toast.message} 
                         type={toast.type} 
-                        onClose={() => setToast(null)} 
-                        duration={3000}
+                        onClose={() => { 
+                            setToast(null)
+                            dispatch(resetCreateTransactionInternal())
+                        }} 
+                        duration={5000}
                         />
                         </div>
                     </ToastPortal>

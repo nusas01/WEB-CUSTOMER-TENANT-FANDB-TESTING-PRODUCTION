@@ -678,21 +678,6 @@ function Home() {
                             </div>
                           )}
                         </div>
-
-                        {/* PRODUCT RATING/POPULARITY INDICATOR */}
-                        {isAvailable && (
-                          <div className="flex items-center justify-between pt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                            <div className="flex items-center space-x-1">
-                              {[...Array(3)].map((_, i) => (
-                                <div key={i} className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" style={{animationDelay: `${i * 0.2}s`}}></div>
-                              ))}
-                              <span className="text-xs text-green-600 font-medium ml-2">Populer</span>
-                            </div>
-                            <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                              #{index + 1}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   );

@@ -533,14 +533,6 @@ export function GeneralJournalForm() {
         message: errorGetJournalByJsonJournal || errorInputGeneralJournal || errorUpdateGeneralJournalInternal,
         type: 'error'
       });
-        
-      const timer = setTimeout(() => {
-        dispatch(resetInputGeneralJournalInternal())
-        dispatch(resetErrorGetJournalByJsonInternal())
-        dispatch(resetUpdateGeneralJournalInternal())
-      }, 3000)
-
-      return () => clearTimeout(timer)
     }
   }, [errorGetJournalByJsonJournal, errorInputGeneralJournal, errorUpdateGeneralJournalInternal]);
 
@@ -1138,8 +1130,13 @@ export function GeneralJournalForm() {
             <Toast 
             message={toast.message} 
             type={toast.type} 
-            onClose={() => setToast(null)} 
-            duration={3000}
+            onClose={() => {
+              setToast(null)
+              dispatch(resetInputGeneralJournalInternal())
+              dispatch(resetErrorGetJournalByJsonInternal())
+              dispatch(resetUpdateGeneralJournalInternal())
+            }} 
+            duration={5000}
             />
           </div>
         </ToastPortal>

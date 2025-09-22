@@ -78,12 +78,6 @@ export default function KasirProducts() {
                 message: successCreateProductInternal,
                 type: 'success'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetCreateProductInternal())
-            }, 2000)
-    
-            return () => clearTimeout(timeout)
         }
     }, [successCreateProductInternal])
 
@@ -99,12 +93,6 @@ export default function KasirProducts() {
                 message: successCreateCategoryInternal,
                 type: 'success'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetCreateCategoryInternal())
-            }, 2000)
-    
-            return () => clearTimeout(timeout)
         }
     }, [successCreateCategoryInternal])
         
@@ -118,13 +106,6 @@ export default function KasirProducts() {
                 message: successUpdateProductInternal,
                 type: 'success'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetDataTempUpdateProduct())
-                dispatch(resetUpdateProductInternal())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
         }
     }, [successUpdateProductInternal])
 
@@ -146,12 +127,6 @@ export default function KasirProducts() {
                 message: successDeleteProductInternal,
                 type: 'success'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetDeleteProductInternal())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
         }
     }, [successDeleteProductInternal])
 
@@ -164,12 +139,6 @@ export default function KasirProducts() {
                 message: successDeleteCategory,
                 type: 'success'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetDeleteCategoryInternal())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
         }
     }, [successDeleteCategory])
 
@@ -180,12 +149,6 @@ export default function KasirProducts() {
             message: errorHasProductDeleteCategory,
             type: 'error'
         });
-
-        const timeOut = setTimeout(() => {
-          dispatch(resetDeleteCategoryInternal())
-        }, 4000)
-
-        return () => clearTimeout(timeOut)
       }
     }, [errorHasProductDeleteCategory])
 
@@ -195,18 +158,6 @@ export default function KasirProducts() {
                 message: errorDeleteProductInternal || errorDeleteCategory || errorAvailableProduct || errorUpdateProductInternal || errorCreateCategoryInternal || errorCategoyAndProductIntenal || errorCreateProductInternal,
                 type: 'error'
             });
-            
-            const timeout = setTimeout(() => {
-                dispatch(resetDeleteProductInternal())
-                dispatch(resetDeleteCategoryInternal())
-                dispatch(resetAvailableProduct())
-                dispatch(resetDataTempUpdateProduct())
-                dispatch(resetUpdateProductInternal())
-                dispatch(resetCreateCategoryInternal())
-                dispatch(resetCreateProductInternal())
-            }, 2000)
-
-            return () => clearTimeout(timeout)
         }   
     }, [errorDeleteProductInternal, errorDeleteCategory, errorAvailableProduct, errorUpdateProductInternal, errorCreateCategoryInternal, errorCategoyAndProductIntenal, errorCreateProductInternal])
 
@@ -227,8 +178,17 @@ export default function KasirProducts() {
                     <Toast 
                         message={toast.message} 
                         type={toast.type} 
-                        onClose={() => setToast(null)} 
-                        duration={3000}
+                        onClose={() => {
+                          setToast(null)
+                          dispatch(resetCreateProductInternal())
+                          dispatch(resetCreateCategoryInternal())
+                          dispatch(resetDataTempUpdateProduct())
+                          dispatch(resetUpdateProductInternal())
+                          dispatch(resetDeleteCategoryInternal())
+                          dispatch(resetDeleteProductInternal())
+                          dispatch(resetAvailableProduct())
+                        }} 
+                        duration={5000}
                     />
                   </div>
                 </ToastPortal>

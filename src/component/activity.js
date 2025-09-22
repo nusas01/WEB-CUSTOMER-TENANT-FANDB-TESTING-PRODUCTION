@@ -319,17 +319,14 @@ export default function Activity() {
                                                         <div className="text-right">
                                                             {(data.status_transaction === "PAID" && data.order_status === 'PROCESS') ? (
                                                                 <div className="flex items-center gap-2 text-blue-600">
-                                                                    <Loader2 className="w-4 h-4 animate-spin" />
                                                                     <span className="text-sm font-medium">Pesanan Anda Sedang Kami Proses</span>
                                                                 </div>
                                                             ) : data.order_status === "PROGRESS" ? (
                                                                 <div className="flex items-center gap-2 text-yellow-600">
-                                                                    <Truck className="w-4 h-4" />
                                                                     <span className="text-sm font-medium">Pesanan Sedang Diproses</span>
                                                                 </div>
                                                             ) : data.order_status === "FINISHED" ? (
                                                                 <div className="flex items-center gap-2 text-green-600">
-                                                                    <CheckCircle className="w-4 h-4" />
                                                                     <span className="text-sm font-medium">Pesanan Selesai</span>
                                                                 </div>
                                                             ) : (

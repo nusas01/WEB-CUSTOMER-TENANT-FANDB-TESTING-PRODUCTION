@@ -131,7 +131,7 @@ export default function Profile() {
                                 {/* Password Section */}
                                 {!data.password ? (
                                     <div 
-                                        onClick={() => navigate("/setpassword")} 
+                                        onClick={() => navigate("/set-password")} 
                                         className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md hover:border-green-200 cursor-pointer group"
                                     >
                                         <div className="flex items-center justify-between">
@@ -151,7 +151,7 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div 
-                                        onClick={() => navigate("/changepassword")} 
+                                        onClick={() => navigate("/change-password")} 
                                         className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-5 transition-all duration-200 hover:shadow-md hover:border-green-200 cursor-pointer group"
                                     >
                                         <div className="flex items-center justify-between">

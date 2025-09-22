@@ -42,13 +42,7 @@ export default function SetPassword() {
             })
             setPassword(null)
             setRepeatPassword(null)
-
-            const timer = setTimeout(() => {
-              dispatch(fetchGetDataCustomer())
-              dispatch(resetSetPassCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
+            dispatch(fetchGetDataCustomer())
         }
     }, [successSetPass])
 
@@ -58,12 +52,6 @@ export default function SetPassword() {
                 type: 'error',
                 message: errorSetPass,
             })
-
-            const timer = setTimeout(() => {
-              dispatch(resetSetPassCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [errorSetPass])
 
@@ -123,8 +111,11 @@ export default function SetPassword() {
                     <Toast
                         message={toast.message}
                         type={toast.type}
-                        onClose={() => setToast(null)}
-                        duration={3000}
+                        onClose={() => {
+                            setToast(null)
+                            dispatch(resetSetPassCustomer())
+                        }}
+                        duration={5000}
                     />
                     </div>
                 </ToastPortal>

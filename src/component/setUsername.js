@@ -36,12 +36,6 @@ export default function SetUsername() {
                 type: 'error',
                 message: errorSetUsername,
             })
-
-            const timer = setTimeout(() => {
-                dispatch(resetSetUsernameCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [errorSetUsername])
 
@@ -57,12 +51,6 @@ export default function SetUsername() {
             })
             setUsername(null)
             dispatch(fetchGetDataCustomer())
-
-            const timer = setTimeout(() => {
-                dispatch(resetSetUsernameCustomer())
-            }, 3000) 
-
-            return () => clearTimeout(timer) 
         }
     }, [successSetUsername])
 
@@ -94,8 +82,11 @@ export default function SetUsername() {
                     <Toast
                         message={toast.message}
                         type={toast.type}
-                        onClose={() => setToast(null)}
-                        duration={3000}
+                        onClose={() => {
+                            setToast(null)
+                            dispatch(resetSetUsernameCustomer())
+                        }}
+                        duration={5000}
                     />
                     </div>
                 </ToastPortal>

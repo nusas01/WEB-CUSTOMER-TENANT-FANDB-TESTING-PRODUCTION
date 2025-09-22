@@ -21,13 +21,6 @@ export default function KasirTransaction() {
         type: 'error',
         message: errorCheckTransactionNonCash,
       });
-
-      const timer = setTimeout(() => {
-        setToast({ show: false, type: '', message: '' });
-        dispatch(resetCheckTransactionNonCash());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
   }, [errorCheckTransactionNonCash]);
 
@@ -54,7 +47,7 @@ export default function KasirTransaction() {
                   message={toast.message}
                   type={toast.type}
                   onClose={handleToastClose}
-                  duration={3000}
+                  duration={5000}
                   />
               </div>
               </ToastPortal>
