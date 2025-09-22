@@ -90,15 +90,11 @@ export default function KasirSettings() {
 
   useEffect(() => {
     if (successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods) {
-      const message = successUpdateDataEmployee
-        ? 'Data berhasil diperbarui'
-        : successChangePassword
-        ? 'Password berhasil diperbarui'
-        : successUpdatePaymentMethods
-        ? 'Metode pembayaran berhasil diperbarui'
-        : '';
-      
-      setToast({ show: true, type: 'success', message })
+      setToast({ 
+        show: true, 
+        type: 'success', 
+        message: successUpdateDataEmployee || successChangePassword || successUpdatePaymentMethods 
+      })
 
       if (successUpdatePaymentMethods) {
         dispatch(fetchPaymentMethodsInternal())
@@ -117,17 +113,12 @@ export default function KasirSettings() {
   
   useEffect(() => {
     if (errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods) {
-      const message = errorDataEmployeeInternal
-        ? 'Terjadi kesalahan pada sistem saat memuat data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi.'
-        : errorUpdateDataEmployee 
-        ? 'Terjadi kesalahan pada sistem saat memperbaruhi data. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-        : errorChangePassword 
-        ? 'Terjadi kesalahan pada sistem saat memperbaruhi password. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-        : errorUpdatePaymentMethods 
-        ? 'Terjadi kesalahan pada sistem saat memperbarui metode pembayaran. Kami sedang mengatasinya. Silakan coba beberapa saat lagi'
-        : ''
 
-      setToast({ show: true, type: 'error', message })
+      setToast({ 
+        show: true, 
+        type: 'error', 
+        message: errorDataEmployeeInternal || errorUpdateDataEmployee || errorChangePassword || errorUpdatePaymentMethods
+      })
 
       const timer = setTimeout(() => {
         setToast({ show: false, type: '', message: '' })
@@ -166,8 +157,8 @@ export default function KasirSettings() {
         <ToastPortal>
           <div className='fixed top-8 left-1/2 transform -translate-x-1/2 z-100'>
             <Toast
-              message={"server internal server error"}
-              type={"error"}
+              message={toast.message}
+              type={toast.type}
               onClose={handleToastClose}
               duration={3000}
             />

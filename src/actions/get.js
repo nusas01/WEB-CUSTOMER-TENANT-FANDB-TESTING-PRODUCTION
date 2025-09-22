@@ -1317,8 +1317,7 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
       return;
     }
 
-    dispatch(setLoadingOrdersFinishedInternal({ loading: true, isLoadMore }))
-    
+    dispatch(setLoadingOrdersFinishedInternal({ loading: true, isLoadMore: isLoadMore }));
     try {
       const response = await axiosInstance.get(`${process.env.REACT_APP_GET_ORDER_INTERNAL_URL}`, {
         withCredentials: true,
@@ -1338,6 +1337,7 @@ export const fetchOrdersFinishedInternal = (startDate, endDate, page, isLoadMore
         hasMore: response?.data?.hasMore || false,
         totalCount: response?.data?.totalCount || 0,
         totalRevenue: response?.data?.totalRevenue || 0,
+        page: page,
       }))
     } catch (error) {
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -1392,6 +1392,7 @@ export const fetchSearchOrderInternal = (searchQuery, currentPage, isLoadMore = 
     dispatch(
       fetchSuccessSearchOrder({
         data: response.data?.data || [],
+        page: currentPage,
         hasMore: response.data?.hasMore || false,
         totalCount: response.data?.totalCount || 0,
         totalRevenue: response.data?.totalRevenue || 0,

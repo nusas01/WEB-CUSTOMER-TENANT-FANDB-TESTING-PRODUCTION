@@ -33,10 +33,9 @@ import {
 } from "../reducers/get" 
 import { loadMoreTransactionHistory  } from "../reducers/reducers"
 import { FormatDate } from "../helper/formatdate"
-import { formatDate } from "date-fns"
 import { CountDownRemoveData } from "../helper/countDown"
 import { da } from "date-fns/locale"
-import {ConfirmationModal, CashPaymentModal, ErrorAlert} from "./alert"
+import {ConfirmationModal, CashPaymentModal} from "./alert"
 import { useInfiniteScroll, useElementHeight, useOutsideClick } from "../helper/helper"
 
 const TransactionTable = ({isFullScreen, fullscreenchange}) => {
@@ -215,170 +214,138 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     }
   }, [filterTransaction]);
 
-  // Hook untuk infinite scroll
-  const { ref: loadMoreRef } = useInfiniteScroll({
-    hasMore,
+  // hook untuk infinite scroll mobile device
+  const { ref: observerRef } = useInfiniteScroll({
+    hasMore: hasMore,
     loading: loadingTransactionHistoryInternal,
     loadMore: loadMoreCallback,
-    threshold: 1.0,
-    rootMargin: '100px'
+    threshold: 0.5,
+    rootMargin: '100px',
+  })
+
+  useEffect(() => {
+      setSpinnerRelatif(loadingTransactionHistoryInternal)
+  }, [loadingTransactionHistoryInternal])
+
+  const [filters, setFilters] = useState({
+      method: null,
+      status: null,
+      startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
+      dateError: null
   });
+  
 
-  // hook untuk infinite scroll mobile devaci
-  const observerRef = useRef(null);
-
- useEffect(() => {
-   if (loadingTransactionHistoryInternal || !hasMore) return; 
-
-  const node = observerRef.current;
-
-  if (!node) return;
-
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry.isIntersecting) {
-        loadMoreCallback();
+  // handle untuk ketika data filter transaction masih ada maka set button ke button filter
+  useEffect(() => {
+      if (method) {
+          setFilterTransaction("methodFilterTransaction")
+          setFilters({
+              method: method,
+              status: status,
+              startDate: startDate,
+              endDate: endDate,
+              startTime: startTime,
+              endTime: endTime,
+          })
       }
-    },
-    {
-      root: null,               // ✅ gunakan viewport (window)
-      rootMargin: '100px',      // ✅ bisa disesuaikan, contoh: "100px" agar trigger sebelum sepenuhnya terlihat
-      threshold: 0.5,           // ✅ bisa 0.0 (sedikit terlihat), atau 1.0 (sepenuhnya terlihat)
-    }
-  );
+  }, [method])
 
-  observer.observe(node);
-
-  return () => {
-    observer.disconnect();
+  // Handlers untuk update state
+  const handleMethodChange = (method) => {
+      setFilters(prev => ({...prev, method}))
   };
-}, [loadMoreCallback, loadingTransactionHistoryInternal, hasMore]);
 
+  const handleStatusChange = (status) => {
+      setFilters(prev => ({...prev, status}))
+  };
 
-    useEffect(() => {
-        setSpinnerRelatif(loadingTransactionHistoryInternal)
-    }, [loadingTransactionHistoryInternal])
+  const handleDateChange = (type, value) => {
+      setFilters(prev => ({
+      ...prev,
+      [type]: value,
+      dateError: null // Reset error saat date diubah
+      }))
+  }
 
-    const [filters, setFilters] = useState({
-        method: null,
-        status: null,
-        startDate: '',
-        endDate: '',
-        startTime: '',
-        endTime: '',
-        dateError: null
-    });
-    
+  const handleClear = () => {
+      setFilters({
+      method: null,
+      status: null,
+      startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
+      dateError: null
+      });
+      dispatch(resetTransactionHitoryInternal())
+      dispatch(resetData())
+  };
 
+  const handleApply = () => {
+      const newErrors = {}
+      
+      if (!filters.method) {
+          newErrors.method = 'Payment method is required'
+      }
+      
+      if (!filters.status) {
+          newErrors.status = 'Transaction status is required'
+      }
 
-    // handle untuk ketika data filter transaction masih ada maka set button ke button filter
-    useEffect(() => {
-        if (method) {
-            setFilterTransaction("methodFilterTransaction")
-            setFilters({
-                method: method,
-                status: status,
-                startDate: startDate,
-                endDate: endDate,
-                startTime: startTime,
-                endTime: endTime,
-            })
-        }
-    }, [method])
-
-    // Handlers untuk update state
-    const handleMethodChange = (method) => {
-        setFilters(prev => ({...prev, method}))
-    };
-
-    const handleStatusChange = (status) => {
-        setFilters(prev => ({...prev, status}))
-    };
-
-    const handleDateChange = (type, value) => {
-        setFilters(prev => ({
-        ...prev,
-        [type]: value,
-        dateError: null // Reset error saat date diubah
-        }))
-    }
-
-    const handleClear = () => {
-        setFilters({
-        method: null,
-        status: null,
-        startDate: '',
-        endDate: '',
-        startTime: '',
-        endTime: '',
-        dateError: null
-        });
-        dispatch(resetTransactionHitoryInternal())
-        dispatch(resetData())
-    };
-
-    const handleApply = () => {
-        const newErrors = {}
+      if (!filters.startDate) {
+          newErrors.startDate = 'Start date is required'
+      } 
+      if (!filters.endDate) { 
+          newErrors.endDate = 'End date is required'
+      }
+      
+      // Jika ada error, tampilkan dan berhenti
+      if (Object.keys(newErrors).length > 0) {
+          setValidationErrors(newErrors)
+          return
+      }
+      
+      // Validasi tanggal
+      if (filters.startDate && filters.endDate) {
+        const start = new Date(filters.startDate)
+        const end = new Date(filters.endDate)
+        const diffTime = Math.abs(end - start)
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
         
-        if (!filters.method) {
-            newErrors.method = 'Payment method is required'
-        }
-        
-        if (!filters.status) {
-            newErrors.status = 'Transaction status is required'
-        }
-
-        if (!filters.startDate) {
-            newErrors.startDate = 'Start date is required'
-        } 
-        if (!filters.endDate) { 
-            newErrors.endDate = 'End date is required'
-        }
-        
-        // Jika ada error, tampilkan dan berhenti
-        if (Object.keys(newErrors).length > 0) {
-            setValidationErrors(newErrors)
+        if (diffDays > 92) {
+            setFilters(prev => ({...prev, dateError: 'Maksimal rentang tanggal 92 hari'}))
             return
         }
-        
-        // Validasi tanggal
-        if (filters.startDate && filters.endDate) {
-          const start = new Date(filters.startDate)
-          const end = new Date(filters.endDate)
-          const diffTime = Math.abs(end - start)
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-          
-          if (diffDays > 92) {
-              setFilters(prev => ({...prev, dateError: 'Maksimal rentang tanggal 92 hari'}))
-              return
-          }
-        }
-        
-        const data = {
-            method: filters.method,
-            status: filters.status,
-            startDate: filters.startDate,
-            endDate: filters.endDate,
-            page: 1
-        }
+      }
+      
+      const data = {
+          method: filters.method,
+          status: filters.status,
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          page: 1
+      }
 
-        dispatch(resetData())
-        dispatch(resetTransactionHitoryInternal())
-        dispatch(setData(data))
-        setSearchTerm('')
-        dispatch(resetSearchTransactionInternal())
-        
-        // Reset status fetch history dan lakukan fetch
-        setInitialFetchDone(prev => ({...prev, history: false}))
-        
-        if (!initialFetchDone.history) {
-        dispatch(fetchTransactionHistory(data))
-        setInitialFetchDone(prev => ({...prev, history: true}))
-        }
-        
-        setFilterTransaction("methodFilterTransaction")
-        setDateFilter(false)
-        setValidationErrors({})
+      dispatch(resetData())
+      dispatch(resetTransactionHitoryInternal())
+      dispatch(setData(data))
+      setSearchTerm('')
+      dispatch(resetSearchTransactionInternal())
+      
+      // Reset status fetch history dan lakukan fetch
+      setInitialFetchDone(prev => ({...prev, history: false}))
+      
+      if (!initialFetchDone.history) {
+      dispatch(fetchTransactionHistory(data))
+      setInitialFetchDone(prev => ({...prev, history: true}))
+      }
+      
+      setFilterTransaction("methodFilterTransaction")
+      setDateFilter(false)
+      setValidationErrors({})
     }
 
     // handle button

@@ -202,7 +202,7 @@ export const loadMoreOrderFinished = () => {
       return;
     }
     
-    const nextPage = (dataOrdersFinishedInternal?.page || 1) + 1;
+    const nextPage = dataOrdersFinishedInternal?.page + 1;
     
     return dispatch(fetchOrdersFinishedInternal(
       filterOrderInternal.startDate,
@@ -221,11 +221,11 @@ export const loadMoreSearchOrderInternal = (keyword) => {
         // Cek apakah masih bisa load more
         if (!searchOrderInternalState.hasMore || 
             searchOrderInternalState.isLoadMore ||
-            searchOrderInternalState.loadingSearchOrderInternal) {
+            searchOrderInternalState.loadingSearchOrder) {
             return;
         }
 
-        const nextPage = (searchOrderInternalState.page || 1) + 1;
+        const nextPage = searchOrderInternalState.page + 1;
 
         return dispatch(fetchSearchOrderInternal(keyword, nextPage, true));
     }

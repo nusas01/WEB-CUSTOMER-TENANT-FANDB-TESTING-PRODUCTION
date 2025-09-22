@@ -305,7 +305,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
     loadingOrdersFinishedInternal = false, 
     page: pageOrderFinished = 1, 
     hasMore: hasMoreOrderFinished = false,
-    isLoadMore: isLoadMoreOrderFinished = false,
     totalCount: totalCountOrderFinished = 0,
     totalRevenue: totalRevenueOrderFinished = 0,
   } = finishedOrdersState || {}
@@ -318,40 +317,6 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
     return []
   }, [dataOrdersFinished, statusFilter])
 
-  // useEffect(() => {
-  //   if (statusFilter !== 'FINISHED') {
-  //     dispatch(resetFinishedOrdersPagination())
-  //     dispatch(setStartDate(''))
-  //     dispatch(setEndDate(''))
-  //   }
-  // }, [statusFilter])
-
-  // Initial fetch effect
-  // useEffect(() => {
-  //   const shouldFetch = (
-  //     statusFilter === 'FINISHED' && 
-  //     startDate !== '' && 
-  //     endDate !== '' && 
-  //     dataOrdersFinished.length === 0 &&
-  //     !loadingOrdersFinishedInternal &&
-  //     !hasInitialized
-  //   );
-    
-  //   console.log("Initial fetch effect:", {
-  //     statusFilter,
-  //     startDate,
-  //     endDate,
-  //     shouldFetch,
-  //     hasInitialized,
-  //     loading: loadingOrdersFinishedInternal
-  //   });
-    
-  //   if (shouldFetch) {
-  //     setHasInitialized(true);
-  //     // dispatch(resetFinishedOrdersPagination());
-  //     dispatch(fetchOrdersFinishedInternal(startDate, endDate, 1, false));
-  //   }
-  // }, [statusFilter, startDate, endDate, dispatch, loadingOrdersFinishedInternal, hasInitialized])
   const handleFilterOrderFinished = () => {
     if (startDate === '' || endDate === '') {
       return
@@ -389,17 +354,17 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // Load more callback - diperbaiki
   const loadMoreFinishedOrdersCallback = useCallback(() => {
-    if (statusFilter === 'FINISHED' && hasMoreOrderFinished && !isLoadMoreOrderFinished) {
+    if (statusFilter === 'FINISHED' && hasMoreOrderFinished && !loadingOrdersFinishedInternal) {
       dispatch(loadMoreOrderFinished());
     }
-  }, [statusFilter, hasMoreOrderFinished, isLoadMoreOrderFinished, dispatch])
+  }, [statusFilter, hasMoreOrderFinished, loadingOrdersFinishedInternal, dispatch])
 
   // Infinite scroll hook
   const { ref: loadMoreFinishedRef } = useInfiniteScroll({
     hasMore: hasMoreOrderFinished,
-    loading: isLoadMoreOrderFinished,
+    loading: loadingOrdersFinishedInternal,
     loadMore: loadMoreFinishedOrdersCallback,
-    threshold: 1.0,
+    threshold: 0.5,
     rootMargin: '100px',
   })
 
@@ -410,6 +375,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
     dispatch(resetFilterGeneralJournal())
     dispatch(resetSearchOrder())
     setSearchQuery('')
+    setHasInitializedSearch(false)
   }
 
   // handle status to progress order
@@ -473,15 +439,10 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   const { 
     dataSearchOrder, 
     loadingSearchOrder, 
-    page: pageSearchOrder, 
     hasMore: hasMoreSearchOrder,
-    isLoadMore: isLoadMoreSearchOrder,
-    totalCount: totalCountSearchOrder, 
+    totalCount: totalCountSearchOrder,
     totalRevenue: totalRevenueSearchOrder,
   } = useSelector((state) => state.searchOrderInternalState)
-
-  // get search order 
-  const dataSearchOrderInternal = useMemo(() => {})
 
   useEffect(() => {
     if (dataSearchOrder.length > 0) {
@@ -506,20 +467,20 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   const handleSearch = () => {
     setHasInitializedSearch(true);
     dispatch(resetSearchOrder());
-    dispatch(fetchSearchOrderInternal(searchQuery, pageSearchOrder, false));
+    dispatch(fetchSearchOrderInternal(searchQuery, 1, false));
   };
 
   const loadMoreSearchOrderCallback = useCallback(() => {
-    if (searchQuery !== '' && hasMoreSearchOrder && !isLoadMoreSearchOrder) {
+    if (searchQuery !== '' && hasMoreSearchOrder && !loadingSearchOrder) {
       dispatch(loadMoreSearchOrderInternal(searchQuery));
     }
-  }, [searchQuery, hasMoreSearchOrder, isLoadMoreSearchOrder])
+  }, [searchQuery, hasMoreSearchOrder, loadingSearchOrder])
 
   const { ref: loadMoreSearchOrderRef } = useInfiniteScroll({
     hasMore: hasMoreSearchOrder,
-    loading: isLoadMoreSearchOrder,
+    loading: loadingSearchOrder,
     loadMore: loadMoreSearchOrderCallback,
-    threshold: 1.0,
+    threshold: 0.5,
     rootMargin: '100px',
   })
 
@@ -534,10 +495,9 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
   }, [loadingSearchOrder, dataSearchOrder.length])
 
 
-
   // Filter orders effect
   useEffect(() => {
-    if (dataOrdersFinishedInternal.length === 0 && !isLoadMoreOrderFinished && !hasInitializedSearch) {
+    if (dataOrdersFinishedInternal.length === 0 && !loadingOrdersFinishedInternal && !hasInitializedSearch) {
       const allOrders = dataOrdersInternal || [];
       let filtered = [];
       let totalRevenue = 0;
@@ -754,17 +714,37 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
             {/* Search Input */}
             <div className="flex flex-col sm:flex-row gap-2 flex-1">
               <div className="flex-1 min-w-0">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Search Orders
+                </label>
                 <div className="relative">
+                  {/* Search icon kiri */}
                   <Search className="absolute inset-y-0 left-4 my-auto text-gray-400" size={20}/>
+
+                  {/* Input */}
                   <input
                     type="text"
                     placeholder="Search by customer, email, table..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+
+                  {/* Tombol X kanan */}
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("")
+                        dispatch(resetSearchOrder())
+                        setHasInitializedSearch(false)
+                      }}
+                      className="absolute inset-y-0 right-3 my-auto text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
               {/* Search Button */}
@@ -772,7 +752,12 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                 <label className="invisible block text-sm">Search Button</label>
                 <button
                   onClick={() => handleSearch()}
-                  className="flex items-center gap-2 px-4 py-2.5 mt-1 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl font-semibold shadow transition-all w-full sm:w-auto justify-center"
+                  disabled={searchQuery === ""}
+                  className={`flex items-center gap-2 px-4 py-2.5 mt-1 rounded-xl font-semibold shadow transition-all w-full sm:w-auto justify-center ${
+                    searchQuery === ""
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-gray-800 to-gray-700 text-white hover:from-gray-700 hover:to-gray-600"
+                  }`}
                 >
                   <Search className="w-4 h-4" />
                   <span className="text-sm">Search Orders</span>
@@ -787,7 +772,8 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                 <select
                   value={statusFilter}
                   onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={searchQuery !== ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="ALL">All Status</option>
                   <option value="PROCESS">Process</option>
@@ -829,9 +815,10 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
         )}
 
        {!spinnerRelative 
-        && ((stats.progress === 0 && statusFilter === 'PROCESS')
-        || (stats.finished === 0 && statusFilter === 'FINISHED') 
-        || (stats.received === 0 && statusFilter === 'PROGRESS'))
+        && ((stats.progress === 0 && statusFilter === 'PROCESS' && !hasInitializedSearch)
+        || (stats.finished === 0 && statusFilter === 'FINISHED' && !hasInitializedSearch) 
+        || (stats.received === 0 && statusFilter === 'PROGRESS' && !hasInitializedSearch)
+        || (dataSearchOrder.length === 0 && hasInitializedSearch))
         ? <div><NoOrdersContainer /></div>
         : null}
 
@@ -991,13 +978,13 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                   ref={loadMoreSearchOrderRef} 
                   className="w-full py-4 flex items-center justify-center"
                 >
-                  {isLoadMoreSearchOrder && (
+                  {loadingOrdersFinishedInternal && (
                     <div className="flex items-center gap-2 py-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
                       <span className="text-sm text-gray-500">Loading more orders...</span>
                     </div>
                   )}
-                  {!hasMoreSearchOrder && dataSearchOrder.length > 0 && (
+                  {!hasMoreSearchOrder && (
                     <div className="py-2 text-sm text-gray-400 text-center">
                       No more orders to load
                     </div>
@@ -1010,7 +997,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                   ref={loadMoreFinishedRef} 
                   className="w-full py-4 flex items-center justify-center"
                 >
-                  {isLoadMoreOrderFinished && (
+                  {(hasMoreOrderFinished && loadingOrdersFinishedInternal) && (
                     <div className="flex items-center gap-2 py-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
                       <span className="text-sm text-gray-500">Loading more orders...</span>

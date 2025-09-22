@@ -1107,7 +1107,7 @@ export const searchOrderInternalSlice = createSlice({
         if (state.page === 1 && !action.payload.isLoadMore) {
         state.loadingSearchOrder = action.payload.loading;
         } else {
-        state.isLoadMore = action.payload.loading;
+        state.isLoadMore = action.payload.isLoadMore;
         }
     },
     fetchSuccessSearchOrder: (state, action) => {
@@ -1155,7 +1155,6 @@ const initialOrdersFinishedInternalState = {
   totalCount: 0,
   totalRevenue: 0,
 }
-
 export const getOrdersFinishedInternalSlice = createSlice({
   name: "dataOrdersFinishedInternal",
   initialState: initialOrdersFinishedInternalState,
@@ -1164,28 +1163,29 @@ export const getOrdersFinishedInternalSlice = createSlice({
       if (state.page === 1 && !action.payload.isLoadMore) {
         state.loadingOrdersFinishedInternal = action.payload.loading
       } else {
-        state.isLoadMore = action.payload.loading
+        state.hasMore = action.payload.isLoadMore
       }
     },
     fetchSuccessOrdersFinishedInternal: (state, action) => {
-      const { data, hasMore, totalCount, totalRevenue, isLoadMore } = action.payload
+      const { data, hasMore, totalCount, totalRevenue, page } = action.payload
      
       // Untuk load more, append data. Untuk initial load, replace data
       state.dataOrdersFinished = [...state.dataOrdersFinished, ...(data || [])]
       state.hasMore = hasMore
+      state.page = page
       state.totalCount = totalCount
       state.totalRevenue = totalRevenue
-      state.errorOrdersFinishedInternal = null
       state.loadingOrdersFinishedInternal = false
+      state.errorOrdersFinishedInternal = null
       state.isLoadMore = false
     },
     fetchErrorOrdersFinishedInternal: (state, action) => {
       state.errorOrdersFinishedInternal = action.payload
-      state.isLoadMore = false
-      state.loadingOrdersFinishedInternal = false
+        state.loadingOrdersFinishedInternal = false
     },
     resetErrorOrdersFinishedInternal: (state) => {
       state.errorOrdersFinishedInternal = null
+      state.loadingOrdersFinishedInternal = false
     },
     incrementPage: (state) => {
       state.page = state.page + 1
@@ -1196,9 +1196,9 @@ export const getOrdersFinishedInternalSlice = createSlice({
       state.hasMore = true
       state.isLoadMore = false
       state.errorOrdersFinishedInternal = null
+      state.loadingOrdersFinishedInternal = false
       state.totalRevenue = 0
       state.totalCount = 0
-      state.loadingOrdersFinishedInternal = false
     }
   }
 })

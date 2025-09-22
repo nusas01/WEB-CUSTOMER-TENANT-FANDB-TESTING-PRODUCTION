@@ -239,7 +239,7 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
     dispatch(setLoadingToProgressOrder(true))
     try {
         const response = await axiosInstance.patch(`${process.env.REACT_APP_PATCH_TO_PROGRESS_ORDER_INTERNAL_URL}`, data, config)
-        dispatch(setSuccessToProgressOrder(response?.data?.data))
+        dispatch(setSuccessToProgressOrder("Order accepted successfully. Status has been updated from Processing to In Progress."))
         dispatch(appendOrdersInternal(response?.data?.data))
     } catch(error) {
         if (error.response?.data?.code === "TOKEN_EXPIRED") {
@@ -280,7 +280,7 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
             transaction_id: data.id,
         }
         const response = await axiosInstance.patch(`${process.env.REACT_APP_PATCH_TO_FINISHED_ORDER_INTERNAL_URL}`, formData, config)
-        dispatch(setSuccessToFinishedOrder(response?.data?.data))
+        dispatch(setSuccessToFinishedOrder("The order has been completed. Status has been updated from In Progress to Finished."))
         // dispatch(addOrderFinishedInternal(data))
         dispatch(appendOrdersInternal(response?.data?.data))
     } catch(error) {
