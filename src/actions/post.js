@@ -53,13 +53,14 @@ export const signupCustomer = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY
+            "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     };
     dispatch(setLoadingSignCustomer(true))
     try {
-        const nonce_data = await customerCollectFingerprintAsync()
+        const nonce_data = await customerCollectFingerprintAsync(dispatch)
 
         const formData = {
             ...data,
@@ -102,6 +103,7 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials : true,
     };
@@ -145,12 +147,13 @@ export const loginCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
     dispatch(setLoginLoadingCustomer(true));
     try {
-        const nonce_data = await customerCollectFingerprintAsync();
+        const nonce_data = await customerCollectFingerprintAsync(dispatch);
 
         const formData = {
             ...data,
@@ -200,12 +203,13 @@ export const forgotPasswordCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
     dispatch(setLoadingForgotPasswordCustomer(true))
     try {
-        const nonce_data = await customerCollectFingerprintAsync();
+        const nonce_data = await customerCollectFingerprintAsync(dispatch);
 
         const formData = {
             ...data,
@@ -249,6 +253,7 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
             ...(state.orderTakeAway === true
             ? {"order_type_take_away": "true"} 
             : {"table_id": state.tableId})
@@ -301,6 +306,7 @@ export const loginGoogleCustomer = () => async (dispatch) => {
             headers: {
                 "Content-Type": "application/json",
                 "API_KEY": process.env.REACT_APP_API_KEY,
+                "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
             },
             withCredentials: true,
         })
@@ -336,6 +342,7 @@ export const loginInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -392,12 +399,13 @@ export const forgotPasswordInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
     dispatch(setLoadingForgotPasswordInternal(true))
     try {
-        const nonce_data = await customerCollectFingerprintAsync();
+        const nonce_data = await customerCollectFingerprintAsync(dispatch);
 
         const formData = {
             ...data,
@@ -441,6 +449,7 @@ export const createTransactionInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -490,6 +499,7 @@ export const createCategoryInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -532,6 +542,7 @@ export const createProductInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -575,6 +586,7 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -609,6 +621,7 @@ export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState)
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -645,6 +658,7 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -697,6 +711,7 @@ export const createTabelInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -740,6 +755,7 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -787,6 +803,7 @@ export const createEmployee = (formData) => {
         headers: {
           "Content-Type": "multipart/form-data",
           "API_KEY": process.env.REACT_APP_API_KEY,
+          "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
       })

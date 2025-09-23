@@ -26,6 +26,7 @@ export const deleteTableInternal = (numberTable) => async (dispatch) => {
     const config = {
         headers: {
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -65,6 +66,7 @@ export const deleteCategoryInternal = (id) => async (dispatch) => {
     const config = {
         headers: {
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
         params: {
@@ -118,6 +120,7 @@ export const deleteEmployee = (id) => {
             withCredentials: true,
             headers: {
                 "API_KEY": process.env.REACT_APP_API_KEY,
+                "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
             },
         })
         dispatch(setSuccessDeleteEmployee(response?.data?.success))

@@ -35,6 +35,8 @@ export const changePasswordCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -76,6 +78,8 @@ export const setPasswordCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -117,6 +121,8 @@ export const setUsernameCustomer = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -157,6 +163,8 @@ export const buyTransactionCashOnGoingInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -198,6 +206,7 @@ export const availableProductInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -233,6 +242,7 @@ export const toProgressOrderInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -271,6 +281,7 @@ export const toFinishedOrderInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -313,6 +324,7 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -349,6 +361,7 @@ export const updateChangePasswordInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -389,6 +402,7 @@ export const changePasswordEmployee = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }

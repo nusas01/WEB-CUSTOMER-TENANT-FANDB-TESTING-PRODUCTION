@@ -23,9 +23,29 @@ import { useDispatch } from "react-redux"
 import { createPortal } from "react-dom";
 
 export const OrderTypeInvalidAlert = ({ onClose }) => {
+  const modalRef = useRef(null)
+
+  // Detect click outside modal
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    document.body.style.overflow = 'hidden' // Prevent background scroll
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.body.style.overflow = 'unset'
+    }
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 z-90 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-90 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div
+        ref={modalRef}
         className="bg-white flex flex-col items-center rounded-3xl p-8 w-full max-w-sm shadow-2xl transform animate-in fade-in-0 zoom-in-95 duration-300"
         role="dialog"
         aria-modal="true"
@@ -75,22 +95,22 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
             <div className="flex items-center justify-center gap-2 text-gray-500">
               <RotateCcw className="w-4 h-4" />
               <p className="text-sm italic">
-                Silakan ulangi proses pemindaian
+                Jika ingin melakukan pemesanan, Silakan ulangi proses pemindaian, jika tidak klik tombol di bawah ini.
               </p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        {/* <div className="w-full">
+        <div className="w-full">
           <button
             onClick={onClose}
             className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-2xl text-base font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg"
           >
             <CheckCircle className="w-5 h-5" />
-            Baiklah
+            Close
           </button>
-        </div> */}
+        </div>
       </div>
     </div>
   )

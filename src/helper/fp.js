@@ -82,8 +82,8 @@ async function getCanvasFingerprintEncrypted(nonce) {
   return await encryptWithNonce(nonce, fingerprintData);
 }
 
-export async function customerCollectFingerprintAsync() {
-  const { data, error } = await fetchNonceCustomer();
+export async function customerCollectFingerprintAsync(dispatch) {
+  const { data, error } = await fetchNonceCustomer(dispatch);
   if (!data || error) throw new Error(error || "failed to fetch nonce");
 
   const nonce = data.nonce;

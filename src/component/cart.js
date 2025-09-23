@@ -28,6 +28,7 @@ import {createTransactionCustomer} from "../actions/post"
 import { SpinnerRelative, SpinnerFixed} from "../helper/spinner"
 import {createTransactionCustomerSlice} from "../reducers/post"
 import { setOrderTypeContext } from "../reducers/reducers"
+import { loginStatusCustomer } from "../actions/get"
 
 function Cart({ closeCart }) {
     const [notesId, setNotesId] = useState('')
@@ -300,22 +301,28 @@ function Cart({ closeCart }) {
     useEffect(() => {
         if (message) {
             dispatch(clearCart());
-            dispatch(resetCreateTransactionCustomer());
-            dispatch(fetchTransactionOnGoingCustomer()).then(() => { // Gunakan promise
-            if (paymentMethod !== "EWALLET") {
-                navigate("/activity/pembayaran", { state: { detailOrder: message?.data } });
-                return;
-            }
-        
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const redirectUrl = isMobile 
-                ? message.data?.redirect_url_mobile 
-                : message.data?.redirect_url_mobile;
-        
-            if (redirectUrl) {
-                localStorage.setItem("pendingTransaction", message.data.id);
-                window.location.href = redirectUrl; // Redirect setelah dispatch selesai
-            }
+            dispatch(fetchTransactionOnGoingCustomer()).then(() => { 
+                if (paymentMethod !== "EWALLET") {
+                    dispatch(resetCreateTransactionCustomer());
+                    navigate("/activity/pembayaran", { state: { detailOrder: message?.data } });
+                    return;
+                }
+                
+                if (message?.data?.channel_code === "OVO") {
+                    dispatch(resetCreateTransactionCustomer());
+                    navigate("/activity", { state: { filter: "on going"}});
+                    return;
+                }
+
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const redirectUrl = isMobile 
+                    ? message.data?.redirect_url_mobile 
+                    : message.data?.redirect_url_mobile;
+            
+                if (redirectUrl) {
+                    localStorage.setItem("pendingTransaction", message.data.id);
+                    window.location.href = redirectUrl; // Redirect setelah dispatch selesai
+                }
             });
         }
     }, [message]);
@@ -369,6 +376,11 @@ function Cart({ closeCart }) {
     }, [loadingOnGoingTransaction])
 
     const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
+    useEffect(() => {
+        if (!loggedIn) {
+            dispatch(loginStatusCustomer())
+        } 
+    }, [loggedIn])
     
     const handleCreateTransaction = () => {
         if (!loggedIn) {
@@ -513,7 +525,6 @@ function Cart({ closeCart }) {
                 </div>
             </ToastPortal>
         )}
-       
 
         {/* section item cart */}
         { !spinner && (

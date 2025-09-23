@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from
 import { useInView } from 'react-intersection-observer'
 import { useDispatch } from 'react-redux';
 import { navbarInternalSlice } from '../reducers/reducers'
+import { useLocation } from 'react-router-dom';
 
 export const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -210,3 +211,13 @@ export const formatDateTime = (dateString) => {
     minute: '2-digit'
   });
 };
+
+export const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // atau behavior: "auto"
+  }, [pathname]);
+
+  return null;
+}

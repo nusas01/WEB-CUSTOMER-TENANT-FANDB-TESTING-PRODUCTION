@@ -35,6 +35,7 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -72,6 +73,7 @@ export const UpdateGeneralJournalInternal = (data) => async (dispatch, getState)
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -134,6 +136,7 @@ export const voidGeneralJournalInternal  = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -171,6 +174,7 @@ export const updatePaymentMethodsInternal = (data) => async (dispatch) => {
         headers: {
             "Content-Type": "application/json",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -214,6 +218,7 @@ export const updateEmployee = (formData) => {
             headers: {
             "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
+            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
             },
             withCredentials: true,
         })

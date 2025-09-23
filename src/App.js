@@ -52,6 +52,7 @@ import {
 import EmployeeManagement from './casier/employee'
 import CreateEmployee from './casier/createEmployee'
 import ForgotPasswordComponent from './component/forgotPassword'
+import { ScrollToTop } from './helper/helper';
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -192,7 +193,8 @@ function AppContent() {
   return (
     <div> 
       <UsedSSEContainer />
-    
+      <ScrollToTop />
+
       <Routes>
         <Route path='/' element={<Home/>}/>
         <Route path='/cart' element={<Cart/>}/>

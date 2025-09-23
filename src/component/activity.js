@@ -34,13 +34,10 @@ export default function Activity() {
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [spinner, setSpinner] = useState(false)
 
-    useEffect(() => {
-        dispatch(loginStatusCustomer())
-    }, [])
-
     const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer)
     useEffect(() => {
         if (!loggedIn) {
+            dispatch(loginStatusCustomer())
         } 
     }, [loggedIn])
     
@@ -70,6 +67,13 @@ export default function Activity() {
     const handleButtonActivity = (data) => {
         dispatch(setButtonActivity(data))
     }
+
+    const filterOvo = location.state?.filter 
+    useEffect(() => {
+        if (filterOvo !== undefined) {
+            dispatch(setButtonActivity(filterOvo))
+        }
+    }, [filterOvo])
 
     const {resetError} = getDetailTransactionsHistoryCustomerSlice.actions;
     const handleDetail = (id) => {
@@ -245,7 +249,7 @@ export default function Activity() {
                                 <div className="flex flex-col gap-4 mb-12 px-4">
                                     {dataTransactionOnGoing.map((data, index) => (
                                         <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                            {data.status_transaction == 'PENDING' && (
+                                            {data?.status_transaction == 'PENDING' && (
                                                 <p className="hidden"><CountDown expiry={data.expires_at} transactionId={data.id}/></p>
                                             )}
                                             
@@ -256,7 +260,7 @@ export default function Activity() {
                                                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                                         <span className="text-sm font-medium text-gray-600">Transaction ID: #{data.id}</span>
                                                     </div>
-                                                    {data.status_transaction === "PENDING" ? (
+                                                    {data?.status_transaction === "PENDING" ? (
                                                         <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
                                                             <Clock className="w-4 h-4" />
                                                             Belum Bayar
