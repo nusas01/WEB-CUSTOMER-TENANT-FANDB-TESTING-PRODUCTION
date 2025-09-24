@@ -66,13 +66,11 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     }, [loadingTransactionCashInternal])
 
     useEffect(() => {
-    if (!loadingTransactionCashInternal && 
-        !initialFetchDone.cash && 
-        (!dataTransactionCashInternal || dataTransactionCashInternal.length === 0)) {
-      dispatch(fetchTransactionCashOnGoingInternal());
-      setInitialFetchDone(prev => ({...prev, cash: true}));
-    }
-  }, [dataTransactionCashInternal, loadingTransactionCashInternal, initialFetchDone.cash]);
+    if (filterTransaction === "methodCash" && dataTransactionCashInternal.length === 0) {
+        dispatch(fetchTransactionCashOnGoingInternal());
+        setInitialFetchDone(prev => ({...prev, cash: true}));
+      }
+    }, []);
 
     // get transaction non cash on going
     const { removeTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
@@ -83,14 +81,11 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
     }, [loadingTransactionNonCashInternal])
 
     useEffect(() => {
-        if (filterTransaction === "methodNonCash" && 
-            !loadingTransactionNonCashInternal && 
-            !initialFetchDone.nonCash && 
-            (!dataTransactionNonCashInternal || dataTransactionNonCashInternal.length === 0)) {
-        dispatch(fetchTransactionNonCashOnGoingInternal());
-        setInitialFetchDone(prev => ({...prev, nonCash: true}));
+        if (filterTransaction === "methodNonCash" && dataTransactionNonCashInternal.length === 0) {
+          dispatch(fetchTransactionNonCashOnGoingInternal());
+          setInitialFetchDone(prev => ({...prev, nonCash: true}));
         }
-    }, [filterTransaction, dataTransactionNonCashInternal, loadingTransactionNonCashInternal, initialFetchDone.nonCash]);
+    }, []);
 
 
     // buy transaction cash on going
@@ -735,7 +730,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                   />
                   <input
                       type="text"
-                      placeholder="Search by id, email, username...."
+                      placeholder="Search by id"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full sm:w-[60%] pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"

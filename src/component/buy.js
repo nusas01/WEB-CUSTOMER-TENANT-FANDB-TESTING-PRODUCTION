@@ -7,27 +7,44 @@ import {QRCodeCanvas } from 'qrcode.react'
 import { useSelector } from "react-redux"
 import { useState, useEffect } from "react"
 import { OrderTypeInvalidAlert } from "./alert"
+import { setIsClose } from "../reducers/reducers"
+import { useDispatch } from "react-redux"
 
 export default function Buy() {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const location = useLocation()
     const detailOrder = location.state?.detailOrder || {}
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
 
-    window.scrollTo(0, 0);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopy = async () => {
+        const nomorRekening = detailOrder?.virtual_account_number || detailOrder?.unixNumber;
+        try {
+            await navigator.clipboard.writeText(nomorRekening);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            alert('Gagal menyalin');
+        }
+    };
     
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
+    }, [tableId, orderTakeAway, isClose])
 
     return (
         <div className="min-h-screen bg-gray-50">
             {orderTypeInvalid && (
-                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                <OrderTypeInvalidAlert onClose={() => {
+                    setOrderTypeInvalid(false)
+                    dispatch(setIsClose(true))
+                }}/>
             )}
             
             {/* Header */}
@@ -118,6 +135,90 @@ export default function Buy() {
                         </div>
                     </div>
                 </div>
+            ) : detailOrder.channel_code === "OVO" ? (
+                <div className="bg-white">
+                    {/* OVO Payment Method Info */}
+                    <div className="border-b-[20px] border-gray-200">
+                        <div className="flex justify-center items-center p-6">
+                            {ImagePaymentMethod(detailOrder?.channel_code, "120px", "60px")}
+                        </div>
+                        <div className="px-6 pb-6">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-start gap-3">
+                                    <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    <div>
+                                        <p className="text-blue-800 font-medium text-sm">Informasi Pembayaran OVO</p>
+                                        <p className="text-blue-700 text-sm mt-1">
+                                            Pembayaran akan diproses secara otomatis melalui notifikasi di aplikasi OVO Anda. Pastikan Anda sudah masuk ke aplikasi OVO dan saldo mencukupi.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* OVO Instructions */}
+                    <div>
+                        <div className="border-b border-gray-200">
+                            <p className="p-6 font-medium text-gray-900">Petunjuk Pembayaran OVO</p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="flex gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">1</span>
+                                <p className="text-gray-700 leading-relaxed">
+                                    Pastikan Anda telah memasukkan nomor ponsel yang terdaftar pada akun <strong className="text-purple-600">OVO</strong> Anda saat *checkout*.
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">2</span>
+                                <p className="text-gray-700 leading-relaxed">
+                                    Segera periksa ponsel Anda, Anda akan menerima <strong className="text-gray-900">notifikasi pembayaran</strong> dari OVO.
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">3</span>
+                                <p className="text-gray-700 leading-relaxed">
+                                    Buka notifikasi tersebut di aplikasi OVO, lalu periksa detail pembayaran dan pastikan semua sudah benar.
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">4</span>
+                                <p className="text-gray-700 leading-relaxed">
+                                    Tekan tombol <strong className="text-gray-900">"Bayar"</strong> dan masukkan PIN OVO Anda untuk menyelesaikan transaksi.
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">5</span>
+                                <p className="text-gray-700 leading-relaxed">
+                                    Pembayaran harus diselesaikan dalam waktu <strong className="text-gray-900">55 detik</strong> untuk menghindari transaksi kadaluarsa.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* Additional Tips */}
+                        <div className="border-t border-gray-200 bg-gray-50">
+                            <div className="p-6">
+                                <h3 className="font-medium text-gray-900 mb-3">Tips Pembayaran OVO:</h3>
+                                <ul className="space-y-2 text-sm text-gray-600">
+                                    <li className="flex items-start gap-2">
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                                        <span>Pastikan koneksi internet ponsel Anda stabil agar notifikasi cepat masuk.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                                        <span>Jika notifikasi tidak muncul, buka aplikasi OVO dan cek ikon lonceng untuk melihat permintaan pembayaran.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                                        <span>Jika mengalami kendala, hubungi customer service OVO atau NusasFood.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             ) : (
                 <div className="bg-white">
                     {/* Payment Method Info */}
@@ -136,8 +237,15 @@ export default function Buy() {
                                         <p className="text-green-600 font-semibold text-xl font-mono">
                                             {detailOrder?.virtual_account_number || detailOrder?.unixNumber}
                                         </p>
-                                        <button className="px-3 py-1 text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors">
-                                            Salin
+                                        <button 
+                                            onClick={handleCopy}
+                                            className={`px-3 py-1 text-sm rounded transition-colors ${
+                                                isCopied 
+                                                    ? 'text-green-700 bg-green-100' 
+                                                    : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                                            }`}
+                                        >
+                                            {isCopied ? 'Tersalin!' : 'Salin'}
                                         </button>
                                     </div>
                                 </div>

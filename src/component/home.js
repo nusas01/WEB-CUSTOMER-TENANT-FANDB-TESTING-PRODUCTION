@@ -8,8 +8,7 @@ import { UseResponsiveClass } from "../helper/presentationalLayer"
 import { data, useLocation, useNavigate } from "react-router-dom"
 import BottomNavbar from "./bottomNavbar"
 import { useDispatch, useSelector } from "react-redux"
-import { fetchProductsCustomer } from "../actions/get"
-import { setOrderTypeContext } from "../reducers/reducers"
+import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
 import {
@@ -23,7 +22,7 @@ import {
 function Home() {
   const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
-  const { orderTakeAway, tableId } = useSelector((state) => state.persisted.orderType)
+  const { orderTakeAway, tableId, isClose } = useSelector((state) => state.persisted.orderType)
   const [activeCategory, setActiveCategory] = useState()
   const [clickedCategory, setClickedCategory] = useState(null);
   const categoryRefs = useRef({});
@@ -260,7 +259,6 @@ function Home() {
     }
   };
 
-
   // Function untuk scroll manual dengan arrow
   const scrollCategory = (direction) => {
     const container = categoryScrollRef.current;
@@ -358,45 +356,14 @@ function Home() {
     });
   };
 
-  // Menyesuaikan headerOffset saat ukuran layar berubah
-  // useEffect(() => {
-  //   const updateHeaderOffset = () => {
-  //     if (window.innerWidth <= 500) {
-  //       setHeaderOffset(10);
-  //     } else {
-  //       setHeaderOffset(145);
-  //     }
-  //   };
-
-  //   window.addEventListener("resize", updateHeaderOffset);
-  //   updateHeaderOffset();
-
-  //   return () => {
-  //     window.removeEventListener("resize", updateHeaderOffset);
-  //   };
-  // }, []);
-
-
-  // const [isFixed, setIsFixed] = useState(false);
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     setIsFixed(window.scrollY > 60);
-  //   };
-  
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
-
-
   const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
   useEffect(() => {
-      if (tableId === null && orderTakeAway === false) {
+      if (tableId === null && orderTakeAway === false && !isClose) {
         setOrderTypeInvalid(true)
         return
     }
-  }, [tableId, orderTakeAway])
-  
+  }, [tableId, orderTakeAway, isClose])
+
 
   return (
     <div style={{position: 'relative'}}>
@@ -509,7 +476,10 @@ function Home() {
       )}
 
       { orderTypeInvalid && (
-            <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+            <OrderTypeInvalidAlert onClose={() => { 
+              setOrderTypeInvalid(false)
+              dispatch(setIsClose(true))
+            }}/>
         )}
 
       <div className="container-bg">

@@ -21,9 +21,9 @@ import {
   loginStatusCustomer, 
   fetchProductsCustomer, 
   fetchGetDataCustomer, 
-  fetchTransactionOnGoingCustomer, 
   fetchDataEmployeeInternal, 
   fetchAssetsStoreInternal,
+  fetchTransactionOnGoingCustomer,
 } from './actions/get'
 import { GeneralJournalForm } from './casier/finance/inputGeneralJournal'
 import { useDispatch, useSelector } from 'react-redux'
@@ -53,6 +53,7 @@ import EmployeeManagement from './casier/employee'
 import CreateEmployee from './casier/createEmployee'
 import ForgotPasswordComponent from './component/forgotPassword'
 import { ScrollToTop } from './helper/helper';
+import { da } from 'date-fns/locale'
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -98,29 +99,20 @@ function CustomerWrapper() {
   // set username jika user sign menggunakan account google
   const {data} = useSelector((state) => state.persisted.dataCustomer)
   useEffect(() => {
-    if (!data || Object.keys(data).length === 0) {
+    if ((!data || Object.keys(data).length === 0) && loggedInCustomer) {
       dispatch(fetchGetDataCustomer())
     }
   }, [])
 
-   // get data transaction on going
+  // get data transaction on going customer
   const {dataTransactionOnGoing} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
   useEffect(() => {
-    if (!dataTransactionOnGoing || Object.keys(dataTransactionOnGoing).length === 0) {
+    if (loggedInCustomer && dataTransactionOnGoing.length === 0) {
       dispatch(fetchTransactionOnGoingCustomer())
     }
-  }, [])
+  }, [loggedInCustomer])
 
-  useEffect(() => {
-    const pendingTransaction = localStorage.getItem("pendingTransaction");
-    
-    if (pendingTransaction) {
-      dispatch(fetchTransactionOnGoingCustomer(pendingTransaction))
-        .finally(() => {
-          localStorage.removeItem("pendingTransaction")
-        })
-    }
-  }, [])
+  console.log("data customer wrapper: ", loggedInCustomer)
 
   // return loggedInCustomer ? <Outlet /> : <Navigate to="/access" />
   return <Outlet/>
@@ -196,15 +188,16 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
-        <Route path='/' element={<Home/>}/>
-        <Route path='/cart' element={<Cart/>}/>
-        <Route path='/access' element={<RegisterPage/>}/>
-        <Route path='/forgot/password' element={<ForgotPasswordComponent type={"customer"}/>}/>
-        <Route path='/verification' element={<Verification/>}/>
-        <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
-        <Route path='/maintenance' element={<MaintenanceComponent/>}/>
-        {/* <Route element={<PrivateRouteCustomer/>}> */}
           <Route element={<CustomerWrapper/>}>
+            <Route path='/' element={<Home/>}/>
+            <Route path='/cart' element={<Cart/>}/>
+            <Route path='/access' element={<RegisterPage/>}/>
+            <Route path='/forgot/password' element={<ForgotPasswordComponent type={"customer"}/>}/>
+            <Route path='/verification' element={<Verification/>}/>
+            <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
+            <Route path='/maintenance' element={<MaintenanceComponent/>}/>
+            {/* <Route element={<PrivateRouteCustomer/>}> */}
+
             <Route path='/profile' element={<Profile/>}/>
             <Route path='/change-password' element={<ChangePassword/>}/> 
             <Route path='/set-password' element={<SetPassword/>}/> 

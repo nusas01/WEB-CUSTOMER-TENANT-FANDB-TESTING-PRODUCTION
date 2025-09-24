@@ -163,7 +163,7 @@ export const fetchGetDataCustomer = () => {
 
             const message = {
                 message: error.response?.data?.error,
-                status: error.response.status,
+                status: error.response?.status,
             }
             dispatch(fetchErrorGetDataCustomer(message))
         } finally {
@@ -207,7 +207,7 @@ export const fetchTransactionOnGoingCustomer = () => {
 
             const message = {
                 error: error.response?.data?.error,
-                statusCode: error.response.status,
+                statusCode: error.response?.status,
             }
             dispatch(fetchErrorGetTransactionOnGoingCustomer(message))
         } finally {
@@ -412,7 +412,7 @@ export const logoutCustomer = () => {
                   "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
               }
           })
-          dispatch(logoutSuccessCustomer(response?.data.success))
+          dispatch(logoutSuccessCustomer(response?.data?.success))
           dispatch(setLoginStatusCustomer(false))
           dispatch(resetGetDataCustomer())
       } catch(error) {
@@ -453,7 +453,7 @@ export const loginStatusCustomer = () => {
                 "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
             }
         })
-        dispatch(setLoginStatusCustomer(response?.data.loggedIn))
+        dispatch(setLoginStatusCustomer(response?.data?.loggedIn))
       } catch (error) {
           if (error.response?.data?.code === "TOKEN_EXPIRED") {
               dispatch(setStatusExpiredToken(true))
@@ -463,9 +463,9 @@ export const loginStatusCustomer = () => {
             dispatch(setStatusExpiredInternalToken(true));
           }
 
-          if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
-            dispatch(setStatusExpiredUserToken(true));
-          }
+          // if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+          //   dispatch(setStatusExpiredUserToken(true));
+          // }
 
           if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
             dispatch(setStatusServiceMaintenance(true));

@@ -10,6 +10,7 @@ import {
 const initialOrderTypeState = {
     orderTakeAway: null,
     tableId: null,
+    isClose: false,
 }
 export const orderTypeSlice = createSlice({
     name: 'orderType',
@@ -18,10 +19,13 @@ export const orderTypeSlice = createSlice({
         setOrderTypeContext: (state, action) => {
             state.orderTakeAway = action.payload.orderTakeAway
             state.tableId = action.payload.tableId
-        }
+        },
+        setIsClose: (state, action) => {
+            state.isClose = action.payload
+        },
     }
 })
-export const { setOrderTypeContext } = orderTypeSlice.actions;
+export const { setOrderTypeContext, setIsClose } = orderTypeSlice.actions;
 
 
 const initialButtonActivityCustomerState = {

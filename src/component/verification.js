@@ -5,6 +5,7 @@ import {SpinnerFixed} from "../helper/spinner"
 import { useNavigate } from "react-router-dom"
 import { verificationSignupCustomerSlice } from "../reducers/post"
 import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert"
+import { setIsClose } from "../reducers/reducers"
 
 export default function Verification() {
     const navigate = useNavigate()
@@ -55,13 +56,13 @@ export default function Verification() {
         }
     }, [error])
 
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
+    }, [tableId, orderTakeAway, isClose])
 
     return (
         <div className="min-h-screen bg-gray-50 p-4">
@@ -85,7 +86,10 @@ export default function Verification() {
 
                 {/* Order Type Invalid Alert */}
                 {orderTypeInvalid && (
-                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)} />
+                <OrderTypeInvalidAlert onClose={() => { 
+                    setOrderTypeInvalid(false)
+                    dispatch(setIsClose(true))
+                }} />
                 )}
 
                 {/* Card */}

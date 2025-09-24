@@ -55,7 +55,6 @@ export const getDataCustomerSlice = createSlice({
     }
 })
 
-
 const initialGetTransactionsOnGoingCustomer = {
     dataTransactionOnGoing: [],
     lengthTransactionOnGoing: 0,
@@ -71,10 +70,14 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
             state.loading = action.payload
         },
         fetchSuccessGetTransactionOnGoingCustomer: (state, action) => {
-            state.dataTransactionOnGoing = action.payload
-            state.lengthTransactionOnGoing = action.payload.length
-            state.statusCode = 200
-            state.loading = false
+            const sortedData = [...action.payload].sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+            );
+            
+            state.dataTransactionOnGoing = sortedData;
+            state.lengthTransactionOnGoing = sortedData.length;
+            state.statusCode = 200;
+            state.loading = false;
         },
         fetchErrorGetTransactionOnGoingCustomer: (state, action) => {
             state.error = action.payload.error
@@ -105,7 +108,7 @@ export const getTransactionOnGoingCustomerSlice = createSlice({
 
 
 const initialTransactionsHistoryCustomer = {
-    dataTransactionHistory: null,
+    dataTransactionHistory: {},
     error: null,
     statusCode: null,
     lengthTransactionProses: 0,
@@ -119,7 +122,7 @@ export const getTransactionsHistoryCustomerSlice = createSlice({
             state.loadingHistory = action.payload
         },
         fetchSuccessGetTransactionHistoryCustomer: (state, action) => {
-            state.dataTransactionHistory = action.payload;
+            state.dataTransactionHistory = action.payload || {};
         },
         fetchErrorGetTransactionHistoryCustomer: (state, action) => {
             state.error = action.payload.error
@@ -182,7 +185,10 @@ export const getPaymentMethodsCustomerSlice = createSlice({
         fetchErrorGetPaymentMethodsCustomer: (state, action) => {
             state.errorPaymentMethodsCustomer = action.payload.error
             state.statusCodePaymentMethodsCustomer = action.payload.statusCode
-        }
+        }, 
+        resetErrorPaymentMethodsCustomer: (state) => {
+            state.errorPaymentMethodsCustomer = null
+        },
     }
 })
 
@@ -203,6 +209,10 @@ export const logoutCustomerSlice = createSlice({
         },
         setLoadingLogoutCustomer: (state, action) => {
             state.loadingLogout = action.payload;
+        }, 
+        resetLogoutCustomer: (state) => {
+            state.message = null;
+            state.error = null;
         }
     }
 })

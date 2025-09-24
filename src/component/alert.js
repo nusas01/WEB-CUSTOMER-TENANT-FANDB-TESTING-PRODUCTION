@@ -61,7 +61,7 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
             </div>
           </div>
           <h2 className="text-red-600 text-xl font-bold text-center leading-tight">
-            Jenis Pesanan Tidak Sesuai
+            Invalid QR Code for Order Type 
           </h2>
         </div>
 
@@ -95,7 +95,7 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
             <div className="flex items-center justify-center gap-2 text-gray-500">
               <RotateCcw className="w-4 h-4" />
               <p className="text-sm italic">
-                Jika ingin melakukan pemesanan, Silakan ulangi proses pemindaian, jika tidak klik tombol di bawah ini.
+                Untuk melakukan pemesanan Wajib scan QR Code, jika tidak klik tombol di bawah ini.
               </p>
             </div>
           </div>

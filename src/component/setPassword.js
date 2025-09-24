@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from "react-redux"
 import {SpinnerFixed} from "../helper/spinner"
 import {setPasswordCustomerSlice} from "../reducers/patch"
 import {fetchGetDataCustomer} from "../actions/get"
+import { setIsClose } from "../reducers/reducers"
 import {OrderTypeInvalidAlert, Toast, ToastPortal} from "./alert"
 
 export default function SetPassword() {
@@ -93,13 +94,13 @@ export default function SetPassword() {
         dispatch(setPasswordCustomer(data))
     }
 
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
+    }, [tableId, orderTakeAway, isClose])
 
     return (
         <div className="min-h-screen bg-gray-50 p-4">
@@ -123,7 +124,10 @@ export default function SetPassword() {
 
                 {/* Alert */}
                 {orderTypeInvalid && (
-                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)} />
+                <OrderTypeInvalidAlert onClose={() => { 
+                    setOrderTypeInvalid(false)
+                    dispatch(setIsClose(true))
+                }} />
                 )}
 
                 {/* Card Container */}

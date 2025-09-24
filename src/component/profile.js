@@ -2,14 +2,29 @@ import { Navigate, useLocation } from "react-router-dom";
 import "../style/profile.css";
 import BottomNavbar from "./bottomNavbar";
 import { useNavigate } from "react-router-dom";
-import { logoutCustomer, fetchGetDataCustomer } from "../actions/get";
 import { loginCustomerSlice } from "../reducers/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import {SpinnerRelative} from "../helper/spinner";
 import { OrderTypeInvalidAlert } from "./alert";
 import {Mail, Settings, Shield, ChevronRight, Key, LogOut} from "lucide-react"
-import { setOrderTypeContext } from "../reducers/reducers"
+import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
+import { resetApp } from '../reducers/state';
+import { 
+    logoutCustomer, 
+    fetchGetDataCustomer,
+} from "../actions/get";
+import { 
+    logoutCustomerSlice,
+    getProductsCustomerSlice,
+    getDataCustomerSlice,
+    getPaymentMethodsCustomerSlice,
+    loginStatusCustomerSlice,
+    getTransactionOnGoingCustomerSlice,
+    getTransactionsHistoryCustomerSlice,
+} from "../reducers/get";
+import { clearCart } from "../reducers/cartSlice";
+
 
 export default function Profile() {
     const dispatch = useDispatch();
@@ -19,31 +34,49 @@ export default function Profile() {
     const [spinner, setSpinner] = useState(false)
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
 
+    const { successFetchProducts } = getProductsCustomerSlice.actions
+    const { fetchSuccessGetDataCustomer } = getDataCustomerSlice.actions
+    const { fetchSuccessGetPaymentMethodsCustomer } = getPaymentMethodsCustomerSlice.actions
+    const { setLoginStatusCustomer } = loginStatusCustomerSlice.actions
+    const { fetchSuccessGetTransactionOnGoingCustomer } = getTransactionOnGoingCustomerSlice.actions
+    const { fetchSuccessGetTransactionHistoryCustomer } = getTransactionsHistoryCustomerSlice.actions
+
     // handle logout
+    const {resetLogoutCustomer} = logoutCustomerSlice.actions
     const {message, loadingLogout} = useSelector((state) => state.logoutCustomerState) 
-    const handleLogout =  async () => {
-        await dispatch(logoutCustomer())
-        window.location.href = "/"
+    const handleLogout = () => {
+        dispatch(logoutCustomer())
     }
+
+    useEffect(() => {
+        if (message) {
+            dispatch(resetLogoutCustomer())
+            dispatch(successFetchProducts([]))
+            dispatch(fetchSuccessGetDataCustomer({}))
+            dispatch(fetchSuccessGetPaymentMethodsCustomer({payment_methods: []}))
+            dispatch(setOrderTypeContext({orderTakeAway: null, tableId: null}))
+            dispatch(setLoginStatusCustomer(null))
+            dispatch(fetchSuccessGetTransactionOnGoingCustomer([]))
+            dispatch(fetchSuccessGetTransactionHistoryCustomer(null))
+            dispatch(clearCart())
+            window.location.href = "/"
+        }
+    }, [message])
+
     useEffect (() => {
         setSpinner(loadingLogout)
     }, [loadingLogout])
 
-
     // data customer
-    const {data, loading} = useSelector((state) => state.persisted.dataCustomer)
+    const {data} = useSelector((state) => state.persisted.dataCustomer)
     useEffect(() => {
         if (!data || Object.keys(data).length === 0) {
-          dispatch(fetchGetDataCustomer())
+        dispatch(fetchGetDataCustomer())
         }
-      }, [data]);
-    useEffect(() => {
-        setSpinner(loading)
-    }, [loading])
-
+    }, [])
 
     // alert invalid order type 
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     
     // get table id or order_tye_take_away = true from query
     const location = useLocation();
@@ -56,11 +89,11 @@ export default function Profile() {
     }
 
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
+    }, [tableId, orderTakeAway, isClose])
 
     const getInitials = (username) => {
     if (!username) return "";
@@ -76,7 +109,10 @@ export default function Profile() {
         <div>
             <div className="container-activity bg-light">
                 {orderTypeInvalid && (
-                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                    <OrderTypeInvalidAlert onClose={() => {
+                        setOrderTypeInvalid(false)
+                        dispatch(setIsClose(true))
+                    }}/>
                 )}
 
                 <div className="body-activity">

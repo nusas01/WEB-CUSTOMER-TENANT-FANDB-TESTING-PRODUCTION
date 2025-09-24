@@ -15,6 +15,7 @@ import {
   loginInternalSlice,
 } from "../reducers/post";
 import {SpinnerFixed} from "../helper/spinner";
+import { setIsClose } from "../reducers/reducers";
 import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert";
 
 export default function RegisterPage() {
@@ -25,7 +26,6 @@ export default function RegisterPage() {
   const [repeatPassword, setRepeatPassword] = useState(false)
   const [showAlertError, setShowAlertError] = useState(false)
   const [toast, setToast] = useState(null)
-  const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
   const location = useLocation()
   const [showPassword, setShowPassword] = useState(false);
 
@@ -262,26 +262,13 @@ export default function RegisterPage() {
   }
     
   useEffect(() => {
-        if (errorLoginGoogleCustomer || errorLoginInternal || errorLogin) {
-            setToast({
-                type: 'error',
-                message: errorLoginGoogleCustomer || errorLoginInternal || errorLogin,
-            })
-        }
-    }, [errorLoginGoogleCustomer, errorLoginInternal, errorLogin])
-
-
-  // handle alert error invalid order type jika user bukan scan dari table atau kasir
-  const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
-  useEffect(() => {
-    if (!isInternal) {
-      if (tableId === null && orderTakeAway === false) {
-          setOrderTypeInvalid(true)
-          return
+      if (errorLoginGoogleCustomer || errorLoginInternal || errorLogin) {
+          setToast({
+              type: 'error',
+              message: errorLoginGoogleCustomer || errorLoginInternal || errorLogin,
+          })
       }
-    }
-  }, [tableId, orderTakeAway]) 
-
+  }, [errorLoginGoogleCustomer, errorLoginInternal, errorLogin])
 
 
   const togglePasswordVisibility = () => {
@@ -330,11 +317,6 @@ export default function RegisterPage() {
             />
           </div>
         </ToastPortal>
-      )}
-
-      {/* Order Type Invalid Alert */}
-      {orderTypeInvalid && (
-        <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
       )}
 
       {/* Main Card Container */}

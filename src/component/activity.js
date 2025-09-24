@@ -2,17 +2,20 @@ import { useState, useEffect } from "react"
 import "../style/activity.css"
 import BottomNavbar from "./bottomNavbar"
 import { useNavigate, useLocation } from "react-router-dom"
-import { EmptyComponent, EmptyHistory} from "./empty"
-import notaImage from "../image/nota.png"
+import { EmptyHistory} from "./empty"
 import { FormatISODate } from "../helper/formatdate"
 import {OrderTypeInvalidAlert} from "./alert"
 import { useSelector, useDispatch } from "react-redux"
 import historyIcon from "../image/nota.png"
 import { CountDown } from "../helper/countDown"
-import {fetchDetailTransactionHistoryCustomer, fetchTransactionHistoryCustomer, loginStatusCustomer} from "../actions/get"
+import {
+    fetchDetailTransactionHistoryCustomer, 
+    fetchTransactionHistoryCustomer, 
+    loginStatusCustomer,
+    fetchTransactionOnGoingCustomer,
+} from "../actions/get"
 import { SpinnerRelative } from "../helper/spinner"
 import { buttonActivityCustomerSlice } from "../reducers/reducers"
-import { da } from "date-fns/locale"
 import { 
     Clock, 
     AlertCircle, 
@@ -20,11 +23,10 @@ import {
     CheckCircle,
     Loader2,
     Package,
-    Truck,
     CreditCard,
 } from 'lucide-react';
 import {getDetailTransactionsHistoryCustomerSlice} from '../reducers/get'
-import { setOrderTypeContext } from "../reducers/reducers"
+import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 
 export default function Activity() {
     const dispatch = useDispatch()
@@ -33,33 +35,6 @@ export default function Activity() {
     const buttonstatus = location.state || "on going"
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [spinner, setSpinner] = useState(false)
-
-    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer)
-    useEffect(() => {
-        if (!loggedIn) {
-            dispatch(loginStatusCustomer())
-        } 
-    }, [loggedIn])
-    
-    // get data transaction on goin 
-    const {dataTransactionOnGoing, lengthTransactionOnGoing, loading} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
-    useEffect(() => {
-        setSpinner(loading)
-    }, [loading])
-
-    // get data transaction history or finished
-    const {dataTransactionHistory, loadingHistory, lengthTransactionProses} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
-    useEffect(() => {
-        setSpinner(loadingHistory)
-    }, [loadingHistory])
-
-    // get data transaction history
-    useEffect(() => {
-    if (!dataTransactionHistory || Object.keys(dataTransactionHistory).length === 0) {
-        dispatch(fetchTransactionHistoryCustomer(1))
-    }  
-    }, [])
-    
 
     // get data button active status
     const {setButtonActivity} = buttonActivityCustomerSlice.actions
@@ -86,9 +61,38 @@ export default function Activity() {
         navigate("/activity/pembayaran", {state: { detailOrder }})
     }
 
+    // get data transaction on going
+    const {dataTransactionOnGoing, lengthTransactionOnGoing, loading} = useSelector((state) => state.persisted.transactionOnGoingCustomer)
+    useEffect(() => {
+        if (buttonActive === 'on going' && dataTransactionOnGoing.length === 0) {
+            dispatch(fetchTransactionOnGoingCustomer())
+        }
+    }, [buttonActive])
+
+    useEffect(() => {
+        setSpinner(loading)
+    }, [loading])
+
+    // get data transaction history or finished
+    const {dataTransactionHistory, loadingHistory, lengthTransactionProses} = useSelector((state) => state.persisted.transactionsHistoryCustomer)
+    useEffect(() => {
+        setSpinner(loadingHistory)
+    }, [loadingHistory])
+
+    // get data transaction history
+    useEffect(() => {
+    if (
+        buttonActive === 'history' && 
+        dataTransactionHistory && 
+        Object.entries(dataTransactionHistory).length === 0
+    ) {
+        dispatch(fetchTransactionHistoryCustomer(1))
+    }  
+    }, [buttonActive])
+
     
     // get table id or order_tye_take_away = true from query
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     if (orderTakeAway === null && tableId === null) {
         const q = new URLSearchParams(location.search);
         const orderTakeAways = q.get("order_type_take_away") === "true";
@@ -98,18 +102,21 @@ export default function Activity() {
     }
 
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
+    }, [tableId, orderTakeAway, isClose])
 
     return (
         <div>
             <div className="container-activity bg-light">
 
                 { orderTypeInvalid && (
-                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                    <OrderTypeInvalidAlert onClose={() => { 
+                        setOrderTypeInvalid(false)
+                        dispatch(setIsClose(true))
+                    }}/>
                 )}
 
                 <div className="body-activity p-6">
@@ -144,8 +151,8 @@ export default function Activity() {
 
                     {/* HISTORY */}
                     {buttonActive === 'history' && !spinner && (
-                        Object.entries(dataTransactionHistory).length > 0 ? (
-                            Object.entries(dataTransactionHistory).map(([date, transactions], actIndex) => (
+                        dataTransactionHistory && Object.entries(dataTransactionHistory).length > 0 ? (
+                            Object.entries(dataTransactionHistory)?.map(([date, transactions], actIndex) => (
                                 <div key={actIndex} className="mb-10">
                                     {/* Modern Date Separator */}
                                     <div className="relative flex items-center justify-center mb-6">
@@ -355,9 +362,8 @@ export default function Activity() {
                                                             </div>
                                                             <button
                                                                 onClick={() => {
-                                                                    if (data.payment_method_type === "EWALLET") {
-                                                                        localStorage.setItem("pendingTransaction", data.id);
-                                                                        window.location.href = data.payment_reference;
+                                                                    if (data.payment_method_type === "EWALLET" && data.channel_code !== 'OVO') {
+                                                                        window.open(data.payment_reference, "_blank"); 
                                                                     } else {
                                                                         handlePembayaran({
                                                                             id: data.id,

@@ -6,6 +6,7 @@ import {SpinnerFixed} from '../helper/spinner'
 import { fetchGetDataCustomer } from '../actions/get'
 import {setUsernameCustomerSlice} from '../reducers/patch'
 import { OrderTypeInvalidAlert, Toast, ToastPortal } from './alert'
+import { setIsClose } from '../reducers/reducers'
 
 export default function SetUsername() {
     const dispatch = useDispatch()
@@ -61,18 +62,21 @@ export default function SetUsername() {
     }
 
     // alert invalid type order
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
-    
+    }, [tableId, orderTakeAway, isClose])
+
     return (
         <div className="flex flex-col items-center justify-center fixed inset-0 bg-black/30 backdrop-blur-sm z-80">
             {orderTypeInvalid && (
-                <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)} />
+                <OrderTypeInvalidAlert onClose={() => { 
+                    setOrderTypeInvalid(false)
+                    dispatch(setIsClose(true))
+                }} />
             )}
 
             <div className="animate-in fade-in-zoom-in duration-300 w-full max-w-md p-6">

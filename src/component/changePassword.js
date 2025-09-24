@@ -6,6 +6,7 @@ import { SpinnerFixed } from "../helper/spinner"
 import { useState } from "react"
 import { useEffect } from "react"
 import {changePasswordCustomerSlice} from "../reducers/patch"
+import { setIsClose } from "../reducers/reducers"
 import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert"
 
 
@@ -129,14 +130,14 @@ export default function ChangePassword() {
         return null;
     }
 
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
     useEffect(() => {
-        if (tableId === null && orderTakeAway === false) {
+        if (tableId === null && orderTakeAway === false && !isClose) {
             setOrderTypeInvalid(true)
             return
         }
-    }, [tableId, orderTakeAway])
-    
+    }, [tableId, orderTakeAway, isClose])
+
     return (
         <div className="bg-gradient-to-br from-slate-50 to-slate-100 md:p-4">
             <div className="md:max-w-md  w-full h-full mx-auto">
@@ -159,7 +160,10 @@ export default function ChangePassword() {
 
                 {/* Order Type Invalid Alert */}
                 {orderTypeInvalid && (
-                    <OrderTypeInvalidAlert onClose={() => setOrderTypeInvalid(false)}/>
+                    <OrderTypeInvalidAlert onClose={() => { 
+                        setOrderTypeInvalid(false)
+                        dispatch(setIsClose(true))
+                    }}/>
                 )}
 
                 <div className="bg-white backdrop-blur-sm rounded-2xl shadow-xl h-[100vh] shadow-slate-200/50 border border-slate-100 p-8">
