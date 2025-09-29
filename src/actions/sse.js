@@ -50,12 +50,10 @@ export const useSSE = (url, onMessage) => {
           handlerRef.current(data);
         }
       } catch (err) {
-        console.error("SSE parse error", err);
       }
     };
 
     evtSource.onerror = (err) => {
-      console.error("SSE connection error", err);
     };
 
     return () => {

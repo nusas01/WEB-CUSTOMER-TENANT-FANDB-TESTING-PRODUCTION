@@ -58,9 +58,13 @@ export const UpdateProductInternal = (data) => async (dispatch) => {
 
         if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
             dispatch(setStatusServiceMaintenance(true));
-        }
+        }   
 
-        dispatch(errorUpdateProductInternal(error.response?.data?.error))
+        const payload = {
+            error: error?.response?.data?.error,
+            errorField: error?.response?.data?.ErrorField
+        }
+        dispatch(errorUpdateProductInternal(payload))
     }finally {
         dispatch(setLoadingUpdateProductInternal(false))
     }

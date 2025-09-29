@@ -397,7 +397,9 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     <div className="min-h-screen bg-gray-50 relative">
 
       { spinnerFixed && (
-        <SpinnerFixed colors={"fill-gray-900"}/>
+        <ToastPortal>
+          <SpinnerFixed colors={"fill-gray-900"}/>
+        </ToastPortal>
       )}
 
       <div className="max-w-7xl mx-auto">

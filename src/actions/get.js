@@ -309,12 +309,22 @@ export const fetchDetailTransactionHistoryCustomer = (id) => {
 }
 
 const {fetchSuccessSearchTransactionInternal, fetchErrorSearchTransactionInternal, setLoadingSearchTransactionInternal} = getSearchTransactionInternalSlice.actions
-export const fetchSearchTransactionInternal = (id_transaction) => {
+export const fetchSearchTransactionInternal = (searchQuery, currentPage, isLoadMore = false) => {
   return async (dispatch, getState) => {
     const { statusExpiredToken } = getState().statusExpiredTokenState;
     if (statusExpiredToken) return;
 
-    dispatch(setLoadingSearchTransactionInternal(true))
+    const currentState = getState().getSearchTransactionInternalState;
+
+    if (currentState.isLoadMore && isLoadMore) {
+      return 
+    }
+
+    if (currentState.loadingSearchTransactionInternal && !isLoadMore) {
+      return
+    }
+
+    dispatch(setLoadingSearchTransactionInternal({loading: true, isLoadMore}))
     try {
       const response = await axiosInstance.get(`${process.env.REACT_APP_SEARCH_TRANSACTION_INTERNAL_URL}`, {
         withCredentials: true, 
@@ -323,10 +333,16 @@ export const fetchSearchTransactionInternal = (id_transaction) => {
           "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         params: {
-          id_transaction: id_transaction,
+          key: searchQuery,
+          page: currentPage,
         }
       })
-      dispatch(fetchSuccessSearchTransactionInternal(response.data))
+      dispatch(fetchSuccessSearchTransactionInternal({
+        data: response.data?.data || [],
+        page: currentPage,
+        hasMore: response.data?.hasMore || false,
+        totalCount: response.data?.totalCount || 0,
+      }))
     } catch(error) {
       if (error.response?.data?.code === "TOKEN_EXPIRED") {
           dispatch(setStatusExpiredToken(true))
@@ -345,8 +361,6 @@ export const fetchSearchTransactionInternal = (id_transaction) => {
       }
       
       dispatch(fetchErrorSearchTransactionInternal(error.response?.data?.error))
-    } finally {
-      dispatch(setLoadingSearchTransactionInternal(false))
     }
   }
 }

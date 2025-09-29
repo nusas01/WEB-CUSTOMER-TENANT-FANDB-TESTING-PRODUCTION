@@ -11,8 +11,8 @@ import { CountDown } from "../helper/countDown"
 import {
     fetchDetailTransactionHistoryCustomer, 
     fetchTransactionHistoryCustomer, 
-    loginStatusCustomer,
     fetchTransactionOnGoingCustomer,
+    fetchGetDataCustomer,
 } from "../actions/get"
 import { SpinnerRelative } from "../helper/spinner"
 import { buttonActivityCustomerSlice } from "../reducers/reducers"
@@ -36,12 +36,28 @@ export default function Activity() {
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
     const [spinner, setSpinner] = useState(false)
 
+    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
+    const {data} = useSelector((state) => state.persisted.dataCustomer)
+    useEffect(() => {
+        if ((!data || Object.keys(data).length === 0) && loggedIn) {
+            dispatch(fetchGetDataCustomer())
+        }
+    }, [])
+
     // get data button active status
     const {setButtonActivity} = buttonActivityCustomerSlice.actions
     const {buttonActive} = useSelector((state) => state.persisted.buttonActivityCustomer)
     const handleButtonActivity = (data) => {
         dispatch(setButtonActivity(data))
     }
+
+    const activityFilter = location?.state?.filterActivity
+    useEffect(() => {
+        if (activityFilter) {
+            dispatch(setButtonActivity(activityFilter))
+        }
+    }, [activityFilter])
+
 
     const filterOvo = location.state?.filter 
     useEffect(() => {

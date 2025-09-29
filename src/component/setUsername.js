@@ -76,7 +76,7 @@ export default function SetUsername() {
                 <OrderTypeInvalidAlert onClose={() => { 
                     setOrderTypeInvalid(false)
                     dispatch(setIsClose(true))
-                }} />
+                }}/>
             )}
 
             <div className="animate-in fade-in-zoom-in duration-300 w-full max-w-md p-6">
@@ -154,6 +154,6 @@ export default function SetUsername() {
                 {/* Spinner */}
                 {spinner && <SpinnerFixed colors={'fill-green-500'} />}
             </div>
-            </div>
+        </div>
     )
 }

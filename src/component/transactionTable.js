@@ -17,7 +17,6 @@ import {
  } from "../actions/get"
 import {
     buyTransactionCashOnGoingInternalSlice,
-
 } from "../reducers/patch"
 import { navbarInternalSlice } from "../reducers/reducers"
 import { 
@@ -31,6 +30,9 @@ import {
     transactionHistoryInternalSlice,
     getSearchTransactionInternalSlice,
 } from "../reducers/get" 
+import {
+  loadMoreSearchTransactionInternal
+} from "../reducers/reducers"
 import { loadMoreTransactionHistory  } from "../reducers/reducers"
 import { FormatDate } from "../helper/formatdate"
 import { CountDownRemoveData } from "../helper/countDown"
@@ -58,142 +60,141 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   });
 
 
-    // get transaction cash on going
-    const { removeTransactionCashOnGoingInternalById } = transactionCashOnGoingInternalSlice.actions
-    const {dataTransactionCashInternal, errorTransactionCashInternal, loadingTransactionCashInternal} = useSelector((state) => state.persisted.transactionCashOnGoingInternal)
-    useEffect(() => {
-        setSpinnerRelatif(loadingTransactionCashInternal)
-    }, [loadingTransactionCashInternal])
+  // get transaction cash on going
+  const { removeTransactionCashOnGoingInternalById } = transactionCashOnGoingInternalSlice.actions
+  const {dataTransactionCashInternal, errorTransactionCashInternal, loadingTransactionCashInternal} = useSelector((state) => state.persisted.transactionCashOnGoingInternal)
+  useEffect(() => {
+      setSpinnerRelatif(loadingTransactionCashInternal)
+  }, [loadingTransactionCashInternal])
 
-    useEffect(() => {
-    if (filterTransaction === "methodCash" && dataTransactionCashInternal.length === 0) {
-        dispatch(fetchTransactionCashOnGoingInternal());
-        setInitialFetchDone(prev => ({...prev, cash: true}));
+  useEffect(() => {
+  if (filterTransaction === "methodCash" && dataTransactionCashInternal.length === 0) {
+      dispatch(fetchTransactionCashOnGoingInternal());
+      setInitialFetchDone(prev => ({...prev, cash: true}));
+    }
+  }, []);
+
+  // get transaction non cash on going
+  const { removeTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
+  const {dataTransactionNonCashInternal, errorTransactionNonCashInternal, loadingTransactionNonCashInternal} = useSelector((state) => state.persisted.transactionNonCashOnGoingInternal)
+
+  useEffect(() => {
+      setSpinnerRelatif(loadingTransactionNonCashInternal)
+  }, [loadingTransactionNonCashInternal])
+
+  useEffect(() => {
+      if (filterTransaction === "methodNonCash" && dataTransactionNonCashInternal.length === 0) {
+        dispatch(fetchTransactionNonCashOnGoingInternal());
+        setInitialFetchDone(prev => ({...prev, nonCash: true}));
       }
-    }, []);
-
-    // get transaction non cash on going
-    const { removeTransactionNonCashOnGoingInternalById } = transactionNonCashOnGoingInternalSlice.actions
-    const {dataTransactionNonCashInternal, errorTransactionNonCashInternal, loadingTransactionNonCashInternal} = useSelector((state) => state.persisted.transactionNonCashOnGoingInternal)
-
-    useEffect(() => {
-        setSpinnerRelatif(loadingTransactionNonCashInternal)
-    }, [loadingTransactionNonCashInternal])
-
-    useEffect(() => {
-        if (filterTransaction === "methodNonCash" && dataTransactionNonCashInternal.length === 0) {
-          dispatch(fetchTransactionNonCashOnGoingInternal());
-          setInitialFetchDone(prev => ({...prev, nonCash: true}));
-        }
-    }, []);
+  }, []);
 
 
-    // buy transaction cash on going
-    const [ openModelBuyPaymentCash, setOpenModelBuyPaymentCash ] = useState(false)
-    const { resetBuyTransactionCashOnGoingInternal } = buyTransactionCashOnGoingInternalSlice.actions
-    const { successBuyTransactionCashOnGoing, errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing, loadingBuyTransactionCashOnGoing } = useSelector((state) => state.buyTransactionCashOnGoingInternalState)
-    const [ allertSuccessBuyTransactionCash, setAllertSuccessBuyTransactionCash] = useState(false)
-    const [ allertErrorBuyTransactionCash, setAllertErrorBuyTransactionCash] = useState(false)
-    const [dataPaymentCash, setDataPaymentCash] = useState({
-        transaction_id: null,
-        amount_price: 0,
-        money_received: 0,
-        open: false,
-    })
-    
-    const handleBuyTransaction = () => {
-        const data = {
-            transaction_id: dataPaymentCash.transaction_id,
-            money_received: dataPaymentCash.money_received,
-        }
-        dispatch(buyTransactionCashOnGoingInternal(data))
-    }
+  // buy transaction cash on going
+  const [ openModelBuyPaymentCash, setOpenModelBuyPaymentCash ] = useState(false)
+  const { resetBuyTransactionCashOnGoingInternal } = buyTransactionCashOnGoingInternalSlice.actions
+  const { successBuyTransactionCashOnGoing, errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing, loadingBuyTransactionCashOnGoing } = useSelector((state) => state.buyTransactionCashOnGoingInternalState)
+  const [ allertSuccessBuyTransactionCash, setAllertSuccessBuyTransactionCash] = useState(false)
+  const [ allertErrorBuyTransactionCash, setAllertErrorBuyTransactionCash] = useState(false)
+  const [dataPaymentCash, setDataPaymentCash] = useState({
+      transaction_id: null,
+      amount_price: 0,
+      money_received: 0,
+      open: false,
+  })
+  
+  const handleBuyTransaction = () => {
+      const data = {
+          transaction_id: dataPaymentCash.transaction_id,
+          money_received: dataPaymentCash.money_received,
+      }
+      dispatch(buyTransactionCashOnGoingInternal(data))
+  }
 
-    useEffect(() => {
-        if (successBuyTransactionCashOnGoing) {
-            setDataPaymentCash({
-                transaction_id: null,
-                amount_price: 0,
-                money_received: 0,
-                open: false, 
-            })
-            dispatch(removeTransactionCashOnGoingInternalById(successBuyTransactionCashOnGoing.id))
-            setAllertSuccessBuyTransactionCash(true)
-        }
-    }, [successBuyTransactionCashOnGoing])
+  useEffect(() => {
+      if (successBuyTransactionCashOnGoing) {
+          setDataPaymentCash({
+              transaction_id: null,
+              amount_price: 0,
+              money_received: 0,
+              open: false, 
+          })
+          dispatch(removeTransactionCashOnGoingInternalById(successBuyTransactionCashOnGoing.id))
+          setAllertSuccessBuyTransactionCash(true)
+      }
+  }, [successBuyTransactionCashOnGoing])
 
-    useEffect(() => {
-        if (errorBuyTransactionCashOnGoing || errorFieldBuyTransactionCashOnGoing) { 
-            setDataPaymentCash({
-                transaction_id: null,
-                amount_price: 0, 
-                money_received: 0,
-                open: false, 
-            })
-            setAllertErrorBuyTransactionCash(true)
-        }
-    }, [errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing])
+  useEffect(() => {
+      if (errorBuyTransactionCashOnGoing || errorFieldBuyTransactionCashOnGoing) { 
+          setDataPaymentCash({
+              transaction_id: null,
+              amount_price: 0, 
+              money_received: 0,
+              open: false, 
+          })
+          setAllertErrorBuyTransactionCash(true)
+      }
+  }, [errorBuyTransactionCashOnGoing, errorFieldBuyTransactionCashOnGoing])
 
-    useEffect(() => {
-        setSpinner(loadingBuyTransactionCashOnGoing)
-        if (loadingBuyTransactionCashOnGoing) {
-            setDataPaymentCash((prev) => ({
-                ...prev,
-                open: false,
-            }))
-        }
-    }, [loadingBuyTransactionCashOnGoing])
+  useEffect(() => {
+      setSpinner(loadingBuyTransactionCashOnGoing)
+      if (loadingBuyTransactionCashOnGoing) {
+          setDataPaymentCash((prev) => ({
+              ...prev,
+              open: false,
+          }))
+      }
+  }, [loadingBuyTransactionCashOnGoing])
 
-    const handleOpenModelPaymentCash = (transactionId, amountPrice) => {
-        setDataPaymentCash({
-            open: true,
-            transaction_id: transactionId,
-            amount_price: amountPrice
-        })
-    }
+  const handleOpenModelPaymentCash = (transactionId, amountPrice) => {
+      setDataPaymentCash({
+          open: true,
+          transaction_id: transactionId,
+          amount_price: amountPrice
+      })
+  }
 
 
 
-    // check Transaction non cash to thired party
-    const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
-    const { checkTransactionNonCashId, statusCheckTransactionNonCash, loadingCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
-    const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
-    const [allertPendingCheckTransactionNonCash, setAllertPendingCheckTransactionNonCash] = useState(false)
+  // check Transaction non cash to thired party
+  const { resetCheckTransactionNonCash } = checkTransactionNonCashInternalSlice.actions
+  const { checkTransactionNonCashId, statusCheckTransactionNonCash, loadingCheckTransactionNonCash } = useSelector((state) => state.checkTransactionNonCashInternalState)
+  const [allertSuccessCheckTransactionNonCash, setAllertSuccessCheckTransactionNonCash] = useState(false)
+  const [allertPendingCheckTransactionNonCash, setAllertPendingCheckTransactionNonCash] = useState(false)
 
-    const handleCheckTransactionNonCash = (transactionId) => {
-        const data = {
-            transaction_id: transactionId,
-        }
-        dispatch(checkTransactionNonCashInternal(data))
-    } 
+  const handleCheckTransactionNonCash = (transactionId) => {
+      const data = {
+          transaction_id: transactionId,
+      }
+      dispatch(checkTransactionNonCashInternal(data))
+  } 
 
-    useEffect(() => {
-        if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
-            dispatch(removeTransactionNonCashOnGoingInternalById(checkTransactionNonCashId))
-            setAllertSuccessCheckTransactionNonCash(true)
-        } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
-            setAllertPendingCheckTransactionNonCash(true)
-        }
-    }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
+  useEffect(() => {
+      if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PAID") {
+          dispatch(removeTransactionNonCashOnGoingInternalById(checkTransactionNonCashId))
+          setAllertSuccessCheckTransactionNonCash(true)
+          dispatch(resetCheckTransactionNonCash())
+      } else if (checkTransactionNonCashId && statusCheckTransactionNonCash === "PENDING") {
+          setAllertPendingCheckTransactionNonCash(true)
+      }
+  }, [checkTransactionNonCashId, statusCheckTransactionNonCash])
 
-    useEffect(() => {
-        setSpinner(loadingCheckTransactionNonCash)
-    }, [loadingCheckTransactionNonCash])
+  useEffect(() => {
+      setSpinner(loadingCheckTransactionNonCash)
+  }, [loadingCheckTransactionNonCash])
 
 
-
-
-    // handle history transaction by selecting filter
-    const {resetTransactionHitoryInternal} = transactionHistoryInternalSlice.actions
-    const {setData, setIncrementPage, resetData} = dataFilteringTransactionHistorySlice.actions
-    const {method, status, startDate, endDate, startTime, endTime , page} = useSelector((state) => state.persisted.dataFilteringTransactionHistoryState)
-    const {
-      dataTransactionHistoryInternal,
-      loadingTransactionHistoryInternal,
-      hasMore,
-      totalCount: totalCountFilter,
-      totalRevenue: totalRevenueFilter,
-    } = useSelector((state) => state.persisted.transactionHistoryInternal);
+  // handle history transaction by selecting filter
+  const {resetTransactionHitoryInternal} = transactionHistoryInternalSlice.actions
+  const {setData, setIncrementPage, resetData} = dataFilteringTransactionHistorySlice.actions
+  const {method, status, startDate, endDate, startTime, endTime , page} = useSelector((state) => state.persisted.dataFilteringTransactionHistoryState)
+  const {
+    dataTransactionHistoryInternal,
+    loadingTransactionHistoryInternal,
+    hasMore,
+    totalCount: totalCountFilter,
+    totalRevenue: totalRevenueFilter,
+  } = useSelector((state) => state.persisted.transactionHistoryInternal);
 
   useEffect(() => {
     if (dataTransactionHistoryInternal.length > 0) {
@@ -380,23 +381,43 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
 
 
     // handle search 
-    const {dataSearchTransactionInternal, loadingSearchTransactionInternal} = useSelector((state) => state.getSearchTransactionInternalState)
-    const {resetSearchTransactionInternal} = getSearchTransactionInternalSlice.actions
     const [searchTerm, setSearchTerm] = useState('')
+    const {resetSearchTransactionInternal} = getSearchTransactionInternalSlice.actions
+    const {
+      dataSearchTransactionInternal, 
+      loadingSearchTransactionInternal,
+      hasMore: hasMoreSearchTransaction,
+      totalCount: totalCountSearchTransaction,
+    } = useSelector((state) => state.getSearchTransactionInternalState)
+
+    useEffect(() => {
+      if (searchTerm === "") {
+        dispatch(resetSearchTransactionInternal())
+      }
+    }, [searchTerm])
 
     const handleSearch = () => {
-      dispatch(fetchSearchTransactionInternal(searchTerm))
+      dispatch(resetSearchTransactionInternal())
+      dispatch(fetchSearchTransactionInternal(searchTerm, 1, true))
     }
 
     useEffect(() => {
       setSpinnerRelatif(loadingSearchTransactionInternal)
     }, [loadingSearchTransactionInternal])
 
-    useEffect(() => {
-      if (searchTerm === '') {
-        dispatch(resetSearchTransactionInternal())
+    const loadMoreSearchTransactionInternalCallback = useCallback(() => {
+      if (searchTerm !== '' && hasMoreSearchTransaction && !loadingSearchTransactionInternal) {
+        dispatch(loadMoreSearchTransactionInternal(searchTerm))
       }
-    }, [searchTerm])
+    }, [searchTerm, hasMoreSearchTransaction, loadingSearchTransactionInternal])
+
+    const { ref: loadMoreSearchTransactionInternalRef } = useInfiniteScroll({
+      hasMore: hasMoreSearchTransaction, 
+      loading: loadingSearchTransactionInternal,
+      loadMore: loadMoreSearchTransactionInternalCallback,
+      threshold: 0.5,
+      rootMargin: '100px',
+    })
 
     // Fungsi untuk memfilter data berdasarkan kondisi
 
@@ -488,16 +509,16 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const handleRefreshTransaction = () => {
     dispatch(fetchTransactionCashOnGoingInternal())
     dispatch(fetchTransactionNonCashOnGoingInternal())
-    if (filterTransaction === 'methodFilterTransaction') {
-      const data = {
-          method: filters.method,
-          status: filters.status,
-          startDate: filters.startDate,
-          endDate: filters.endDate,
-          page: 1
-      }
-      dispatch(fetchTransactionHistory(data))
-    }
+    // if (filterTransaction === 'methodFilterTransaction') {
+    //   const data = {
+    //       method: filters.method,
+    //       status: filters.status,
+    //       startDate: filters.startDate,
+    //       endDate: filters.endDate,
+    //       page: 1
+    //   }
+    //   dispatch(fetchTransactionHistory(data))
+    // }
   }
   
   // handle sidebar dan element header yang responsive 
@@ -505,7 +526,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const { setIsOpen } = navbarInternalSlice.actions
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-
+  console.log("data search transaction: ", dataSearchTransactionInternal)
   return (
      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Modern Header */}
@@ -602,7 +623,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         {/* Filter & Search */}
         <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200/50 mb-4">
           {/* Mobile Layout */}
-          <div className="block lg:hidden space-y-4">
+          <div className="block sm:hidden space-y-4">
             {/* Method Filter Buttons - Mobile */}
             <div className="flex justify-between gap-3">
               <button 
@@ -725,22 +746,38 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               <div className="relative flex-1">
                 <div className="relative">
                   <Search
-                      className="absolute inset-y-0 left-4 my-auto text-gray-400"
-                      size={20}
+                    className="absolute inset-y-0 left-4 my-auto text-gray-400"
+                    size={20}
                   />
                   <input
-                      type="text"
-                      placeholder="Search by id"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full sm:w-[60%] pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                    type="text"
+                    placeholder="Search by transaction id, username, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-10 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
                   />
+                  {searchTerm !== "" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm("")
+                        dispatch(resetSearchTransactionInternal())
+                      }}
+                      className="absolute inset-y-0 right-3 my-auto text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
-
               <button
                 onClick={handleSearch}
-                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 h-12 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-100"
+                disabled={searchTerm === ""}
+                className={`px-6 py-2 h-12 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 font-semibold ${
+                  searchTerm === ""
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-gray-800 to-gray-700 text-white hover:from-gray-700 hover:to-gray-600 hover:shadow-lg"
+                }`}
               >
                 Search
               </button>
@@ -748,11 +785,11 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden lg:flex flex-wrap gap-4 items-center justify-between">
+          <div className="hidden sm:grid grid-cols-12 gap-4 items-center">
             {/* Method Filter Buttons - Desktop */}
-            <div className="flex items-center gap-3">
+            <div className="col-span-4 flex items-center gap-3">
                <button 
-                className={`relative overflow-visible  flex items-center w-[45%] justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200
+                className={`relative overflow-visible flex items-center w-full justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200
                   ${filterTransaction === "methodCash" 
                     ? "bg-gray-900 text-white shadow-lg scale-100" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -762,21 +799,18 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                 <Banknote className="w-4 h-4" />
                 Method Cash
 
-                {/* Badge */}
-                {/* {dataTransactionCashInternal.length > 0 && ( */}
-                  <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
-                    text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
-                    ${filterTransaction === "methodCash"
-                      ? "bg-white text-gray-900"
-                      : "bg-red-500 text-white"
-                    }`}>
-                    {dataTransactionCashInternal.length}
-                  </span>
-                {/* )} */}
+                <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                  text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                  ${filterTransaction === "methodCash"
+                    ? "bg-white text-gray-900"
+                    : "bg-red-500 text-white"
+                  }`}>
+                  {dataTransactionCashInternal.length}
+                </span>
               </button>
 
               <button 
-                className={`flex relative overflow-visible items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex relative overflow-visible items-center w-full justify-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   filterTransaction === "methodNonCash" 
                     ? "bg-gray-900 text-white shadow-lg scale-105" 
                     : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -786,24 +820,22 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                 <CreditCard className="w-4 h-4" />
                 Method Non Cash
 
-                {/* { dataTransactionNonCashInternal.length > 0 && ( */}
-                  <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
-                    text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
-                    ${filterTransaction === "methodNonCash"
-                      ? "bg-white text-gray-900"
-                      : "bg-red-500 text-white"
-                    }`}>
-                    {dataTransactionNonCashInternal.length || 0}
-                  </span>
-                {/* )} */}
+                <span className={`absolute top-0 right-1 translate-x-1/2 -translate-y-1/2
+                  text-xs min-w-[20px] h-[20px] px-1 rounded-full flex items-center justify-center font-bold
+                  ${filterTransaction === "methodNonCash"
+                    ? "bg-white text-gray-900"
+                    : "bg-red-500 text-white"
+                  }`}>
+                  {dataTransactionNonCashInternal.length || 0}
+                </span>
               </button>
             </div>
 
             {/* Date Filter - Desktop */}
-            <div className="relative">
+            <div className="col-span-3 relative">
               <div
                 onClick={() => setDateFilter(prev => !prev)}
-                className={`w-64 h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
+                className={`w-full h-12 flex items-center justify-between px-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
                   filterTransaction === "methodFilterTransaction" 
                     ? 'bg-gray-900 text-white shadow-lg' 
                     : 'bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -859,38 +891,53 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
             </div>
 
             {/* Status Filter - Desktop */}
-            <div>
-              <div className={`flex items-center gap-2 h-12 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+            <div className="col-span-1">
+              <div className={`flex items-center justify-center gap-2 h-12  py-3 rounded-xl font-medium transition-all duration-200 w-full ${
                 filterTransaction !== "methodFilterTransaction" 
                   ? "bg-gray-900 text-white shadow-lg scale-105" 
                   : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:scale-105"
               }`}>
-                <History className="w-4 h-4" />
                 On Going
               </div>
             </div>
 
             {/* Search Input & Button - Desktop */}
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1 max-w-md">
+            <div className="col-span-4 flex gap-2">
+              <div className="relative flex-1">
                 <div className="relative">
                   <Search
-                      className="absolute inset-y-0 left-4 my-auto text-gray-400"
-                      size={20}
+                    className="absolute inset-y-0 left-4 my-auto text-gray-400"
+                    size={20}
                   />
                   <input
-                      type="text"
-                      placeholder="Search by id, email, username...."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
+                    type="text"
+                    placeholder="Search by id, username, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-10 py-3 h-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 text-gray-900"
                   />
+                  {searchTerm !== "" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm("")
+                        dispatch(resetSearchTransactionInternal())
+                      }}
+                      className="absolute inset-y-0 right-3 my-auto text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
-
               <button
                 onClick={handleSearch}
-                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-4 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+                disabled={searchTerm === ""}
+                className={`px-6 py-2 h-12 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 font-semibold whitespace-nowrap ${
+                  searchTerm === ""
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-gray-800 to-gray-700 text-white hover:from-gray-700 hover:to-gray-600 hover:shadow-lg"
+                }`}
               >
                 Search
               </button>
@@ -1009,6 +1056,14 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
                         />
                       </div>
                     )}
+
+                    { dataSearchTransactionInternal.length > 0 && searchTerm !== '' && (
+                      <div ref={loadMoreSearchTransactionInternalRef} className="p-4">
+                        <BottomLoadingIndicator 
+                          isVisible={loadingSearchTransactionInternal && hasMoreSearchTransaction} 
+                        />
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -1037,8 +1092,10 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
               )}
 
               {/* End of Data Indicator */}
-              {filterTransaction === "methodFilterTransaction" && 
-              !hasMore && dataTransactionHistoryInternal.length > 0 && (
+             {(
+                (filterTransaction === "methodFilterTransaction" && !hasMore && dataTransactionHistoryInternal.length > 0 && searchTerm === "")
+                || (searchTerm !== '' && !hasMoreSearchTransaction && dataSearchTransactionInternal.length > 0)
+              ) && (
                 <div className="flex justify-center items-center py-4 border-t border-gray-100">
                   <div className="flex items-center gap-2 text-gray-500">
                     <div className="w-4 h-4 rounded-full bg-gray-300"></div>
@@ -1053,7 +1110,7 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
         {/* Loading Spinner */}
         {spinner && (
           <div className="fixed">
-            <SpinnerFixed colors={'border-gray-900'} />
+            <SpinnerFixed colors={'fill-gray-900'} />
           </div>
         )}
 

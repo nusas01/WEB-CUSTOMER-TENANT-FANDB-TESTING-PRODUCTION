@@ -658,13 +658,15 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
               </div>
               <h2 className="text-lg font-bold text-gray-800">Search & Filter Orders</h2>
             </div>
-            <button
-              onClick={handleResetFilter}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow transition-all w-fit"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="text-sm">Reset Filters</span>
-            </button>
+            { statusFilter === "FINISHED" && (
+              <button
+                onClick={handleResetFilter}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow transition-all w-fit"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="text-sm">Reset Filters</span>
+              </button>
+            )}
           </div>
 
           {/* Filter Row */}
@@ -682,7 +684,7 @@ const OrderDashboard = ({isFullScreen, fullscreenchange}) => {
                   {/* Input */}
                   <input
                     type="text"
-                    placeholder="Search by customer, email, table..."
+                    placeholder="Search by transaction id, usename, email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

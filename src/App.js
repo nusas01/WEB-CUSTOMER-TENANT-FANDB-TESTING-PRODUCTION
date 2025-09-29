@@ -187,24 +187,27 @@ function AppContent() {
       <UsedSSEContainer />
       <ScrollToTop />
 
+      { data.username === "" && statusCode === 200 && (
+        <SetUsername/>
+      )}
+      
       <Routes>
-          <Route element={<CustomerWrapper/>}>
-            <Route path='/' element={<Home/>}/>
-            <Route path='/cart' element={<Cart/>}/>
-            <Route path='/access' element={<RegisterPage/>}/>
-            <Route path='/forgot/password' element={<ForgotPasswordComponent type={"customer"}/>}/>
-            <Route path='/verification' element={<Verification/>}/>
-            <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
-            <Route path='/maintenance' element={<MaintenanceComponent/>}/>
-            {/* <Route element={<PrivateRouteCustomer/>}> */}
-
-            <Route path='/profile' element={<Profile/>}/>
-            <Route path='/change-password' element={<ChangePassword/>}/> 
-            <Route path='/set-password' element={<SetPassword/>}/> 
-            <Route path='/activity' element={<Activity/>}/> 
-            <Route path='/activity/detail' element={<DetailActivity/>}/> 
-            <Route path='/activity/pembayaran' element={<Buy/>}/> 
-          </Route>
+        <Route element={<CustomerWrapper/>}>
+          <Route path='/' element={<Home/>}/>
+          <Route path='/cart' element={<Cart/>}/>
+          <Route path='/access' element={<RegisterPage/>}/>
+          <Route path='/forgot/password' element={<ForgotPasswordComponent type={"customer"}/>}/>
+          <Route path='/verification' element={<Verification/>}/>
+          <Route path='/service/renewal' element={<ServiceRenewalNotice/>}/>
+          <Route path='/maintenance' element={<MaintenanceComponent/>}/>
+          {/* <Route element={<PrivateRouteCustomer/>}> */}
+          <Route path='/profile' element={<Profile/>}/>
+          <Route path='/change-password' element={<ChangePassword/>}/> 
+          <Route path='/set-password' element={<SetPassword/>}/> 
+          <Route path='/activity' element={<Activity/>}/> 
+          <Route path='/activity/detail' element={<DetailActivity/>}/> 
+          <Route path='/activity/pembayaran' element={<Buy/>}/> 
+        </Route>
         {/* </Route> */}
 
         <Route path='/internal/access' element={<RegisterPage/>}/>
@@ -225,10 +228,6 @@ function AppContent() {
             <Route path="/internal/admin/employee/create" element={<CreateEmployee/>}/>
           </Route>
       </Routes>
-
-      { data.username === "" && statusCode === 200 && (
-        <SetUsername/>
-      )}
     </div>
   );
 }

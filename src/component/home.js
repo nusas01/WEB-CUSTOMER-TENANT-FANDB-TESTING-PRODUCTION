@@ -12,6 +12,9 @@ import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
 import {OrderTypeInvalidAlert} from "./alert"
 import {
+  fetchGetDataCustomer
+} from "../actions/get"
+import {
   X, 
   ShoppingBag, 
   Plus,
@@ -36,6 +39,14 @@ function Home() {
   const lastActiveCategoryRef = useRef(null);
   const headerOffset = 100;
 
+  const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
+  const {data} = useSelector((state) => state.persisted.dataCustomer)
+    useEffect(() => {
+        if ((!data || Object.keys(data).length === 0) && loggedIn) {
+        dispatch(fetchGetDataCustomer())
+    }
+  }, [])
+
   // get data  products
   const { datas, loading, error, errorStatusCode } = useSelector((state) => state.persisted.productsCustomer)
   useEffect(() => {
@@ -47,7 +58,6 @@ function Home() {
       setActiveCategory(datas[0].category_name)
     }
   }, [datas, window.location.pathname])
-
 
   // get table id or order_tye_take_away = true from query
   const location = useLocation();

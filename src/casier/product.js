@@ -383,7 +383,9 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
     return (
         <div className="relative">
             { spinnerFixed && (
+            <ToastPortal>
               <SpinnerFixed colors={'fill-gray-900'}/>
+            </ToastPortal>
             )}
 
             {/* Header */}
@@ -1116,14 +1118,41 @@ const AddProductModal = ({
 }
 
 const AddCategoryModal = ({ dataCategory = [], handleDeleteCategory, onClose, onSubmit, onDelete }) => {
+  const dispatch = useDispatch()
   const [categoryName, setCategoryName] = useState('')
   const [activeTab, setActiveTab] = useState('add') // 'add' or 'manage'
+  const [errors, setErrors] = useState()
+
+  const { resetCreateCategoryInternal } = createCategoryInternalSlice.actions
+  const { 
+    errorFieldCreateCategoryInternal, 
+    errorCreateCategoryInternal,
+    successCreateCategoryInternal,
+  } = useSelector((state) => state.createCategoryInternalState)
+
+  useEffect(() => {
+    if (errorCreateCategoryInternal || successCreateCategoryInternal) {
+      setCategoryName('')
+    } 
+  }, [errorCreateCategoryInternal, successCreateCategoryInternal])
+
+  useEffect(() => {
+  if (errorFieldCreateCategoryInternal) {
+    const fieldErrors = errorFieldCreateCategoryInternal.reduce((acc, item) => {
+      const key = Object.keys(item)[0]
+      acc[key] = item[key]
+      return acc
+    })
+
+    setErrors(fieldErrors)
+  }
+}, [errorFieldCreateCategoryInternal])
 
   const handleSubmit = () => {
     if (categoryName.trim()) {
+      setErrors()
+      dispatch(resetCreateCategoryInternal())
       onSubmit({ category_name: categoryName.trim() })
-      setCategoryName('')
-      onClose()
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
@@ -1194,17 +1223,28 @@ const AddCategoryModal = ({ dataCategory = [], handleDeleteCategory, onClose, on
                   <input
                     type="text"
                     maxLength={30}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
+                    className={`w-full px-4 py-3 rounded-xl outline-none transition-all placeholder-gray-400
+                      ${errors?.Name
+                        ? "border-2 border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        : "border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      }`}
                     placeholder="Masukkan nama kategori..."
                     value={categoryName}
                     required
                     onChange={(e) => setCategoryName(e.target.value)}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <FolderPlus className="w-5 h-5 text-gray-400" />
+                    <FolderPlus
+                      className={`w-5 h-5 ${errors?.Name ? "text-red-500" : "text-gray-400"}`}
+                    />
                   </div>
                 </div>
+
+                {errors?.Name && (
+                  <p className="text-sm text-red-500 font-medium">{errors.Name}</p>
+                )}
               </div>
+
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -1417,20 +1457,46 @@ const EditProductModal = ({
   }
 
   // handle Update product
+  const modelScrollref = useRef()
   const {addDataTempUpdateProduct} = dataTempUpdateProductSlice.actions
+  const {resetUpdateProductInternal} = updateInternalSlice.actions
+  const {
+    successUpdateProductInternal,
+    errorUpdateProductInternal, 
+    errorFieldUpdateProductInternal
+  } = useSelector((state) => state.updateInternalState)
+
+  useEffect(() => {
+    if (errorFieldUpdateProductInternal) {
+      const fieldErrors = errorFieldUpdateProductInternal.reduce((acc, item) => {
+        const key = Object.keys(item)[0]
+        acc[key] = item[key]
+        return acc
+      })
+      modelScrollref.current.scrollTop = 0;
+      setErrors(fieldErrors)
+    }
+  }, [errorFieldUpdateProductInternal])
+
+  useEffect(() => {
+    if (successUpdateProductInternal || errorUpdateProductInternal) {
+      onClose()
+    }
+  }, [errorUpdateProductInternal, successUpdateProductInternal])
  
   const handleSubmit = (e) => {
     e.preventDefault()
     if (validateForm()) {
+      setErrors({})
       dispatch(UpdateProductInternal(formData))
       dispatch(addDataTempUpdateProduct(formData))
-      onClose()
     }
   }
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (modalContentRef.current && !modalContentRef.current.contains(event.target)) {
+        dispatch(resetUpdateProductInternal())
         onClose()
       }
     }
@@ -1440,9 +1506,14 @@ const EditProductModal = ({
     }
   }, [onClose])
 
+  const handleClose = () => {
+    onClose()
+    dispatch(resetUpdateProductInternal())
+  }
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div ref={modalContentRef} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div ref={modalContentRef} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -1450,7 +1521,7 @@ const EditProductModal = ({
             {title}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => handleClose()}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
           >
             <X className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
@@ -1458,7 +1529,7 @@ const EditProductModal = ({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div ref={modelScrollref} className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Upload Gambar */}
             <div className="space-y-3">
@@ -1466,7 +1537,7 @@ const EditProductModal = ({
                 Gambar Produk <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center justify-center">
-                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${errors.image ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
+                <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${(errors.image || errors.Image) ? 'border-red-300' : 'border-gray-300'} rounded-xl cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group`}>
                   <input 
                     type="file" 
                     className="hidden" 
@@ -1489,7 +1560,7 @@ const EditProductModal = ({
                   </div>
                 </label>
               </div>
-              {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
+              {(errors.image || errors.Image) && <p className="text-red-500 text-xs mt-1">{errors.image || errors.Image}</p>}
             </div>
 
             {/* Nama Produk */}
@@ -1502,13 +1573,13 @@ const EditProductModal = ({
                   type="text"
                   value={formData.name}
                   maxLength={50}
-                  className={`w-full px-4 py-3 border-2 ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                  className={`w-full px-4 py-3 border-2 ${(errors.name || errors.Name) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                   required
                   onChange={(e) => handleChange("name", e.target.value)}
                 />
                 <Package className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              {(errors.name || errors.Name) && <p className="text-red-500 text-xs mt-1">{errors.name || errors.Name}</p>}
             </div>
 
             {/* Harga Jual */}
@@ -1524,14 +1595,14 @@ const EditProductModal = ({
                   type="text"
                   value={formData.price.toLocaleString("id-ID")}
                   name="price"
-                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.price ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${(errors.price || errors.Price) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                   step="0.01"
                   required
                   onChange={handleChangeMoneyReceived}
                 />
                 <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
+              {(errors.price || errors.Price) && <p className="text-red-500 text-xs mt-1">{errors.price || errors.Price}</p>}
             </div>
 
             {/* HPP */}
@@ -1547,14 +1618,14 @@ const EditProductModal = ({
                   type="text"
                   name="hpp"
                   value={formData.hpp.toLocaleString("id-ID")}
-                  className={`w-full pl-10 pr-12 py-3 border-2 ${errors.hpp ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
+                  className={`w-full pl-10 pr-12 py-3 border-2 ${(errors.hpp || errors.HPP) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all`}
                   step="0.01"
                   required
                   onChange={handleChangeMoneyReceived}
                 />
                 <DollarSign className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               </div>
-              {errors.hpp && <p className="text-red-500 text-xs mt-1">{errors.hpp}</p>}
+              {(errors.hpp || errors.HPP) && <p className="text-red-500 text-xs mt-1">{errors.hpp || errors.HPP}</p>}
             </div>
 
             {/* Kategori Dropdown */}
@@ -1585,7 +1656,7 @@ const EditProductModal = ({
               <div className="relative">
                 <textarea
                   value={formData.desc}
-                  className={`w-full px-4 py-3 border-2 ${errors.desc ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all resize-none`}
+                  className={`w-full px-4 py-3 border-2 ${(errors.desc || errors.Description) ? 'border-red-300' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-all resize-none`}
                   required
                   rows={4}
                   maxLength={100}
@@ -1593,7 +1664,7 @@ const EditProductModal = ({
                 />
                 <FileText className="absolute right-3 top-3 w-5 h-5 text-gray-400" />
               </div>
-              {errors.desc && <p className="text-red-500 text-xs mt-1">{errors.desc}</p>}
+              {(errors.desc || errors.Description) && <p className="text-red-500 text-xs mt-1">{errors.desc || errors.Description}</p>}
             </div>
 
             {/* Footer */}

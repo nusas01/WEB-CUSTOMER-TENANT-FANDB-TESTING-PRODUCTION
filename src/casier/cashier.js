@@ -831,15 +831,6 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                                     </button>
                                 )}
                                 </div>
-
-                                {/* Preview notes ketika collapsed dan ada text */}
-                                {!expandedNotes[t.id] && (notesState[t.id] || '').trim() && (notesState[t.id] || '').length > 15 && (
-                                <div className="mt-1">
-                                    <p className="text-xs text-gray-500 truncate max-w-[120px]" title={notesState[t.id]}>
-                                    {(notesState[t.id] || '').substring(0, 15)}...
-                                    </p>
-                                </div>
-                                )}
                             </div>
                             </td>
                             <td className="py-3 px-4 text-center">
@@ -1018,13 +1009,22 @@ const ProductCashier = ({onClose}) => {
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all"
                                 />
                             </div>
-                            <button 
-                            onClick={() => handleRefreshProducts()}
-                            className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
-                            >
-                                <RefreshCw className="h-4 w-4" />
-                                <span>Refresh</span>
-                            </button>
+
+                            <div className="flex gap-2">
+                                <button 
+                                onClick={() => handleRefreshProducts()}
+                                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-xl hover:shadow-sm transition-all duration-300 flex items-center space-x-2 hover:scale-105"
+                                >
+                                    <RefreshCw className="h-4 w-4" />
+                                    <span>Refresh</span>
+                                </button>
+                                <button
+                                onClick={onClose}
+                                >
+                                    <X/>
+                                </button>
+                            </div> 
+
                         </div>
 
 

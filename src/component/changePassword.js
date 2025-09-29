@@ -6,6 +6,7 @@ import { SpinnerFixed } from "../helper/spinner"
 import { useState } from "react"
 import { useEffect } from "react"
 import {changePasswordCustomerSlice} from "../reducers/patch"
+import { Lock, EyeOff, Eye } from "lucide-react";
 import { setIsClose } from "../reducers/reducers"
 import { OrderTypeInvalidAlert, Toast, ToastPortal } from "./alert"
 
@@ -21,6 +22,9 @@ export default function ChangePassword() {
     const [newPassword, setNewPassword] = useState(null)
     const [repeatPassword, setRepeatPassword] = useState(false)
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showRepeatPassword, setShowRepeatPassword] = useState(false)
     const [data, setData] = useState({
         last_password: "",
         new_password: "",
@@ -206,28 +210,38 @@ export default function ChangePassword() {
                     {/* Form */}
                     <form onSubmit={handleChangePassword} className="space-y-7">
                         {/* Current Password Field */}
-                        <div className="relative group">
-                            <input 
-                                onChange={handleChange} 
-                                value={data.last_password} 
-                                name="last_password" 
-                                type="password" 
-                                placeholder=" " 
-                                className={`peer w-full px-4 py-4 border-2 rounded-xl bg-white text-slate-900 placeholder-transparent focus:outline-none transition-all duration-200 ${
-                                    lastPassword 
-                                    ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100' 
-                                    : 'border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-slate-300'
-                                }`}
-                                required
-                            />
-                            <label className={`absolute left-4 px-2 text-sm font-medium transition-all duration-200 pointer-events-none bg-white
-                                peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent
-                                peer-focus:-top-2.5 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
-                                ${data.last_password ? '-top-2.5 text-sm font-medium bg-white' : 'peer-placeholder-shown:top-4'} ${
-                                    lastPassword ? 'text-red-500 peer-focus:text-red-500' : 'text-slate-600 peer-focus:text-emerald-600'
-                                }`}>
-                                Current Password
-                            </label>
+                        <div className="relative">
+                            <div className="relative">
+                                <div className="absolute flex items-center left-4 inset-y-0">
+                                    <Lock className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <input 
+                                    type={showCurrentPassword ? "text" : "password"}
+                                    onChange={handleChange} 
+                                    value={data.last_password} 
+                                    name="last_password" 
+                                    placeholder=" " 
+                                    className={`peer w-full pl-12 pr-12 py-4 border-2 rounded-xl bg-white/50 text-gray-900 placeholder-transparent transition-all duration-200 hover:bg-white/70 ${
+                                        lastPassword 
+                                        ? 'border-red-400 bg-red-50/50 focus:outline-none focus:ring-4 focus:ring-red-500/20 focus:border-red-500' 
+                                        : 'border-gray-200 focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500'
+                                    }`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                                <label className={`absolute left-12 cursor-text select-none -top-3 bg-white px-2 text-sm font-medium transition-all duration-200 peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
+                                    ${lastPassword ? 'text-red-500' : 'text-gray-700 peer-focus:text-green-600'}`}
+                                    onClick={() => document.querySelector('input[name="last_password"]')?.focus()}
+                                >
+                                    Current Password
+                                </label>
+                            </div>
                             {lastPassword && (
                                 <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -239,28 +253,38 @@ export default function ChangePassword() {
                         </div>
 
                         {/* New Password Field */}
-                        <div className="relative group">
-                            <input 
-                                onChange={handleChange} 
-                                value={data.new_password} 
-                                name="new_password" 
-                                type="password" 
-                                placeholder=" " 
-                                className={`peer w-full px-4 py-4 border-2 rounded-xl bg-white text-slate-900 placeholder-transparent focus:outline-none transition-all duration-200 ${
-                                    newPassword 
-                                    ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100' 
-                                    : 'border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-slate-300'
-                                }`}
-                                required
-                            />
-                            <label className={`absolute left-4 px-2 text-sm font-medium transition-all duration-200 pointer-events-none bg-white
-                                peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent
-                                peer-focus:-top-2.5 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
-                                ${data.new_password ? '-top-2.5 text-sm font-medium bg-white' : 'peer-placeholder-shown:top-4'} ${
-                                    newPassword ? 'text-red-500 peer-focus:text-red-500' : 'text-slate-600 peer-focus:text-emerald-600'
-                                }`}>
-                                Password Baru
-                            </label>
+                        <div className="relative">
+                            <div className="relative">
+                                <div className="absolute flex items-center left-4 inset-y-0">
+                                    <Lock className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <input 
+                                    onChange={handleChange} 
+                                    value={data.new_password} 
+                                    name="new_password" 
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder=" " 
+                                    className={`peer w-full pl-12 pr-12 py-4 border-2 rounded-xl bg-white/50 text-gray-900 placeholder-transparent focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 hover:bg-white/70 ${
+                                        newPassword 
+                                        ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100' 
+                                        : 'border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-slate-300'
+                                    }`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                                <label className={`absolute left-12 cursor-text select-none -top-3 bg-white px-2 text-sm font-medium transition-all duration-200 peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
+                                    ${newPassword ? 'text-red-500' : 'text-gray-700 peer-focus:text-green-600'}`}
+                                    onClick={() => document.querySelector('input[name="new_password"]')?.focus()}
+                                >
+                                    Password Baru
+                                </label>
+                            </div>
                             {newPassword && (
                                 <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -272,28 +296,38 @@ export default function ChangePassword() {
                         </div>
 
                         {/* Repeat Password Field */}
-                        <div className="relative group mb-8">
-                            <input 
-                                onChange={handleChange} 
-                                value={data.repeatPassword} 
-                                name="repeatPassword" 
-                                type="password" 
-                                placeholder=" " 
-                                className={`peer w-full px-4 py-4 border-2 rounded-xl bg-white text-slate-900 placeholder-transparent focus:outline-none transition-all duration-200 ${
-                                    repeatPassword 
-                                    ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100' 
-                                    : 'border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-slate-300'
-                                }`}
-                                required
-                            />
-                            <label className={`absolute left-4 px-2 text-sm font-medium transition-all duration-200 pointer-events-none bg-white
-                                peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-slate-400 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent
-                                peer-focus:-top-2.5 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
-                                ${data.repeatPassword ? '-top-2.5 text-sm font-medium bg-white' : 'peer-placeholder-shown:top-4'} ${
-                                    repeatPassword ? 'text-red-500 peer-focus:text-red-500' : 'text-slate-600 peer-focus:text-emerald-600'
-                                }`}>
-                                Ulangi Password
-                            </label>
+                        <div className="relative mb-8">
+                            <div className="relative">
+                                <div className="absolute flex items-center left-4 inset-y-0">
+                                    <Lock className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <input 
+                                    onChange={handleChange} 
+                                    value={data.repeatPassword} 
+                                    name="repeatPassword" 
+                                    type={showRepeatPassword ? "text" : "password"}
+                                    placeholder="" 
+                                    className={`peer w-full pl-12 pr-12 py-4 border-2 rounded-xl bg-white/50 text-gray-900 placeholder-transparent  transition-all duration-200 hover:bg-white/70 ${
+                                        repeatPassword 
+                                        ? 'border-red-400 bg-red-50/50 focus:outline-none focus:ring-4 focus:ring-red-500/20 focus:border-red-500' 
+                                        : 'focus:outline-none focus:ring-4 focus:ring-green-500/20 focus:border-green-500'
+                                    }`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                                    className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showRepeatPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                                <label className={`absolute left-12 cursor-text select-none -top-3 bg-white px-2 text-sm font-medium transition-all duration-200 peer-placeholder-shown:text-base peer-placeholder-shown:font-normal peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-4 peer-placeholder-shown:bg-transparent peer-focus:-top-3 peer-focus:text-sm peer-focus:font-medium peer-focus:bg-white
+                                    ${repeatPassword ? 'text-red-500' : 'text-gray-700 peer-focus:text-green-600'}`}
+                                    onClick={() => document.querySelector('input[name="repeatPassword"]')?.focus()}
+                                >
+                                    Ulangi Password
+                                </label>
+                            </div>
                             {repeatPassword && (
                                 <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

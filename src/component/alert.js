@@ -358,7 +358,7 @@ export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar, r
 
   return (
     <div ref={ref} className="fixed inset-0 z-80 flex items-center justify-center bg-black bg-opacity-40 px-4">
-      <div className="bg-gray-800 text-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+      <div className="bg-gray-900 text-white rounded-2xl p-6 w-full max-w-md shadow-lg">
         <h2 className="text-xl font-semibold mb-2">Pembayaran Tunai</h2>
         <p className="text-sm text-gray-300 mb-4">
           Total pembayaran:{" "}
@@ -367,12 +367,12 @@ export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar, r
           </span>
         </p>
 
-        <label className="block text-sm text-gray-300 mb-1">Uang Diterima</label>
+        <label className="block text-sm text-white mb-1">Uang Diterima</label>
         <input
           type="text"
           value={uangDiterima}
           onChange={handleInputChange}
-          className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
+          className="w-full px-4 py-2 rounded-md bg-white border border-gray-600 text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
           placeholder="Masukkan jumlah uang dari pelanggan"
         />
 
@@ -387,7 +387,7 @@ export const CashPaymentModal = forwardRef(({ data, setData, onClose, onBayar, r
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-600 rounded-md hover:bg-gray-500"
+            className="px-4 py-2 text-sm text-gray-500 bg-white rounded-md"
           >
             Batal
           </button>

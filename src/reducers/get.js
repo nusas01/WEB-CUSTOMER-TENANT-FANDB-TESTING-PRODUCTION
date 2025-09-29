@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
+import { data } from "react-router-dom"
 
 const initialGetProductsCustomerState = {
     datas: [],
@@ -538,25 +539,52 @@ export const getAllCreateTransactionInternalSlice = createSlice({
 const initialSearchTransactionInternalState = {
     dataSearchTransactionInternal: [],
     errorSearchTransactionInternal: null,
-    loadingSearchTransactionInternal: false
+    loadingSearchTransactionInternal: false,
+    page: 1, 
+    hasMore: true, 
+    isLoadMore: false,
+    totalCount: 0, 
 }
 export const getSearchTransactionInternalSlice = createSlice({
     name: "searchTransactionInternal",
     initialState: initialSearchTransactionInternalState,
     reducers: {
         setLoadingSearchTransactionInternal: (state, action) => {
-            state.loadingSearchTransactionInternal = action.payload
+            if (state.page === 1 && !action.payload.isLoadMore) {
+                state.loadingSearchTransactionInternal = action.payload.loading
+            } else {
+                state.isLoadMore = action.payload.isLoadMore
+            }
         },
         fetchSuccessSearchTransactionInternal: (state, action) => {
-            state.dataSearchTransactionInternal = [action.payload]
+            const { data, page, hasMore, totalCount} = action.payload;
+
+            if (page === 1) {
+                state.dataSearchTransactionInternal = data
+                state.totalCount = totalCount
+            } else {
+                state.dataSearchTransactionInternal = [...state.dataSearchTransactionInternal, ...data]
+            }
+
+            state.page = page
+            state.hasMore = hasMore
             state.errorSearchTransactionInternal = null
+            state.loadingSearchTransactionInternal = false
+            state.isLoadMore = false
         },
         fetchErrorSearchTransactionInternal: (state, action) => {
             state.errorSearchTransactionInternal = action.payload
+            state.loadingSearchTransactionInternal = false 
+            state.isLoadMore = false
         },
         resetSearchTransactionInternal: (state) => {
             state.dataSearchTransactionInternal = []
             state.errorSearchTransactionInternal = null
+            state.page = 1
+            state.hasMore = true
+            state.isLoadMore = false
+            state.totalCount = 0
+            state.loadingSearchTransactionInternal = false
         }
     }
 })

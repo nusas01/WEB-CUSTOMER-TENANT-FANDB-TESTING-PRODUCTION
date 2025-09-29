@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import {SpinnerRelative} from "../helper/spinner";
 import { OrderTypeInvalidAlert } from "./alert";
 import {Mail, Settings, Shield, ChevronRight, Key, LogOut} from "lucide-react"
+import { Toast, ToastPortal } from "./alert";
 import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 import { resetApp } from '../reducers/state';
 import { 
@@ -23,6 +24,7 @@ import {
     getTransactionOnGoingCustomerSlice,
     getTransactionsHistoryCustomerSlice,
 } from "../reducers/get";
+import { setPasswordCustomerSlice } from "../reducers/patch";
 import { clearCart } from "../reducers/cartSlice";
 
 
@@ -33,6 +35,7 @@ export default function Profile() {
     const nameParts = name.trim().split(" ")
     const [spinner, setSpinner] = useState(false)
     const [orderTypeInvalid, setOrderTypeInvalid] = useState(false)
+    const [toast, setToast] = useState(null);
 
     const { successFetchProducts } = getProductsCustomerSlice.actions
     const { fetchSuccessGetDataCustomer } = getDataCustomerSlice.actions
@@ -40,7 +43,7 @@ export default function Profile() {
     const { setLoginStatusCustomer } = loginStatusCustomerSlice.actions
     const { fetchSuccessGetTransactionOnGoingCustomer } = getTransactionOnGoingCustomerSlice.actions
     const { fetchSuccessGetTransactionHistoryCustomer } = getTransactionsHistoryCustomerSlice.actions
-
+    
     // handle logout
     const {resetLogoutCustomer} = logoutCustomerSlice.actions
     const {message, loadingLogout} = useSelector((state) => state.logoutCustomerState) 
@@ -68,10 +71,17 @@ export default function Profile() {
     }, [loadingLogout])
 
     // data customer
+    const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
     const {data} = useSelector((state) => state.persisted.dataCustomer)
     useEffect(() => {
-        if (!data || Object.keys(data).length === 0) {
-        dispatch(fetchGetDataCustomer())
+        if ((!data || Object.keys(data).length === 0) && loggedIn) {
+            dispatch(fetchGetDataCustomer())
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!loggedIn) {
+            navigate("/access")
         }
     }, [])
 
@@ -104,7 +114,20 @@ export default function Profile() {
     };
 
     const initials = getInitials(data?.username);
+
+
+    const {resetSetPassCustomer} = setPasswordCustomerSlice.actions
+    const {successSetPass} = useSelector((state) => state.setPasswordCustomerState)
     
+     useEffect(() => {
+        if (successSetPass) {
+            setToast({
+                type: 'success',
+                message: successSetPass,
+            })
+        }
+    }, [successSetPass])
+
     return (
         <div>
             <div className="container-activity bg-light">
@@ -115,11 +138,27 @@ export default function Profile() {
                     }}/>
                 )}
 
+                { toast && (
+                    <ToastPortal>
+                        <div className="fixed top-4 right-4 z-100">
+                            <Toast
+                            message={toast.message}
+                            type={toast.type}
+                            onClose={() => {
+                                setToast(null)
+                                dispatch(resetSetPassCustomer())
+                            }}
+                            duration={5000}
+                            />
+                        </div>
+                    </ToastPortal>
+                )}
+
                 <div className="body-activity">
                     {!spinner ? (
                         <div className="container-activity bg-light pt-4">
                             {/* Header Profile Section */}
-                            <div className="bg-white rounded-b-3xl shadow-lg border-b border-gray-100 px-20 py-4 mx-4 sm:mx-0">
+                            <div className="bg-white rounded-b-3xl shadow-lg border-b border-gray-100 px-10 py-4 mx-4 sm:mx-0">
                                 <div className="flex items-center mx-auto w-full space-x-4">
                                     {/* Profile Circle */}
                                     <div className="relative">

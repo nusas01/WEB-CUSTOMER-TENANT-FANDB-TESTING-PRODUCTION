@@ -12,6 +12,7 @@ import {
     fetchProductsCustomer, 
     fetchPaymentMethodsCustomer, 
     fetchTransactionOnGoingCustomer, 
+    fetchGetDataCustomer,
 } from "../actions/get"
 import ImagePaymentMethod from "../helper/imagePaymentMethod"
 import { 
@@ -338,6 +339,7 @@ function Cart({ closeCart }) {
             
                 if (redirectUrl) {
                     window.open(redirectUrl, "_blank"); 
+                    navigate("/activity", { state: { filterActivity: "on going" }});
                 }
             });
         }
@@ -382,7 +384,6 @@ function Cart({ closeCart }) {
     // }, [error])
 
 
-
     useEffect(() => {
         setSpinnerTrannsaction(loading)
     }, [loading])
@@ -392,6 +393,13 @@ function Cart({ closeCart }) {
     }, [loadingOnGoingTransaction])
 
     const { loggedIn } = useSelector((state) => state.persisted.loginStatusCustomer);
+
+    const {data} = useSelector((state) => state.persisted.dataCustomer)
+    useEffect(() => {
+        if ((!data || Object.keys(data).length === 0) && loggedIn) {
+        dispatch(fetchGetDataCustomer())
+        }
+    }, [])
     
     const handleCreateTransaction = () => {
         if (!loggedIn) {

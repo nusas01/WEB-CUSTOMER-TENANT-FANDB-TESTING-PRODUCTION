@@ -6,7 +6,6 @@ const handleDownloadQR = async (
 ) => {
   const { onStart, onSuccess, onError, onFinally } = callbacks;
 
-  // Trigger loading start
   if (onStart) onStart();
 
   try {
@@ -20,57 +19,149 @@ const handleDownloadQR = async (
     await new Promise((resolve, reject) => {
       image.onload = () => {
         try {
-          const width = 300;
-          const padding = 20;
-          const qrHeight = 300;
-          const textLineHeight = 24;
+          const width = 400;
+          const padding = 30;
+          const qrSize = 280;
+          const qrX = (width - qrSize) / 2;
+          const qrY = padding + 60;
 
           const isTakeAway = Boolean(takeAway);
-          const titleText = isTakeAway ? 'Take Away QR' : `Table ${tableNumber}`;
-          const usageText = isTakeAway 
-            ? 'Scan QR ini untuk memesan take away.' 
-            : 'Scan QR ini untuk memesan dari meja ini.';
+          const titleText = isTakeAway ? 'TAKE AWAY QR' : `MEJA ${tableNumber}`;
           
-          // Tambahan informasi domain
-          const currentDomain = window.location.hostname;
-          const domainText = `Pastikan alamat URL berada di: ${currentDomain}`;
-          
-          // Update total height untuk menampung text tambahan
-          const totalHeight = qrHeight + padding + textLineHeight * 3;
+          // Hitung total tinggi canvas
+          const totalHeight = 720;
 
           canvas.width = width;
           canvas.height = totalHeight;
 
-          // Background putih
-          ctx.fillStyle = '#ffffff';
+          // === BACKGROUND GRADIENT ===
+          const gradient = ctx.createLinearGradient(0, 0, 0, totalHeight);
+          gradient.addColorStop(0, '#f8f9fa');
+          gradient.addColorStop(1, '#e9ecef');
+          ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, width, totalHeight);
 
-          // Gambar QR di tengah
-          ctx.drawImage(image, (width - qrHeight) / 2, 0, qrHeight, qrHeight);
-
-          // Title text
-          ctx.fillStyle = '#000000';
-          ctx.font = 'bold 18px Arial';
+          // === HEADER SECTION ===
+          ctx.fillStyle = '#1a1a1a';
+          ctx.fillRect(0, 0, width, 100);
+          
+          // Title
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 26px Arial, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(titleText, width / 2, qrHeight + textLineHeight);
+          ctx.fillText(titleText, width / 2, 50);
+          
+          // Subtitle
+          ctx.font = '14px Arial, sans-serif';
+          ctx.fillStyle = '#e0e0e0';
+          const subtitleText = isTakeAway 
+            ? 'Scan untuk pesan Take Away' 
+            : 'Scan untuk pesan dari meja ini';
+          ctx.fillText(subtitleText, width / 2, 75);
 
-          // Usage text
-          ctx.font = '14px Arial';
-          ctx.fillText(usageText, width / 2, qrHeight + textLineHeight * 2);
+          // === QR CODE CONTAINER WITH SHADOW ===
+          // Shadow
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+          ctx.shadowBlur = 20;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 8;
+          
+          // White container
+          ctx.fillStyle = '#ffffff';
+          const containerPadding = 15;
+          ctx.fillRect(
+            qrX - containerPadding, 
+            qrY - containerPadding, 
+            qrSize + (containerPadding * 2), 
+            qrSize + (containerPadding * 2)
+          );
+          
+          // Reset shadow
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
 
-          // Domain information text
-          ctx.font = '12px Arial';
-          ctx.fillStyle = '#666666';
-          ctx.fillText(domainText, width / 2, qrHeight + textLineHeight * 3);
+          // QR Code
+          ctx.drawImage(image, qrX, qrY, qrSize, qrSize);
 
-          const filename = isTakeAway ? `qr-take-away.png` : `table-${tableNumber}-qr.png`;
+          // === SECURITY INFO SECTION ===
+          let currentY = qrY + qrSize + 50;
+          
+          // Security Header
+          ctx.fillStyle = '#1a1a1a';
+          ctx.font = 'bold 18px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('⚠️ INFORMASI PENTING', width / 2, currentY);
+          currentY += 30;
+
+          // Security box background
+          const securityBoxY = currentY;
+          const securityBoxHeight = 200;
+          
+          ctx.fillStyle = '#fff3cd';
+          ctx.strokeStyle = '#ffc107';
+          ctx.lineWidth = 2;
+          const boxPadding = 20;
+          ctx.fillRect(boxPadding, securityBoxY, width - (boxPadding * 2), securityBoxHeight);
+          ctx.strokeRect(boxPadding, securityBoxY, width - (boxPadding * 2), securityBoxHeight);
+
+          // Security info text
+          ctx.fillStyle = '#1a1a1a';
+          ctx.font = 'bold 14px Arial, sans-serif';
+          ctx.textAlign = 'left';
+          currentY += 25;
+          
+          ctx.fillText('Pastikan sebelum scan:', boxPadding + 15, currentY);
+          currentY += 25;
+
+          ctx.font = '13px Arial, sans-serif';
+          const securityPoints = [
+            '✓ Alamat URL harus:',
+            `   https://${window.location.hostname}`,
+            '',
+            '✓ Browser menampilkan ikon gembok 🔒',
+            '',
+            '⚠️ Jika browser menampilkan peringatan',
+            '   "Situs Tidak Aman" atau URL berbeda,',
+            '   JANGAN LANJUTKAN dan segera',
+            '   laporkan ke staff kami.'
+          ];
+
+          securityPoints.forEach((point, index) => {
+            if (point.startsWith('   https://')) {
+              ctx.fillStyle = '#0066cc';
+              ctx.font = 'bold 12px monospace';
+            } else if (point.startsWith('⚠️')) {
+              ctx.fillStyle = '#d32f2f';
+              ctx.font = 'bold 13px Arial, sans-serif';
+            } else if (point.startsWith('   ')) {
+              ctx.fillStyle = '#d32f2f';
+              ctx.font = '12px Arial, sans-serif';
+            } else {
+              ctx.fillStyle = '#1a1a1a';
+              ctx.font = '13px Arial, sans-serif';
+            }
+            ctx.fillText(point, boxPadding + 15, currentY);
+            currentY += point === '' ? 8 : 20;
+          });
+
+          // === FOOTER ===
+          currentY = totalHeight - 40;
+          ctx.fillStyle = '#6c757d';
+          ctx.font = '11px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Keamanan dan kenyamanan Anda adalah prioritas kami', width / 2, currentY);
+          ctx.fillText('Terima kasih telah berkunjung! 😊', width / 2, currentY + 18);
+
+          // Download
+          const filename = isTakeAway ? `qr-take-away.png` : `qr-meja-${tableNumber}.png`;
 
           const link = document.createElement('a');
           link.download = filename;
-          link.href = canvas.toDataURL('image/png');
+          link.href = canvas.toDataURL('image/png', 1.0);
           link.click();
 
-          // Trigger success callback
           if (onSuccess) onSuccess(filename);
 
           resolve();
@@ -85,10 +176,8 @@ const handleDownloadQR = async (
     });
   } catch (error) {
     console.error('Error downloading QR:', error);
-    // Trigger error callback
     if (onError) onError(error.message);
   } finally {
-    // Trigger finally callback
     if (onFinally) onFinally();
   }
 };

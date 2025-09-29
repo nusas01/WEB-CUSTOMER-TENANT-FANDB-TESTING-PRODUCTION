@@ -429,7 +429,7 @@ export default function DetailActivity() {
                 <div className="p-6 space-y-6 bg-white">
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <p className="text-xs font-mono text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                            <p className="text-md font-mono text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
                                 ID: {detailOrder?.id}
                             </p>
                         </div>

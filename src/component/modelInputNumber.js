@@ -7,6 +7,8 @@ export function ModelInputNumberEwallet({ channelCode, handleCloseModel, handleI
     const handleChange = (e) => {
         let value = e.target.value;
 
+        if (value.length > 15) return;
+
         // Pastikan tetap dimulai dengan +62
         if (!value.startsWith("+62")) {
             value = "+62" + value.replace(/^(\+)?62?/, ""); // ganti apapun di awal jadi +62

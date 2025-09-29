@@ -251,7 +251,9 @@ export default function ModernKasirDashboard() {
           <div className='relative'>
 
             { spinnerFixed && (
-              <SpinnerFixed colors={"fill-gray-800"}/>
+              <ToastPortal>
+                <SpinnerFixed colors={"fill-gray-900"}/>
+              </ToastPortal>
             )}
 
             {/* Header */}

@@ -5,6 +5,7 @@ import {
     fetchSearchOrderInternal,
     fetchGeneralJournalByEventPerDayInternal,
     fetchGeneralJournalVoidInternal,
+    fetchSearchTransactionInternal,
  } from "../actions/get";
 
 const initialOrderTypeState = {
@@ -314,5 +315,20 @@ export const headerHiddenInternalSlice = createSlice({
   },
 });
 
+export const loadMoreSearchTransactionInternal = (keyword) => {
+    return async (dispatch, getState) => {
+        const state = getState()
+        const { getSearchTransactionInternalState } = state;
+        
+        if (!getSearchTransactionInternalState.hasMore || 
+            getSearchTransactionInternalState.isLoadMore ||
+            getSearchTransactionInternalState.loadingSearchTransactionInternal
+        ) {
+            return 
+        }
 
+        const nextPage = getSearchTransactionInternalState.page + 1 
 
+        return dispatch(fetchSearchTransactionInternal(keyword, nextPage, true))
+    }
+}

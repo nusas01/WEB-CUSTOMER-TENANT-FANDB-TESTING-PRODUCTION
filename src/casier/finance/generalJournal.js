@@ -522,7 +522,9 @@ const JournalDashboard = ({isFullScreen, fullscreenchange}) => {
     <div className="min-h-screen relative bg-gray-50">        
 
       { spinnerFixed && (
-        <SpinnerFixed colors={"fill-gray-900"}/>
+        <ToastPortal>
+          <SpinnerFixed colors={"fill-gray-900"}/>
+        </ToastPortal>
       )}
     
       { modelConfirmVoid && (

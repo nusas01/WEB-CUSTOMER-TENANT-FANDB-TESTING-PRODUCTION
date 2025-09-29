@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit"
 const initialUpdateProductInternalState = {
     successUpdateProductInternal: null,
     errorUpdateProductInternal: null,
+    errorFieldUpdateProductInternal: null,
     loadingUpdateProductInternal: false,
 }
 export const updateInternalSlice = createSlice({
@@ -14,7 +15,8 @@ export const updateInternalSlice = createSlice({
             state.errorUpdateProductInternal = null
         },
         errorUpdateProductInternal: (state, action) => {
-            state.errorUpdateProductInternal = action.payload
+            state.errorUpdateProductInternal = action.payload.error
+            state.errorFieldUpdateProductInternal = action.payload.errorField
             state.successUpdateProductInternal = null
         }, 
         setLoadingUpdateProductInternal: (state, action) => {
@@ -22,6 +24,7 @@ export const updateInternalSlice = createSlice({
         }, 
         resetUpdateProductInternal: (state) => {
             state.successUpdateProductInternal = null
+            state.errorFieldUpdateProductInternal = null
             state.errorUpdateProductInternal = null
         }
     }
