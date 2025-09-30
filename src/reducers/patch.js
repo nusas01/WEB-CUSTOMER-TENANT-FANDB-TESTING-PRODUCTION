@@ -218,6 +218,7 @@ export const toFinishedOrderInternalSlice = createSlice({
 const initialUpdateDataEmployeeInternalState = {
     successUpdateDataEmployee: null,
     errorUpdateDataEmployee: null,
+    errorFieldUpdateDataEmployee: null,
     loadingUpdateDataEmployee: false,
 }
 export const updateDataEmployeeSlice = createSlice({
@@ -229,7 +230,8 @@ export const updateDataEmployeeSlice = createSlice({
             state.errorUpdateDataEmployee = null
         },
         setErrorUpdateDataEmployee: (state, action) => {
-            state.errorUpdateDataEmployee = action.payload
+            state.errorUpdateDataEmployee = action.payload.error
+            state.errorFieldUpdateDataEmployee = action.payload.errorField
             state.successUpdateDataEmployee = null
         },
         setLoadingUpdateDataEmployee: (state, action) => {
@@ -238,6 +240,7 @@ export const updateDataEmployeeSlice = createSlice({
         resetUpdateDataEmployee: (state) => {
             state.successUpdateDataEmployee = null
             state.errorUpdateDataEmployee = null
+            state.errorFieldUpdateDataEmployee = null
         }
     }
 })

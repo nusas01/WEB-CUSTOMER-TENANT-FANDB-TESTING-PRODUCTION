@@ -54,6 +54,7 @@ import CreateEmployee from './casier/createEmployee'
 import ForgotPasswordComponent from './component/forgotPassword'
 import { ScrollToTop } from './helper/helper';
 import { da } from 'date-fns/locale'
+import { useSingleTab } from './helper/helper'
 
 function InternalWrapper() {
   const dispatch = useDispatch();
@@ -181,7 +182,9 @@ function AppContent() {
       dispatch(clearStatusServiceMaintenance())
     }
   }, [statusServiceMaintenance])
-
+  
+  useSingleTab()
+  
   return (
     <div> 
       <UsedSSEContainer />

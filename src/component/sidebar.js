@@ -25,6 +25,9 @@ import {
   logoutInternal,
   fetchDataEmployeeInternal,
 } from "../actions/get"
+import {
+  updateDataEmployeeSlice
+} from "../reducers/patch"
 import {resetApp} from "../reducers/state"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
@@ -162,6 +165,13 @@ const Sidebar = ({activeMenu}) => {
     }
   }, [location.pathname])
 
+
+  const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
+  useEffect(() => {
+    if (location.pathname !== '/internal/admin/settings') {
+      dispatch(resetUpdateDataEmployee())
+    }
+  }, [location])
   
   // handle response logout
   const {resetLogoutInternal} = logoutInternalSlice.actions

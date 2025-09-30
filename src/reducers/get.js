@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { data } from "react-router-dom"
+import { getPhoneWithoutPrefix } from "../helper/helper"
 
 const initialGetProductsCustomerState = {
     datas: [],
@@ -1288,8 +1289,6 @@ const initialDataEmployeeInternalState = {
     dataEmployeeInternal: null,
     errorDataEmployeeInternal: null,
     loadingDataEmployeeInternal: false,
-    updateStatus: false,
-    imageUpdateEmployee: null,
 } 
 export const getDataEmployeeInternalSlice = createSlice({
     name: "dataEmployeeInternal",
@@ -1299,8 +1298,14 @@ export const getDataEmployeeInternalSlice = createSlice({
             state.loadingDataEmployeeInternal = action.payload
         },
         fetchSuccessDataEmployeeInternal: (state, action) => {
-            state.dataEmployeeInternal = action.payload
-            state.errorDataEmployeeInternal = null
+            const payload = { ...action.payload };
+
+            if (payload.phone_number !== undefined) {
+                payload.phone_number = getPhoneWithoutPrefix(payload.phone_number) || "";
+            }
+
+            state.dataEmployeeInternal = payload;
+            state.errorDataEmployeeInternal = null;
         },
         fetchErrorDataEmployeeInternal: (state, action) => {
            state.errorDataEmployeeInternal = action.payload
@@ -1311,21 +1316,18 @@ export const getDataEmployeeInternalSlice = createSlice({
         },
         updateEmployeeInternalFields: (state, action) => {
             const updates = action.payload;
-            const allowedFields = ["image", "name", "phone_number", "date_of_birth"];
+            const allowedFields = ["image", "name", "email", "phone_number", "date_of_birth"];
 
             allowedFields.forEach((field) => {
-                if (updates[field] !== undefined) {
-                    state.dataEmployeeInternal[field] = updates[field];
+            if (updates[field] !== undefined) {
+                if (field === "phone_number") {
+                state.dataEmployeeInternal[field] = getPhoneWithoutPrefix(updates[field]) || '';
+                } else {
+                state.dataEmployeeInternal[field] = updates[field];
                 }
+            }
             });
         },
-       updateEmployeeImage: (state, action) => {
-            state.dataEmployeeInternal.image = action.payload.baseStr;
-            state.imageUpdateEmployee = action.payload.file; 
-        },
-        setUpdateStatusImage: (state, action) => {
-            state.updateStatus = action.payload
-        }
     }
 })
 

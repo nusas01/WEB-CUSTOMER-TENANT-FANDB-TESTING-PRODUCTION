@@ -322,7 +322,7 @@ const {setSuccessUpdateDataEmployee, setErrorUpdateDataEmployee, setLoadingUpdat
 export const updateDataEmployeeInternal = (data) => async (dispatch) => {
     const config = {
         headers: {
-            "Content-Type": "multipart/form-data",
+            // "Content-Type": "multipart/form-data",
             "API_KEY": process.env.REACT_APP_API_KEY,
             "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
@@ -349,7 +349,12 @@ export const updateDataEmployeeInternal = (data) => async (dispatch) => {
             dispatch(setStatusServiceMaintenance(true));
         }
 
-        dispatch(setErrorUpdateDataEmployee(error.response?.data?.error));
+        const message = {
+            error: error.response?.data?.error,
+            errorField: error.response?.data?.ErrorField,
+        }
+
+        dispatch(setErrorUpdateDataEmployee(message));
     } finally {
         dispatch(setLoadingUpdateDataEmployee(false))
     }

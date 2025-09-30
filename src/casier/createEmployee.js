@@ -427,11 +427,11 @@ const CreateEmployee = () => {
         return
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
         setErrors(prev => ({
           ...prev,
-          image: 'Ukuran file maksimal 5MB'
+          image: 'Ukuran file maksimal 2MB'
         }))
         return
       }

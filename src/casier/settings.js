@@ -24,7 +24,7 @@ import {
   Menu,
 } from 'lucide-react';
 import Sidebar  from '../component/sidebar';
-import { fetchDataEmployeeInternal } from '../actions/get'
+import { fetchAllEmployees, fetchDataEmployeeInternal } from '../actions/get'
 import { getDataEmployeeInternalSlice } from '../reducers/get'
 import { 
   Toast,
@@ -58,6 +58,7 @@ import { formatCurrency, EmptyState, useFullscreen, useElementHeight } from '../
 import { current } from '@reduxjs/toolkit';
 import { navbarInternalSlice } from "../reducers/reducers"
 import { AccessDeniedModal } from '../component/model';
+import { Navigate, useLocation } from 'react-router-dom';
  
 export default function KasirSettings() {
   const activeMenu = "settings"
@@ -78,7 +79,10 @@ export default function KasirSettings() {
 
   // response update data employee
   const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
-  const { successUpdateDataEmployee, errorUpdateDataEmployee, loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+  const { 
+    successUpdateDataEmployee, 
+    errorUpdateDataEmployee, 
+  } = useSelector((state) => state.updateDataEmployeeState)
 
   // response change password
   const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
@@ -98,6 +102,10 @@ export default function KasirSettings() {
 
       if (successUpdatePaymentMethods) {
         dispatch(fetchPaymentMethodsInternal())
+      }
+
+      if (successUpdateDataEmployee) {
+        dispatch(fetchAllEmployees())
       }
     }
   }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
@@ -163,6 +171,9 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const dispatch = useDispatch()
   const [spinnerFixed, setSpinnerFixed] = useState(false)
   const [showAccessDenied, setShowAccessDenied] = useState(false);
+  const [profileImage, setProfileImage] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [errors, setErrors] = useState()
 
   // call data payment method
   const [paymentSettings, setPaymentSettings] = useState(null);
@@ -255,7 +266,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     }));
   };
 
-
   // UI State
   const [showPassword, setShowPassword] = useState({
     current: false,
@@ -267,8 +277,16 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
 
   // get data customer from state and call api
-  const {setUpdateStatusImage, updateEmployeeImage, updateEmployeeInternalFields} = getDataEmployeeInternalSlice.actions
-  const {dataEmployeeInternal, updateStatus, imageUpdateEmployee} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  const {updateEmployeeInternalFields} = getDataEmployeeInternalSlice.actions
+  const {dataEmployeeInternal} = useSelector((state) => state.persisted.getDataEmployeeInternal)
+  const [formDataUpdateEmployee, setFormDataUpdateEmployee] = useState({
+    name: '',
+    email: '',
+    phone_number: '',
+    date_of_birth: '',
+    gender: '', 
+    position: '',
+  }) 
 
   useEffect(() => {
     if (!dataEmployeeInternal) {
@@ -278,36 +296,44 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // Handlers
  const handleProfileUpdate = (field, value) => {
-    if (field === 'email' || field === 'gender' || field === 'position') return;
+    if (field === 'gender' || field === 'position') return;
 
-    dispatch(updateEmployeeInternalFields({ [field]: value }));
+    setFormDataUpdateEmployee((prev) => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
+    if (!file) return;
 
-      reader.onload = (event) => {
-        const imageData = event.target.result; 
+    setProfileImage(file);
 
-        dispatch(updateEmployeeImage({baseStr: imageData, file: file}));
-        dispatch(setUpdateStatusImage(true))
-      };
-
-      reader.readAsDataURL(file);
-    }
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
   };
 
-  const handleSubmitUpdateEmployee = () => {
-    const formData = new FormData();
-    formData.append("id", dataEmployeeInternal.id);
-    formData.append("name", dataEmployeeInternal.name);
-    formData.append("phone_number", dataEmployeeInternal.phone_number);
-    formData.append("date_of_birth", dataEmployeeInternal.date_of_birth);
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
-    if (imageUpdateEmployee instanceof File) {
-      formData.append("image", imageUpdateEmployee);
+
+  const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
+
+  const handleSubmitUpdateEmployee = () => {
+    dispatch(resetUpdateDataEmployee())
+    const formData = new FormData();
+    formData.append("id", (formDataUpdateEmployee.id || dataEmployeeInternal.id));
+    formData.append("name", (formDataUpdateEmployee.name || dataEmployeeInternal.name));
+    formData.append("phone_number", `+62${formDataUpdateEmployee.phone_number || dataEmployeeInternal.phone_number}`);
+    formData.append("date_of_birth", (formDataUpdateEmployee.date_of_birth || dataEmployeeInternal.date_of_birth));
+    formData.append("email", (formDataUpdateEmployee.email || dataEmployeeInternal.email))
+
+    if (profileImage instanceof File) {
+      formData.append("image", profileImage);
     }
 
     dispatch(updateDataEmployeeInternal(formData))
@@ -357,7 +383,29 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   };
 
   // handle loading update data employee
-  const { loadingUpdateDataEmployee } = useSelector((state) => state.updateDataEmployeeState)
+  const { 
+    errorFieldUpdateDataEmployee,
+    loadingUpdateDataEmployee,
+  } = useSelector((state) => state.updateDataEmployeeState)
+
+  useEffect(() => {
+    if (errorFieldUpdateDataEmployee) {
+      const mappedErrors = errorFieldUpdateDataEmployee.reduce((acc, curr) => {
+        const [field, message] = Object.entries(curr)[0]; 
+        acc[field] = message;
+        return acc;
+      }, {});
+      if (isMobileDeviceType) {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth" 
+        });
+      }
+      setErrors(mappedErrors)
+    }
+  }, [errorFieldUpdateDataEmployee])
+
+
   // response loading update payment methods
   const { loadingUpdatePaymentMethods } = useSelector((state) => state.updatePaymentMethodsInternalState)
 
@@ -512,18 +560,21 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   <label className="block text-sm font-semibold text-gray-800 mb-3">Foto Profil</label>
                   <div className="flex items-center gap-4">
                     <div className="relative">
-                      <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      <div
+                        className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden
+                          ${errors?.Image || errors?.FileSize ? "border-2 border-red-500" : "bg-gray-200"}`}
+                      >
                         {dataEmployeeInternal?.image &&
                         dataEmployeeInternal.image !== "00000000-0000-0000-0000-000000000000" &&
-                        !updateStatus ? (
+                        !previewUrl ? (
                           <img
                             src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${dataEmployeeInternal.image}`}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
-                        ) : dataEmployeeInternal?.image && updateStatus ? (
+                        ) : previewUrl ? (
                           <img
-                            src={dataEmployeeInternal.image}
+                            src={previewUrl}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
@@ -543,7 +594,12 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Upload foto profil baru</p>
-                      <p className="text-xs text-gray-400">JPG, PNG hingga 5MB</p>
+                      <p className="text-xs text-gray-400">JPG, PNG hingga 2MB</p>
+                      {(errors?.Image || errors?.FileSize) && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {errors.Image || errors.FileSize}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -552,7 +608,8 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField
                     label="Nama Lengkap"
-                    value={dataEmployeeInternal?.name || ''}
+                    error={errors?.Name}
+                    value={formDataUpdateEmployee?.name ? formDataUpdateEmployee.name : dataEmployeeInternal?.name}
                     onChange={(value) => handleProfileUpdate('name', value)}
                     icon={User}
                     placeholder="Masukkan nama lengkap"
@@ -560,25 +617,29 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   
                   <InputField
                     label="Email"
+                    value={formDataUpdateEmployee?.email ? formDataUpdateEmployee?.email : dataEmployeeInternal?.email}
+                    onChange={(value) => handleProfileUpdate('email', value)}
                     type="email"
-                    value={dataEmployeeInternal?.email || ''}
-                    disabled={true}
+                    error={errors?.Email}
                     icon={Mail}
-                    placeholder="Email tidak dapat diubah"
+                    placeholder="Masukkan email anda"
                   />
                   
                   <InputField
                     label="Nomor Telepon"
-                    value={dataEmployeeInternal?.phone_number || ''}
+                    value={formDataUpdateEmployee?.phone_number ? formDataUpdateEmployee?.phone_number : dataEmployeeInternal?.phone_number}
                     onChange={(value) => handleProfileUpdate('phone_number', value)}
+                    isPhone={true}
+                    error={errors?.PhoneNumber}
                     icon={Phone}
-                    placeholder="+62 812 3456 7890"
+                    placeholder="81234567890"
                   />
                   
                   <InputField
                     label="Tanggal Lahir"
                     type="date"
-                    value={dataEmployeeInternal?.date_of_birth || ''}
+                    error={errors?.DateOfBirth}
+                    value={dataEmployeeInternal?.date_of_birth ? dataEmployeeInternal?.date_of_birth : dataEmployeeInternal?.date_of_birth}
                     onChange={(value) => handleProfileUpdate('date_of_birth', value)}
                     icon={Calendar}
                   />
@@ -935,28 +996,77 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   );
 };
 
-const InputField = ({ label, type = 'text', value, onChange, disabled = false, icon: Icon, placeholder }) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-semibold text-gray-800">{label}</label>
-    <div className="relative flex items-center">
-      {Icon && (
-        <div className="absolute left-3 top-0 h-full flex items-center">
-          <Icon className="text-gray-400" size={18} />
+const InputField = ({ 
+  label, 
+  type = 'text', 
+  value, 
+  onChange, 
+  disabled = false, 
+  icon: Icon, 
+  placeholder,
+  isPhone = false,
+  error = null,
+  maxLength
+}) => {
+  // Untuk input phone number dengan prefix +62
+  if (isPhone) {
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-gray-800">{label}</label>
+        <div className="relative flex items-center">
+          <div className="flex items-center bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg px-3 py-2.5 h-[44px]">
+            {Icon && <Icon className="h-5 w-5 text-gray-500 mr-2" />}
+            <span className="text-gray-900 font-normal text-base">+62</span>
+          </div>
+          <input
+            type="tel"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
+            placeholder={placeholder}
+            maxLength={maxLength || "12"}
+            className={`block w-full px-4 py-2.5 border ${
+              error ? 'border-red-500' : 'border-gray-300'
+            } rounded-r-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200 ${
+              disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'text-gray-900'
+            } text-base h-[44px]`}
+          />
         </div>
-      )}
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        placeholder={placeholder}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200 ${
-          Icon ? 'pl-11' : ''
-        } ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'} leading-none text-sm`}
-      />
+        {error && <p className="mt-1 text-sm text-red-600">• {error}</p>}
+      </div>
+    );
+  }
+
+  // Input field biasa
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-semibold text-gray-800">{label}</label>
+      <div className="relative flex items-center">
+        {Icon && (
+          <div className="absolute left-3 top-0 h-full flex items-center pointer-events-none">
+            <Icon className="text-gray-400" size={18} />
+          </div>
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          className={`w-full px-4 py-3 border ${
+            error ? 'border-red-500' : 'border-gray-300'
+          } rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all duration-200 ${
+            Icon ? 'pl-11' : ''
+          } ${
+            disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white'
+          } leading-none text-sm h-[42px]`}
+        />
+      </div>
+      {error && <p className="mt-1 text-sm text-red-600">• {error}</p>}
     </div>
-  </div>
-);
+  );
+};
 
 const PasswordField = ({ label, value, onChange, showPassword, toggleShow, placeholder }) => (
   <div className="space-y-2">

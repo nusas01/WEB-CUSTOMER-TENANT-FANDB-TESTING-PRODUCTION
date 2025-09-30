@@ -230,3 +230,41 @@ export const getPhoneWithoutPrefix = (phoneNumber) => {
   }
   return phone;
 };
+
+export function useSingleTab() {
+  useEffect(() => {
+    const bc = new BroadcastChannel("only_one_tab");
+
+    let isMaster = false;
+
+    // dengarkan pesan dari tab lain
+    bc.onmessage = (e) => {
+      if (e.data === "who_is_master") {
+        // kalau ada tab baru nanya, jawab "saya master"
+        if (isMaster) {
+          bc.postMessage("master_here");
+        }
+      }
+
+      if (e.data === "master_here") {
+        // berarti tab lain sudah master → tab ini harus keluar
+        alert("Aplikasi sudah dibuka di tab lain!");
+        window.location.href = "/error"; // lebih aman daripada window.close()
+      }
+    };
+
+    // saat tab ini dibuka, cek apakah sudah ada master
+    bc.postMessage("who_is_master");
+
+    // kasih delay sedikit untuk menunggu jawaban
+    const timer = setTimeout(() => {
+      // kalau tidak ada tab lain yang jawab → tab ini jadi master
+      isMaster = true;
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      bc.close();
+    };
+  }, []);
+}
