@@ -115,6 +115,7 @@ export const updatePaymentMethodsInternalSlice = createSlice({
 const initialUpdateEmployeeState = {
   successUpdateEmployee: null,
   errorUpdateEmployee: null,
+  errorFieldUpdateEmployee: null,
   loadingUpdateEmployee: false,
 }
 export const updateEmployeeSlice = createSlice({
@@ -125,7 +126,8 @@ export const updateEmployeeSlice = createSlice({
       state.successUpdateEmployee = action.payload
     },
     setErrorUpdateEmployee: (state, action) => {
-      state.errorUpdateEmployee = action.payload || null
+      state.errorUpdateEmployee = action.payload.error || null
+      state.errorFieldUpdateEmployee = action.payload.errorField || null
     },
     setLoadingUpdateEmployee: (state, action) => {
       state.loadingUpdateEmployee = action.payload
@@ -133,6 +135,7 @@ export const updateEmployeeSlice = createSlice({
     resetUpdateEmployee: (state) => {
       state.successUpdateEmployee = null
       state.errorUpdateEmployee = null
+      state.errorFieldUpdateEmployee = null
     },
   },
 })

@@ -243,7 +243,12 @@ export const updateEmployee = (formData) => {
         if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
             dispatch(setStatusServiceMaintenance(true));
         }
-        dispatch(setErrorUpdateEmployee(error?.response?.data?.error || 'Gagal memperbarui employee'))
+        
+        const payload = {
+            error: error?.response?.data?.error,
+            errorField: error?.response?.data?.ErrorField,
+        }
+        dispatch(setErrorUpdateEmployee(payload))
     } finally {
         dispatch(setLoadingUpdateEmployee(false))
     }

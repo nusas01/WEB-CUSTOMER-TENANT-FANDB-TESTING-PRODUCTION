@@ -26,6 +26,7 @@ import {
   fetchAllEmployees,
   fetchDataEmployeeInternal,
 } from '../actions/get'
+import { getPhoneWithoutPrefix } from '../helper/helper'
 
 const CreateEmployee = () => {
   const navigate = useNavigate()
@@ -50,17 +51,33 @@ const CreateEmployee = () => {
   // handle update employee
   const employeUpdateState = location.state?.employeeState
   const {resetUpdateEmployee} = updateEmployeeSlice.actions
-  const {successUpdateEmployee, errorUpdateEmployee, loadingUpdateEmployee} = useSelector((state) => state.updateEmployeeState)
+  const {successUpdateEmployee, errorUpdateEmployee, errorFieldUpdateEmployee, loadingUpdateEmployee} = useSelector((state) => state.updateEmployeeState)
   const isUpdate = Boolean(employeUpdateState?.id);
 
   useEffect(() => {
     if (employeUpdateState) {
         setFormData(prev => ({
         ...prev,
-        ...employeUpdateState
+        ...employeUpdateState,
+        phone_number: getPhoneWithoutPrefix(employeUpdateState.phone_number) || ''
         }));
     }
     }, [employeUpdateState]);
+
+    useEffect(() => {
+      if (errorFieldUpdateEmployee) {
+        const mappedErrors = errorFieldUpdateEmployee.reduce((acc, curr) => {
+          const [field, message] = Object.entries(curr)[0]; 
+          acc[field] = message;
+          return acc;
+        }, {});
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth" 
+        });
+        setErrors(mappedErrors)
+      }
+    }, [errorFieldUpdateEmployee])
 
     useEffect(() => {
       if (successUpdateEmployee) {
@@ -103,20 +120,22 @@ const CreateEmployee = () => {
             message: errorCreateEmployee
           })
       }
-    }, [errorCreateEmployee])  
+    }, [errorCreateEmployee]) 
 
     useEffect(() => {
-      if (ErrorFieldCreateEmployee?.Email) {
-          setErrors({email: ErrorFieldCreateEmployee?.Email})
+      if (ErrorFieldCreateEmployee) {
+        const mappedErrors = ErrorFieldCreateEmployee.reduce((acc, curr) => {
+          const [field, message] = Object.entries(curr)[0]; 
+          acc[field] = message;
+          return acc;
+        }, {});
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+        setErrors(mappedErrors)
       }
-    }, [ErrorFieldCreateEmployee?.Email])
-
-    useEffect(() => {
-      if (ErrorFieldCreateEmployee?.PhoneNumber) {
-        setErrors({phone_number: ErrorFieldCreateEmployee?.PhoneNumber})
-      }
-    }, [ErrorFieldCreateEmployee?.PhoneNumber])
-
+    }, [ErrorFieldCreateEmployee])
 
 
     const [showPassword, setShowPassword] = useState(false)
@@ -432,25 +451,28 @@ const CreateEmployee = () => {
       if (e) e.preventDefault()
       
       // Validate all fields
+      dispatch(resetCreateEmployee())
+      dispatch(resetUpdateEmployee())
+
       const foundErrors = validateAllFields()
       
       // Check if there are any errors
-      if (Object.keys(foundErrors).length > 0) return
-
+      if (Object.keys(foundErrors).length > 0) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       // Create FormData for multipart submission
-      const submitData = new FormData()
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== '') {
-          submitData.append(key, formData[key])
-        }
-      })
+      const submitData = {
+          ...formData,
+          phone_number: `+62${formData.phone_number}`
+      };
 
       if (!isUpdate) {
-        dispatch(createEmployee(formData))
+        dispatch(createEmployee(submitData))
       } 
 
       if (isUpdate) {
-        dispatch(updateEmployee(formData))
+        dispatch(updateEmployee(submitData))
       }
     }
 
@@ -547,8 +569,8 @@ const CreateEmployee = () => {
                   onChange={handleImageChange}
                   className="hidden"
                 />
-                {errors.image && (
-                  <p className="text-red-500 text-sm text-center">{errors.image}</p>
+                {(errors.image || errors.Image || errors.FileSize) && (
+                  <p className="text-red-500 text-sm text-center">{errors.image || errors.Image || errors.FileSize}</p>
                 )}
               </div>
 
@@ -566,13 +588,13 @@ const CreateEmployee = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                        errors.name ? 'border-red-500' : 'border-gray-300'
+                        (errors.name || errors.Name) ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Masukkan nama lengkap"
                       maxLength={100}
                     />
                   </div>
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                  {(errors.name || errors.Name) && <p className="text-red-500 text-sm mt-1">{errors.name || errors.Name}</p>}
                 </div>
 
                 {/* Email */}
@@ -588,12 +610,12 @@ const CreateEmployee = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
+                        (errors.email || errors.Email) ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="nama@email.com"
                     />
                   </div>
-                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  {(errors.email || errors.Email) && <p className="text-red-500 text-sm mt-1">{errors.email || errors.Email}</p>}
                 </div>
 
                 {/* Password */}
@@ -610,7 +632,7 @@ const CreateEmployee = () => {
                           value={formData.password}
                           onChange={handleInputChange}
                           className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                          errors.password ? 'border-red-500' : 'border-gray-300'
+                          (errors.password || errors.Password) ? 'border-red-500' : 'border-gray-300'
                           }`}
                           placeholder="Minimal 6 karakter"
                           maxLength={50}
@@ -623,7 +645,7 @@ const CreateEmployee = () => {
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                       </div>
-                      {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                      {(errors.password || errors.Password) && <p className="text-red-500 text-sm mt-1">{errors.password || errors.Password}</p>}
                       <p className="text-xs text-gray-500 mt-1">
                       Harus mengandung: huruf kapital, angka, dan karakter khusus
                       </p>
@@ -631,25 +653,31 @@ const CreateEmployee = () => {
                 )}
 
                 {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nomor Telepon *
+                <div className="md:col-span-2">
+                  <label htmlFor="phone_number" className="block text-sm font-medium text-gray-900 mb-1">
+                      Phone Number *
                   </label>
                   <div className="relative flex items-center">
-                    <Phone className="absolute left-3 w-5 h-5 text-gray-400"/>
-                    <input
-                      type="tel"
-                      name="phone_number"
-                      value={formData.phone_number}
-                      onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                        errors.phone_number ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="08123456789"
-                    />
+                      <div className="flex items-center bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg px-3 py-3 h-full">
+                          <Phone className="h-5 w-5 text-gray-500 mr-2" />
+                          <span className="text-gray-700 font-medium">+62</span>
+                          <div className="w-px h-6 bg-gray-300 ml-3"></div>
+                      </div>
+                      <input
+                          id="phone_number"
+                          name="phone_number"
+                          type="tel"
+                          value={formData.phone_number}
+                          onChange={handleInputChange}
+                          className={`block w-full px-3 py-3 border ${
+                              (errors.PhoneNumber || errors.phone_number) ? 'border-red-500' : 'border-gray-300'
+                          } rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent rounded-l-none border-l-0 pl-3`}
+                          placeholder="8123456789"
+                          maxLength="12"
+                      />
                   </div>
-                  {errors.phone_number && <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>}
-                </div>
+                  {(errors.PhoneNumber || errors.phone_number) && <p className="mt-1 text-sm text-red-600">• {errors.PhoneNumber || errors.phone_number}</p>}
+              </div>
 
                 {/* Position */}
                 <div>
@@ -663,7 +691,7 @@ const CreateEmployee = () => {
                       value={formData.position}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none ${
-                        errors.position ? 'border-red-500' : 'border-gray-300'
+                        (errors.position || errors.Position) ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
                       <option value="">Pilih posisi</option>
@@ -671,7 +699,7 @@ const CreateEmployee = () => {
                       <option value="Staff">Staff</option>
                     </select>
                   </div>
-                  {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position}</p>}
+                  {(errors.position || errors.Position) && <p className="text-red-500 text-sm mt-1">{errors.position || errors.Position}</p>}
                 </div>
 
                 {/* Gender */}
@@ -703,7 +731,7 @@ const CreateEmployee = () => {
                       <span className="text-sm text-gray-700">Perempuan</span>
                     </label>
                   </div>
-                  {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+                  {(errors.gender || errors.Gender) && <p className="text-red-500 text-sm mt-1">{errors.gender || errors.Gender}</p>}
                 </div>
 
                 {/* Date of Birth */}
@@ -719,11 +747,11 @@ const CreateEmployee = () => {
                       value={formData.date_of_birth}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                        errors.date_of_birth ? 'border-red-500' : 'border-gray-300'
+                        (errors.date_of_birth || errors.DateOfBirth) ? 'border-red-500' : 'border-gray-300'
                       }`}
                     />
                   </div>
-                  {errors.date_of_birth && <p className="text-red-500 text-sm mt-1">{errors.date_of_birth}</p>}
+                  {(errors.date_of_birth || errors.DateOfBirth) && <p className="text-red-500 text-sm mt-1">{errors.date_of_birth || errors.DateOfBirth}</p>}
                 </div>
 
                 {/* Salary */}
@@ -739,13 +767,13 @@ const CreateEmployee = () => {
                       value={formData.salery.toLocaleString("id-ID")}
                       onChange={handleInputSalery}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${
-                        errors.salery ? 'border-red-500' : 'border-gray-300'
+                        (errors.salery || errors.Salery) ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="5.000.000"
                       min="0"
                     />
                   </div>
-                  {errors.salery && <p className="text-red-500 text-sm mt-1">{errors.salery}</p>}
+                  {(errors.salery || errors.Salery) && <p className="text-red-500 text-sm mt-1">{errors.salery || errors.Salery}</p>}
                 </div>
               </div>
 

@@ -221,3 +221,12 @@ export const ScrollToTop = () => {
 
   return null;
 }
+
+export const getPhoneWithoutPrefix = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  const phone = phoneNumber.toString();
+  if (phone.startsWith('+62')) {
+      return phone.substring(3);
+  }
+  return phone;
+};

@@ -827,7 +827,7 @@ export const createEmployee = (formData) => {
         
         dispatch(setErrorCreateEmployee({
             error: error?.response?.data?.error, 
-            errorField: error?.response?.data?.ErrorField[0],
+            errorField: error?.response?.data?.ErrorField,
         }))
     } finally {
       dispatch(setLoadingCreateEmployee(false))
