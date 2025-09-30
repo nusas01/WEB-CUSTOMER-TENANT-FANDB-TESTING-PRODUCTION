@@ -447,6 +447,11 @@ const CreateEmployee = () => {
       reader.readAsDataURL(file)
     }
 
+    useEffect(() => {
+      dispatch(resetCreateEmployee())
+      dispatch(resetUpdateEmployee())
+    }, [])
+
     const handleSubmit = (e) => {
       if (e) e.preventDefault()
       

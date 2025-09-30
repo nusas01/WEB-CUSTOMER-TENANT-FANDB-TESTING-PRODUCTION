@@ -13,21 +13,17 @@ import {
   Edit3, 
   Trash2, 
   Menu,
-  MapPin, 
+  Info,
   Phone, 
-  Globe, 
-  Building2,
   Shield,
   UserCheck,
   Clock,
   Calendar,
-  CreditCard,
   User,
   Mail,
   DollarSign,
   Search,
   ChevronDown,
-  Filter,
   Settings,
   Maximize,
   Minimize,
@@ -675,54 +671,56 @@ const EmployeeManagement = () => {
                                     </div>
                                     
                                     <div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">    
-                                        {/* New Password */}
-                                        <div className="space-y-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* New Password */}
+                                            <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-700">New Password</label>
                                             <div className="relative">
-                                            <input
+                                                <input
                                                 type={showPassword[`${employee.id}-new`] ? 'text' : 'password'}
                                                 placeholder="Enter new password"
                                                 className="w-full pl-4 pr-12 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 value={passwordData[employee.id]?.newPassword || ''}
                                                 onChange={(e) => handlePasswordChange(employee.id, 'newPassword', e.target.value)}
-                                            />
-                                            <button
+                                                />
+                                                <button
                                                 type="button"
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                                className="absolute right-3 inset-y-0 flex items-center text-gray-500 hover:text-gray-700"
                                                 onClick={() => togglePasswordVisibility(employee.id, 'new')}
-                                            >
+                                                >
                                                 {showPassword[`${employee.id}-new`] ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
+                                                </button>
                                             </div>
-                                        </div>
-                                        
-                                        {/* Confirm Password */}
-                                        <div className="space-y-2">
+                                            </div>
+
+                                            {/* Confirm Password */}
+                                            <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-700">Confirm Password</label>
                                             <div className="relative">
-                                            <input
+                                                <input
                                                 type={showPassword[`${employee.id}-confirm`] ? 'text' : 'password'}
                                                 placeholder="Confirm new password"
                                                 className="w-full pl-4 pr-12 py-2.5 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 value={passwordData[employee.id]?.confirmPassword || ''}
                                                 onChange={(e) => handlePasswordChange(employee.id, 'confirmPassword', e.target.value)}
-                                            />
-                                            <button
+                                                />
+                                                <button
                                                 type="button"
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                                className="absolute right-3 inset-y-0 flex items-center text-gray-500 hover:text-gray-700"
                                                 onClick={() => togglePasswordVisibility(employee.id, 'confirm')}
-                                            >
+                                                >
                                                 {showPassword[`${employee.id}-confirm`] ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
+                                                </button>
+                                            </div>
                                             </div>
                                         </div>
-                                        </div>
-                                    
+
                                         {error.change_Password && (
-                                        <p className="text-red-500 text-sm mt-2">{error.change_Password}</p>
+                                            <p className="text-red-500 text-sm mt-2">{error.change_Password}</p>
                                         )}
-                                    </div>
+
+                                        <PasswordInfo />
+                                        </div>
                                     
                                     {/* Action Buttons */}
                                     <div className="flex justify-end gap-3 mt-4">
@@ -790,3 +788,19 @@ const EmployeeManagement = () => {
 };
 
 export default EmployeeManagement;
+
+const PasswordInfo = () => {
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+      <div className="flex items-start gap-2">
+        <Info size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-gray-700 mb-1">Kriteria Password:</p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Password harus terdiri dari 6-50 karakter, minimal 1 huruf kapital, 1 angka, dan 1 simbol (!@#$%^&*).
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
