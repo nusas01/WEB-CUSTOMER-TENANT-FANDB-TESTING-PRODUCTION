@@ -24,6 +24,9 @@ import { useDispatch, useSelector } from "react-redux"
 import { 
   logoutInternal,
 } from "../actions/get"
+import {
+  changePasswordInternalSlice
+} from "../reducers/patch"
 import {resetApp} from "../reducers/state"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
@@ -160,6 +163,13 @@ const Sidebar = ({activeMenu}) => {
       setOpenFinance(true);
     }
   }, [location.pathname])
+
+  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
+  useEffect(() => {
+    if (location.pathname !== '/store/settings') {
+      dispatch(resetChangePasswordInternal())
+    }
+  }, [])
   
   // handle response logout
   const {resetLogoutInternal} = logoutInternalSlice.actions
