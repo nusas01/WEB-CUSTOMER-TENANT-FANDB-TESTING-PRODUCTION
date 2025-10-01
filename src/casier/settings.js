@@ -362,6 +362,15 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
     confirmPassword: ''
   });
 
+  useEffect(() => {
+    setPasswordErrors({
+      currentPassword: errorValidatePassword || '',
+      newPassword: errorValidateNewPassword || '',
+      confirmPassword: '' // biasanya confirmPassword error dibuat manual di client
+    });
+    dispatch(resetChangePasswordInternal())
+  }, [errorValidatePassword, errorValidateNewPassword]);
+
    const handlePasswordChange = (field, value) => {
     setPasswordData(prev => ({ ...prev, [field]: value }));
   };
@@ -421,6 +430,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
         });
       }
       setErrors(mappedErrors)
+      dispatch(resetUpdateDataEmployee())
     }
   }, [errorFieldUpdateDataEmployee])
 

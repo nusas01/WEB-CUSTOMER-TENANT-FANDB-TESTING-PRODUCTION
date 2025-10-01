@@ -76,6 +76,7 @@ const CreateEmployee = () => {
           behavior: "smooth" 
         });
         setErrors(mappedErrors)
+        dispatch(resetUpdateEmployee())
       }
     }, [errorFieldUpdateEmployee])
 
@@ -134,6 +135,7 @@ const CreateEmployee = () => {
           behavior: "smooth"
         });
         setErrors(mappedErrors)
+        dispatch(resetCreateEmployee())
       }
     }, [ErrorFieldCreateEmployee])
 
@@ -446,11 +448,6 @@ const CreateEmployee = () => {
       }
       reader.readAsDataURL(file)
     }
-
-    useEffect(() => {
-      dispatch(resetCreateEmployee())
-      dispatch(resetUpdateEmployee())
-    }, [])
 
     const handleSubmit = (e) => {
       if (e) e.preventDefault()

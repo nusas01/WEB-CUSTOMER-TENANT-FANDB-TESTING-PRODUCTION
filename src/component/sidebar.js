@@ -23,12 +23,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { 
   logoutInternal,
-  fetchDataEmployeeInternal,
 } from "../actions/get"
-import {
-  updateDataEmployeeSlice,
-  changePasswordInternalSlice,
-} from "../reducers/patch"
 import {resetApp} from "../reducers/state"
 import {logoutInternalSlice} from "../reducers/get"
 import {SpinnerFixed} from "../helper/spinner"
@@ -165,15 +160,6 @@ const Sidebar = ({activeMenu}) => {
       setOpenFinance(true);
     }
   }, [location.pathname])
-
-  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
-  const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
-  useEffect(() => {
-    if (location.pathname !== '/internal/admin/settings') {
-      dispatch(resetUpdateDataEmployee())
-      dispatch(resetChangePasswordInternal())
-    }
-  }, [location])
   
   // handle response logout
   const {resetLogoutInternal} = logoutInternalSlice.actions
