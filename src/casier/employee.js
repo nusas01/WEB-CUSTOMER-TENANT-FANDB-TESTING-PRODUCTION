@@ -371,9 +371,9 @@ const EmployeeManagement = () => {
         {/* Main Content */}
         <div
             ref={contentRef}
-            className={`flex-1 bg-gray-50 ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
+            className={`flex-1 bg-gray-50 relative ${isFullScreen ? 'w-full h-screen overflow-y-auto' : ''}`}
         >
-            <div className='relative'>
+            <div className='max-w-7xl mx-auto'>
                 {/* Header */}
                 <div
                 ref={headerRef}

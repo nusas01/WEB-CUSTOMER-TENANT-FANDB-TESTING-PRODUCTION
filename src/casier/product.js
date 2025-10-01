@@ -332,6 +332,8 @@ function ProductsTable({isFullScreen, fullscreenchange}) {
             image: image
           }
         }))
+
+        dispatch(fetchCategoryAndProductInternal())
         dispatch(resetUpdateProductInternal())
         dispatch(resetDataTempUpdateProduct())
       }
@@ -882,8 +884,6 @@ const AddProductModal = ({
   const { resetCreateProductInternal } = createProductInternalSlice.actions
   const { successCreateProductInternal, errorCreateProductInternal, errorFieldCreateProductInternal } = useSelector((state) => state.createProductInternalState)
 
-  console.log("error field: ", errorFieldCreateProductInternal)
-
   useEffect(() => {
     if (Array.isArray(errorFieldCreateProductInternal)) {
       const mappedErrors = errorFieldCreateProductInternal.reduce((acc, curr) => {
@@ -951,7 +951,7 @@ const AddProductModal = ({
                     <div className="flex flex-col items-center justify-center text-gray-500">
                       <ImageIcon className="w-12 h-12 mb-3 text-gray-400" />
                       <span className="text-sm font-medium">Upload Gambar Produk</span>
-                      <span className="text-xs text-gray-400 mt-1">PNG, JPG hingga 10MB</span>
+                      <span className="text-xs text-gray-400 mt-1">PNG, JPG hingga 2MB</span>
                     </div>
                   )}
                 </label>

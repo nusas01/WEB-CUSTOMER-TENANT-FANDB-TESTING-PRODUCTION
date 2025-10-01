@@ -175,7 +175,6 @@ const handleDownloadQR = async (
       };
     });
   } catch (error) {
-    console.error('Error downloading QR:', error);
     if (onError) onError(error.message);
   } finally {
     if (onFinally) onFinally();

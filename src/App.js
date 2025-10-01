@@ -113,8 +113,6 @@ function CustomerWrapper() {
     }
   }, [loggedInCustomer])
 
-  console.log("data customer wrapper: ", loggedInCustomer)
-
   // return loggedInCustomer ? <Outlet /> : <Navigate to="/access" />
   return <Outlet/>
 }

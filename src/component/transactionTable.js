@@ -526,7 +526,6 @@ const TransactionTable = ({isFullScreen, fullscreenchange}) => {
   const { setIsOpen } = navbarInternalSlice.actions
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
 
-  console.log("data search transaction: ", dataSearchTransactionInternal)
   return (
      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Modern Header */}

@@ -106,6 +106,7 @@ export default function KasirSettings() {
 
       if (successUpdateDataEmployee) {
         dispatch(fetchAllEmployees())
+        dispatch(fetchDataEmployeeInternal())
       }
     }
   }, [successUpdateDataEmployee, successChangePassword, successUpdatePaymentMethods])
@@ -174,6 +175,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const [profileImage, setProfileImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [errors, setErrors] = useState()
+  const [isUpdate, setIsUpdate] = useState()
 
   // call data payment method
   const [paymentSettings, setPaymentSettings] = useState(null);
@@ -298,6 +300,11 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
  const handleProfileUpdate = (field, value) => {
     if (field === 'gender' || field === 'position') return;
 
+    setIsUpdate((prev) => ({
+      ...prev,
+      [field]: true
+    }))
+
     setFormDataUpdateEmployee((prev) => ({
       ...prev,
       [field]: value
@@ -325,12 +332,14 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
   const handleSubmitUpdateEmployee = () => {
     dispatch(resetUpdateDataEmployee())
+    setErrors()
+
     const formData = new FormData();
-    formData.append("id", (formDataUpdateEmployee.id || dataEmployeeInternal.id));
-    formData.append("name", (formDataUpdateEmployee.name || dataEmployeeInternal.name));
-    formData.append("phone_number", `+62${formDataUpdateEmployee.phone_number || dataEmployeeInternal.phone_number}`);
-    formData.append("date_of_birth", (formDataUpdateEmployee.date_of_birth || dataEmployeeInternal.date_of_birth));
-    formData.append("email", (formDataUpdateEmployee.email || dataEmployeeInternal.email))
+    formData.append("id", (formDataUpdateEmployee?.id || dataEmployeeInternal?.id));
+    formData.append("name", (formDataUpdateEmployee?.name || dataEmployeeInternal?.name));
+    formData.append("phone_number", `+62${formDataUpdateEmployee?.phone_number || dataEmployeeInternal?.phone_number}`);
+    formData.append("date_of_birth", (formDataUpdateEmployee?.date_of_birth || dataEmployeeInternal?.date_of_birth));
+    formData.append("email", (formDataUpdateEmployee?.email || dataEmployeeInternal?.email))
 
     if (profileImage instanceof File) {
       formData.append("image", profileImage);
@@ -384,9 +393,19 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
 
   // handle loading update data employee
   const { 
+    successUpdateDataEmployee,
     errorFieldUpdateDataEmployee,
     loadingUpdateDataEmployee,
   } = useSelector((state) => state.updateDataEmployeeState)
+
+  useEffect(() => {
+    if (successUpdateDataEmployee) {
+      setFormDataUpdateEmployee()
+      setIsUpdate()
+      setPreviewUrl()
+      setProfileImage()
+    }
+  }, [successUpdateDataEmployee])
 
   useEffect(() => {
     if (errorFieldUpdateDataEmployee) {
@@ -425,7 +444,6 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
   const { ref: headerRef, height: headerHeight } = useElementHeight();
   const { setIsOpen } = navbarInternalSlice.actions
   const { isOpen, isMobileDeviceType } = useSelector((state) => state.persisted.navbarInternal)
-
 
   const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     <button
@@ -609,7 +627,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   <InputField
                     label="Nama Lengkap"
                     error={errors?.Name}
-                    value={formDataUpdateEmployee?.name ? formDataUpdateEmployee.name : dataEmployeeInternal?.name}
+                    value={isUpdate?.name ? formDataUpdateEmployee.name : dataEmployeeInternal?.name}
                     onChange={(value) => handleProfileUpdate('name', value)}
                     icon={User}
                     placeholder="Masukkan nama lengkap"
@@ -617,7 +635,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   
                   <InputField
                     label="Email"
-                    value={formDataUpdateEmployee?.email ? formDataUpdateEmployee?.email : dataEmployeeInternal?.email}
+                    value={isUpdate?.email ? formDataUpdateEmployee?.email : dataEmployeeInternal?.email}
                     onChange={(value) => handleProfileUpdate('email', value)}
                     type="email"
                     error={errors?.Email}
@@ -627,7 +645,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                   
                   <InputField
                     label="Nomor Telepon"
-                    value={formDataUpdateEmployee?.phone_number ? formDataUpdateEmployee?.phone_number : dataEmployeeInternal?.phone_number}
+                    value={isUpdate?.phone_number ? formDataUpdateEmployee?.phone_number : dataEmployeeInternal?.phone_number}
                     onChange={(value) => handleProfileUpdate('phone_number', value)}
                     isPhone={true}
                     error={errors?.PhoneNumber}
@@ -639,7 +657,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                     label="Tanggal Lahir"
                     type="date"
                     error={errors?.DateOfBirth}
-                    value={dataEmployeeInternal?.date_of_birth ? dataEmployeeInternal?.date_of_birth : dataEmployeeInternal?.date_of_birth}
+                    value={isUpdate?.date_of_birth ? dataEmployeeInternal?.date_of_birth : dataEmployeeInternal?.date_of_birth}
                     onChange={(value) => handleProfileUpdate('date_of_birth', value)}
                     icon={Calendar}
                   />

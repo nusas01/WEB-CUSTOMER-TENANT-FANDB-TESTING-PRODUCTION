@@ -98,7 +98,6 @@ export default function ModernKasirDashboard() {
         });
         
       } catch (error) {
-        console.error('Error downloading QR:', error);
         setToast({
           message: 'Gagal mendownload QR Code. Silakan coba lagi.',
           type: 'error'

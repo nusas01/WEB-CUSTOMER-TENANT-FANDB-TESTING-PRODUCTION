@@ -26,7 +26,8 @@ import {
   fetchDataEmployeeInternal,
 } from "../actions/get"
 import {
-  updateDataEmployeeSlice
+  updateDataEmployeeSlice,
+  changePasswordInternalSlice,
 } from "../reducers/patch"
 import {resetApp} from "../reducers/state"
 import {logoutInternalSlice} from "../reducers/get"
@@ -165,11 +166,12 @@ const Sidebar = ({activeMenu}) => {
     }
   }, [location.pathname])
 
-
+  const { resetChangePasswordInternal } = changePasswordInternalSlice.actions
   const { resetUpdateDataEmployee } = updateDataEmployeeSlice.actions
   useEffect(() => {
     if (location.pathname !== '/internal/admin/settings') {
       dispatch(resetUpdateDataEmployee())
+      dispatch(resetChangePasswordInternal())
     }
   }, [location])
   
