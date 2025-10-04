@@ -1,9 +1,30 @@
-import {Database, RefreshCw} from 'lucide-react'
+import {Box, Database, RefreshCw} from 'lucide-react'
 import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useDispatch } from 'react-redux';
 import { navbarInternalSlice } from '../reducers/reducers'
 import { useLocation } from 'react-router-dom';
+import {
+  Utensils,
+  Pizza,
+  Cookie,
+  IceCream,
+  Soup,
+  Sandwich,
+  Salad,
+  Cake,
+  Drumstick,
+  Droplets,
+  Wine,
+  Beer,
+  Martini,
+  Milk,
+  Coffee,
+  CircleHelp,
+  CupSoda,
+  GlassWater,
+  ChefHat,
+} from 'lucide-react'
 
 export const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -268,3 +289,35 @@ export function useSingleTab() {
     };
   }, []);
 }
+
+export const getIconByCategory = (categoryName) => {
+  if (!categoryName) return CircleHelp;
+  
+  const name = categoryName.toLowerCase();
+  
+  // Makanan
+  if (name.includes('makanan') || name.includes('food')) return Utensils;
+  if (name.includes('pizza')) return Pizza;
+  if (name.includes('cemilan') || name.includes('snack')) return Cookie;
+  if (name.includes('dessert') || name.includes('manis')) return IceCream;
+  if (name.includes('soup') || name.includes('sop')) return Soup;
+  if (name.includes('sandwich') || name.includes('burger')) return Sandwich;
+  if (name.includes('salad') || name.includes('sayur')) return Salad;
+  if (name.includes('cake') || name.includes('kue')) return Cake;
+  if (name.includes('ayam') || name.includes('chicken')) return Drumstick;
+  
+  // Minuman
+  if (name.includes('minuman') || name.includes('drink') || name.includes('beverage')) return Coffee;
+  if (name.includes('kopi') || name.includes('coffee')) return Coffee;
+  if (name.includes('teh') || name.includes('tea')) return Coffee;
+  if (name.includes('jus') || name.includes('juice') || name.includes('segar')) return Droplets;
+  if (name.includes('alkohol') || name.includes('alcohol') || name.includes('wine')) return Wine;
+  if (name.includes('bir') || name.includes('beer')) return Beer;
+  if (name.includes('cocktail') || name.includes('martini')) return Martini;
+  if (name.includes('susu') || name.includes('milk')) return Milk;
+  if (name.includes('soda') || name.includes('soft drink')) return CupSoda;
+  if (name.includes('air') || name.includes('water')) return GlassWater;
+  
+  // Default fallback
+  return ChefHat;
+};

@@ -5,6 +5,7 @@ import sessionStorage from 'redux-persist/lib/storage/session';
 import { cartSlice, cartCashierSlice } from './cartSlice';
 import {
   orderTypeSlice,
+  storeInfoCustomerSlice,
   buttonActivityCustomerSlice,
   filterGeneralJournalInternalSlice,
   filterDateLabaRugiInternalSlice,
@@ -106,6 +107,7 @@ import {
 // 1. Reducer yang ingin dipersist
 const persistedReducers = combineReducers({
   cart: cartSlice.reducer,
+  storeInfoCustomer: storeInfoCustomerSlice.reducer,
   productsCustomer: getProductsCustomerSlice.reducer,
   dataCustomer: getDataCustomerSlice.reducer,
   paymentMethodsCustomer: getPaymentMethodsCustomerSlice.reducer,

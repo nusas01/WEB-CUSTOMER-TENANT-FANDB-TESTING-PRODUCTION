@@ -28,6 +28,19 @@ export const orderTypeSlice = createSlice({
 })
 export const { setOrderTypeContext, setIsClose } = orderTypeSlice.actions;
 
+const initialStoreInfoCustomerState = {
+    statusStoreInfo: false
+}
+export const storeInfoCustomerSlice = createSlice({
+    name: "storeInfoCustomer",
+    initialState: initialStoreInfoCustomerState,
+    reducers: {
+        setStoreInfoCustomer: (state, action) => {
+            state.statusStoreInfo = action.payload 
+        }
+    }
+})
+
 
 const initialButtonActivityCustomerState = {
     buttonActive: "on going"

@@ -43,7 +43,7 @@ export const OrderTypeInvalidAlert = ({ onClose }) => {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-90 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[99999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div
         ref={modalRef}
         className="bg-white flex flex-col items-center rounded-3xl p-8 w-full max-w-sm shadow-2xl transform animate-in fade-in-0 zoom-in-95 duration-300"

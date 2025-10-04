@@ -4,7 +4,7 @@ import BottomNavbar from "./bottomNavbar"
 import { useNavigate, useLocation } from "react-router-dom"
 import { EmptyHistory} from "./empty"
 import { FormatISODate } from "../helper/formatdate"
-import {OrderTypeInvalidAlert} from "./alert"
+import {OrderTypeInvalidAlert, ToastPortal} from "./alert"
 import { useSelector, useDispatch } from "react-redux"
 import historyIcon from "../image/nota.png"
 import { CountDown } from "../helper/countDown"
@@ -27,6 +27,9 @@ import {
 } from 'lucide-react';
 import {getDetailTransactionsHistoryCustomerSlice} from '../reducers/get'
 import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
+import {
+    ModernStoreBrand
+} from './model'
 
 export default function Activity() {
     const dispatch = useDispatch()
@@ -129,13 +132,22 @@ export default function Activity() {
             <div className="container-activity bg-light">
 
                 { orderTypeInvalid && (
-                    <OrderTypeInvalidAlert onClose={() => { 
-                        setOrderTypeInvalid(false)
-                        dispatch(setIsClose(true))
-                    }}/>
+                    <ToastPortal>
+                        <OrderTypeInvalidAlert onClose={() => { 
+                            setOrderTypeInvalid(false)
+                            dispatch(setIsClose(true))
+                        }}/>
+                    </ToastPortal>
                 )}
 
                 <div className="body-activity p-6">
+                    <ModernStoreBrand 
+                        storeName="Nusas Resto"
+                        location="Serpong"
+                        rating={5}
+                        totalReviews={1000}
+                        phone="6289524474969"
+                    />
                     <div className="container-button-activity">
                         <button 
                             onClick={() => handleButtonActivity("on going")}

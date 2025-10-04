@@ -26,6 +26,7 @@ import {
 } from "../reducers/get";
 import { setPasswordCustomerSlice } from "../reducers/patch";
 import { clearCart } from "../reducers/cartSlice";
+import { ModernStoreBrand } from "./model";
 
 
 export default function Profile() {
@@ -132,10 +133,12 @@ export default function Profile() {
         <div>
             <div className="container-activity bg-light">
                 {orderTypeInvalid && (
-                    <OrderTypeInvalidAlert onClose={() => {
-                        setOrderTypeInvalid(false)
-                        dispatch(setIsClose(true))
-                    }}/>
+                    <ToastPortal>
+                        <OrderTypeInvalidAlert onClose={() => {
+                            setOrderTypeInvalid(false)
+                            dispatch(setIsClose(true))
+                        }}/>
+                    </ToastPortal>
                 )}
 
                 { toast && (
@@ -153,6 +156,14 @@ export default function Profile() {
                         </div>
                     </ToastPortal>
                 )}
+
+                <ModernStoreBrand 
+                    storeName="Nusas Resto"
+                    location="Serpong"
+                    rating={5}
+                    totalReviews={1000}
+                    phone="6289524474969"
+                />
 
                 <div className="body-activity">
                     {!spinner ? (

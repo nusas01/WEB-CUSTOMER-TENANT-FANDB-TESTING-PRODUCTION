@@ -10,7 +10,7 @@ import BottomNavbar from "./bottomNavbar"
 import { useDispatch, useSelector } from "react-redux"
 import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 import {SpinnerFixed} from "../helper/spinner"
-import {OrderTypeInvalidAlert} from "./alert"
+import {OrderTypeInvalidAlert, ToastPortal} from "./alert"
 import {
   fetchGetDataCustomer
 } from "../actions/get"
@@ -18,9 +18,16 @@ import {
   X, 
   ShoppingBag, 
   Plus,
+  Coffee,
   ChevronLeft, 
   ChevronRight,
 } from "lucide-react"
+import {
+  getIconByCategory
+} from "../helper/helper"
+import {
+  ModernStoreBrand
+} from "./model"
 
 function Home() {
   const dispatch = useDispatch()
@@ -377,7 +384,7 @@ function Home() {
 
   return (
     <div style={{position: 'relative'}}>
-      <div className={"w-full z-10 bg-white relative"}>        
+      <div className={"w-full z-10 bg-white flex flex-cols relative"}>
         {/* Modern Category Button Container */}
         <div className={`relative mx-auto ${"container-button-category-mobile"}`}>
           {/* Left Arrow */}
@@ -420,46 +427,81 @@ function Home() {
               WebkitScrollbar: { display: 'none' }
             }}
           >
-            <div className="inline-flex px-4 gap-3 py-3 min-w-full">
+            <div className="inline-flex px-4 gap-3 py-2.5 min-w-full">
               {/* Left Padding Spacer */}
               <div className={`flex-shrink-0 transition-all duration-300 ${showLeftArrow ? 'w-8' : 'w-0'}`} />
               
-              {datas.map((item, index) => (
+              {datas.map((item) => {
+              const isActive = activeCategory === item.category_name;
+              const Icon = getIconByCategory(item.category_name);
+
+              return (
                 <button
                   key={item.category}
                   data-category={item.category_name}
-                  className={`group relative flex-shrink-0 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                    activeCategory === item.category_name
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg hover:shadow-xl hover:from-green-600 hover:to-emerald-600'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300 hover:text-green-600 hover:shadow-md hover:bg-green-50'
+                  className={`group relative flex-shrink-0 px-5 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 overflow-hidden ${
+                    isActive
+                      ? 'bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-white text-gray-700 border-2 border-gray-100 hover:border-green-300 hover:text-green-600 hover:shadow-md'
                   }`}
                   onClick={() => scrollToCategory(item.category_name)}
                 >
-                  {/* Background Animation */}
-                  <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
-                    activeCategory === item.category_name
-                      ? 'bg-white/20 scale-100'
-                      : 'bg-green-500/0 scale-95 group-hover:bg-green-500/10 group-hover:scale-100'
+                  {/* Animated Background */}
+                  <div className={`absolute inset-0 transition-all duration-500 ${
+                    isActive
+                      ? 'bg-gradient-to-tr from-white/20 via-transparent to-white/10 opacity-100'
+                      : 'bg-gradient-to-br from-green-500/0 to-emerald-500/0 opacity-0 group-hover:opacity-100 group-hover:from-green-500/10 group-hover:to-emerald-500/5'
                   }`} />
                   
-                  {/* Text */}
-                  <span className="relative z-10 whitespace-nowrap">
-                    {item.category_name}
-                  </span>
-                  
-                  {/* Active Indicator */}
-                  {activeCategory === item.category_name && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm" />
+                  {/* Shimmer Effect for Active */}
+                  {isActive && (
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" 
+                           style={{
+                             animation: 'shimmer 3s infinite',
+                             backgroundSize: '200% 100%'
+                           }} />
+                    </div>
                   )}
                   
-                  {/* Hover Glow Effect */}
-                  <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
-                    activeCategory === item.category_name
-                      ? 'shadow-lg shadow-green-500/25'
-                      : 'shadow-none group-hover:shadow-md group-hover:shadow-green-500/20'
+                  {/* Content Container */}
+                  <div className="relative z-10 flex items-center gap-2">
+                    {/* Icon with Background */}
+                    <div className={`relative p-1 rounded-lg transition-all duration-300 ${
+                      isActive
+                        ? 'bg-white/20'
+                        : 'bg-gray-100 group-hover:bg-green-100'
+                    }`}>
+                      <Icon className={`w-4 h-4 transition-all duration-300 ${
+                        isActive 
+                          ? 'text-white' 
+                          : 'text-gray-600 group-hover:text-green-600'
+                      }`} strokeWidth={2.5} />
+                    </div>
+                    
+                    {/* Text */}
+                    <span className="whitespace-nowrap font-medium">
+                      {item.category_name}
+                    </span>
+                  </div>
+                  
+                  {/* Active Indicator Dot */}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full shadow-lg animate-pulse" />
+                    </div>
+                  )}
+                  
+                  {/* Glow Effect */}
+                  <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
+                    isActive
+                      ? 'shadow-lg shadow-green-500/30'
+                      : 'shadow-none group-hover:shadow-md group-hover:shadow-green-500/15'
                   }`} />
                 </button>
-              ))}
+              );
+            })}
+            
               
               {/* Right Padding Spacer */}
               <div className={`flex-shrink-0 transition-all duration-300 ${showRightArrow ? 'w-8' : 'w-0'}`} />
@@ -486,11 +528,21 @@ function Home() {
       )}
 
       { orderTypeInvalid && (
+        <ToastPortal>
             <OrderTypeInvalidAlert onClose={() => { 
               setOrderTypeInvalid(false)
               dispatch(setIsClose(true))
             }}/>
+        </ToastPortal>
         )}
+
+      <ModernStoreBrand 
+        storeName="Nusas Resto"
+        location="Serpong"
+        rating={5}
+        totalReviews={1000}
+        phone="6289524474969"
+      />
 
       <div className="container-bg">
         <div className={containerClass === "container-main-cart" ? "container-home" : `container-home-mobile`}>
@@ -710,3 +762,5 @@ function Home() {
 
 
 export default Home;
+
+

@@ -31,6 +31,7 @@ import {createTransactionCustomerSlice} from "../reducers/post"
 import { setOrderTypeContext, setIsClose } from "../reducers/reducers"
 import { loginStatusCustomer } from "../actions/get"
 import { getPaymentMethodsCustomerSlice } from "../reducers/get"
+import { ModernStoreBrand } from "./model"
 
 function Cart({ closeCart }) {
     const [notesId, setNotesId] = useState('')
@@ -274,8 +275,22 @@ function Cart({ closeCart }) {
         setIsModelInputNumberEwallet(false)
     }
 
-    const {tableId, orderTakeAway} = useSelector((state) => state.persisted.orderType)
+    const {tableId, orderTakeAway, isClose} = useSelector((state) => state.persisted.orderType)
+    if (orderTakeAway === null && tableId === null) {
+        const q = new URLSearchParams(location.search);
+        const orderTakeAways = q.get("order_type_take_away") === "true";
+        const tableIds = q.get("table_id");
 
+        dispatch(setOrderTypeContext({ orderTakeAway: orderTakeAways, tableId: tableIds }));
+    }
+
+    useEffect(() => {
+        if (tableId === null && orderTakeAway === false && !isClose) {
+            setOrderTypeInvalid(true)
+            return
+        }
+      }, [tableId, orderTakeAway, isClose])
+    
 
     // handle create transaction
     const [productUnavailable, setProductUnavailable] = useState(false)
@@ -502,10 +517,12 @@ function Cart({ closeCart }) {
 
         {/* section alert invalid order type */}
         { (orderTypeInvalid || errorOrderType) && (
-            <OrderTypeInvalidAlert onClose={() => {
-                setOrderTypeInvalid(false)
-                dispatch(setIsClose(true))
-            }}/>   
+            <ToastPortal>
+                <OrderTypeInvalidAlert onClose={() => {
+                    setOrderTypeInvalid(false)
+                    dispatch(setIsClose(true))
+                }}/>   
+            </ToastPortal>
         )}
 
         {/* section header of cart */}
@@ -540,6 +557,13 @@ function Cart({ closeCart }) {
         {/* section item cart */}
         <div>
             <div className="item-container-cart p-6 bg-gray-50">
+                <ModernStoreBrand 
+                    storeName="Nusas Resto"
+                    location="Serpong"
+                    rating={5}
+                    totalReviews={1000}
+                    phone="6289524474969"
+                />
                 {items.length > 0 ? items.map((item, index) => (
                     <div key={index} className="group relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 py-6 px-3">
                         <div className="flex gap-6 items-start"> 
