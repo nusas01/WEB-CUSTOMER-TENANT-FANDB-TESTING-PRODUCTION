@@ -57,6 +57,28 @@ export const getDataCustomerSlice = createSlice({
     }
 })
 
+const initialGetNumberTableCustomerState = {
+    numberTable: null,
+    loading: false,
+    error: null,
+}
+export const getNumberTableCustomerSlice = createSlice({
+    name: "numberTableCustomer",
+    initialState: initialGetNumberTableCustomerState,
+    reducers: {
+        setLoadingNumberTableCustomer: (state, action) => {
+            state.loading = action.payload
+        },
+        successFetchNumberTableCustomer: (state, action) => {
+            state.numberTable = action.payload?.number || null
+            state.error = null
+        },
+        errorFetchNumberTableCustomer: (state, action) => {
+            state.error = action.payload
+        }
+    }
+})
+
 const initialGetTransactionsOnGoingCustomer = {
     dataTransactionOnGoing: [],
     lengthTransactionOnGoing: 0,

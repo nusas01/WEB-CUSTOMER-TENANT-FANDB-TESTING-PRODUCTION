@@ -18,6 +18,7 @@ import {
 import { 
   getProductsCustomerSlice, 
   getDataCustomerSlice,
+  getNumberTableCustomerSlice,
   getTransactionOnGoingCustomerSlice,
   getTransactionsHistoryCustomerSlice,
   getPaymentMethodsCustomerSlice,
@@ -110,6 +111,7 @@ const persistedReducers = combineReducers({
   storeInfoCustomer: storeInfoCustomerSlice.reducer,
   productsCustomer: getProductsCustomerSlice.reducer,
   dataCustomer: getDataCustomerSlice.reducer,
+  getNumberTableCustomer: getNumberTableCustomerSlice.reducer,
   paymentMethodsCustomer: getPaymentMethodsCustomerSlice.reducer,
   orderType: orderTypeSlice.reducer,
   loginStatusCustomer: loginStatusCustomerSlice.reducer,

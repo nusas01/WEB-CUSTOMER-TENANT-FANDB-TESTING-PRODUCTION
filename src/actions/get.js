@@ -3,6 +3,7 @@ import {
     getProductsCustomerSlice, 
     logoutCustomerSlice, 
     getDataCustomerSlice, 
+    getNumberTableCustomerSlice,
     getTransactionOnGoingCustomerSlice, 
     getTransactionsHistoryCustomerSlice, 
     getPaymentMethodsCustomerSlice,
@@ -170,6 +171,56 @@ export const fetchGetDataCustomer = () => {
             dispatch(setLoadingGetDataCustomer(false))
         }
     }
+}
+
+const {successFetchNumberTableCustomer, errorFetchNumberTableCustomer, setLoadingNumberTableCustomer} = getNumberTableCustomerSlice.actions
+export const fetchNumberTableCustomer = (id) => {
+  return async (dispatch, getState) => {
+    const { statusExpiredToken } = getState().statusExpiredTokenState;
+    if (statusExpiredToken) return; 
+
+    dispatch(setLoadingNumberTableCustomer(true))
+    try {
+      const nonce_data = await customerCollectFingerprintAsync(dispatch);
+
+      const params = {
+        nonce: nonce_data.nonce,
+        value: nonce_data.value,
+        iv: nonce_data.iv,
+        id: id,
+      }
+
+      const response = await axiosInstance.get(`${process.env.REACT_APP_NUMBER_TABLE_URL}`, {
+          withCredentials: true,
+          headers: {
+              'API_KEY': process.env.REACT_APP_API_KEY,
+              "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+          },
+          params: params,
+      })
+      dispatch(successFetchNumberTableCustomer(response?.data))
+    } catch (error) {
+      if (error.response?.data?.code === "TOKEN_EXPIRED") {
+          dispatch(setStatusExpiredToken(true))
+      }
+
+      if (error.response?.data?.code === "TOKEN_INTERNAL_EXPIRED") {
+        dispatch(setStatusExpiredInternalToken(true));
+      }
+
+      if (error.response?.data?.code === "TOKEN_USER_EXPIRED") {
+        dispatch(setStatusExpiredUserToken(true));
+      }
+
+      if (error.response?.data?.code === "SERVICE_ON_MAINTENANCE") {
+        dispatch(setStatusServiceMaintenance(true));
+      }
+
+      dispatch(errorFetchNumberTableCustomer(error.response?.data?.error))
+    } finally {
+      dispatch(setLoadingNumberTableCustomer(false))
+    }
+  }
 }
 
 const {setLoadingGetTransactionOnGoingCustomer, fetchSuccessGetTransactionOnGoingCustomer, fetchErrorGetTransactionOnGoingCustomer} = getTransactionOnGoingCustomerSlice.actions;
