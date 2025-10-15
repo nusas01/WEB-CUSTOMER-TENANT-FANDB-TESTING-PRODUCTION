@@ -587,7 +587,7 @@ const SettingsDashboard = ({isFullScreen, fullscreenchange}) => {
                         dataEmployeeInternal.image !== "00000000-0000-0000-0000-000000000000" &&
                         !previewUrl ? (
                           <img
-                            src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${dataEmployeeInternal.image}`}
+                            src={`https://assets.nusas.id/${dataEmployeeInternal.image}`}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />

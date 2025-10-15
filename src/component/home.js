@@ -628,7 +628,7 @@ function Home() {
                               ? 'group-hover:scale-110'
                               : 'grayscale brightness-75 contrast-75'
                           }`}
-                          src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${product.image}`}
+                          src={`https://assets.nusas.id/${product.image}`}
                           alt={product.name}
                         />
                         <div className={`absolute inset-0 transition-all duration-300 ${

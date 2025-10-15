@@ -569,7 +569,7 @@ function Cart({ closeCart }) {
                         <div className="flex gap-6 items-start"> 
                             <div className="min-w-[120px] relative">
                                 <img 
-                                    src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${item.image}`}
+                                    src={`https://assets.nusas.id/${item.image}`}
                                     className="w-32 h-32 rounded-xl object-cover border border-gray-200"
                                     alt={item.name}
                                 />

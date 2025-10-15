@@ -752,7 +752,7 @@ const ComponentCartCashier = ({cartRef, isFullScreen}) => {
                             <td className="py-3 px-4">
                             <div className="w-[62px] h-auto aspect-[4/3]">
                                 <img 
-                                src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${t.image}`} 
+                                src={`https://assets.nusas.id/${t.image}`} 
                                 alt={t.name} 
                                 className="w-full h-full object-cover rounded-md" 
                                 />
@@ -1084,7 +1084,7 @@ const ProductCashier = ({onClose}) => {
                                                         className={`h-32 mx-auto w-40 object-cover rounded-md mb-3 transition-all duration-200 ${
                                                             !isAvailable ? 'grayscale brightness-75' : ''
                                                         }`}
-                                                        src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${prd.image}`}
+                                                        src={`https://assets.nusas.id/${prd.image}`}
                                                         alt={prd.name}
                                                     />
 

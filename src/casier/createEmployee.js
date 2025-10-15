@@ -546,7 +546,7 @@ const CreateEmployee = () => {
                   ) : formData.image ? (
                     <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
                       <img
-                        src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${formData.image}`}
+                        src={`https://assets.nusas.id/${formData.image}`}
                         alt="Preview"
                         className="w-full h-full object-cover"
                       />

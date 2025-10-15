@@ -20,6 +20,7 @@ import {
   storeInfoCustomerSlice
 } from "../reducers/reducers"
 import { useDispatch, useSelector } from "react-redux";
+import { fetchNumberTableCustomer } from "../actions/get";
 
 export const ModalConfirm = ({ isOpen, onClose, onConfirm, message }) => {
   if (!isOpen) return null;

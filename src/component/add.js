@@ -47,7 +47,7 @@ export const AddProductToCart = ({ onClose, id, name, desc, harga, image, type }
           {/* Product Info */}
           <div className="flex items-center space-x-4">
             <img 
-              src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${image}`} 
+              src={`https://assets.nusas.id/${image}`} 
               alt="Product" 
               className="w-full h-48 rounded-xl object-cover"
             />

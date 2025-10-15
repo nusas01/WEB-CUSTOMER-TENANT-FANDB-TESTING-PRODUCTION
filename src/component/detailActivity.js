@@ -360,7 +360,7 @@ export default function DetailActivity() {
                         <div key={index} className="flex items-start space-x-4 group hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 p-4 rounded-xl transition-all duration-200 border border-transparent hover:border-green-100">
                             <div className="relative">
                                 <img 
-                                    src={`https://nusas-bucket.oss-ap-southeast-5.aliyuncs.com/${item.product.image}`} 
+                                    src={`https://assets.nusas.id/${item.product.image}`} 
                                     alt={item.product.name}
                                     className="w-20 h-20 object-cover rounded-xl border-2 border-gray-100 group-hover:border-green-200 transition-colors shadow-sm"
                                 />
