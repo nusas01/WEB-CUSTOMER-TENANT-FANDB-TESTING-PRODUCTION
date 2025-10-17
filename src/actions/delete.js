@@ -25,8 +25,8 @@ const {setSuccessDeleteTableInternal, setErrorDeleteTableInternal, setLoadingDel
 export const deleteTableInternal = (numberTable) => async (dispatch) => {
     const config = {
         headers: {
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -65,8 +65,8 @@ const {setSuccessDeleteCategoryInternal, setErrorDeleteCategoryInternal, setLoad
 export const deleteCategoryInternal = (id) => async (dispatch) => {
     const config = {
         headers: {
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
         params: {
@@ -119,8 +119,8 @@ export const deleteEmployee = (id) => {
             params: { id: id },
             withCredentials: true,
             headers: {
-                "API_KEY": process.env.REACT_APP_API_KEY,
-                "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+                "x-api-key": process.env.REACT_APP_API_KEY,
+                "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
             },
         })
         dispatch(setSuccessDeleteEmployee(response?.data?.success))

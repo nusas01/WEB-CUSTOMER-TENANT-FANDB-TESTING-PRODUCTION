@@ -53,8 +53,8 @@ export const signupCustomer = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     };
@@ -102,8 +102,8 @@ export const verificationSignupCustomer = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials : true,
     };
@@ -146,8 +146,8 @@ export const loginCustomer = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -202,8 +202,8 @@ export const forgotPasswordCustomer = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -252,11 +252,11 @@ export const createTransactionCustomer = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
             ...(state.orderTakeAway === true
-            ? {"order_type_take_away": "true"} 
-            : {"table_id": state.tableId})
+            ? {"x-order-type-take-away": "true"} 
+            : {"x-table-id": state.tableId})
         },
         withCredentials: true,
     }
@@ -305,8 +305,8 @@ export const loginGoogleCustomer = () => async (dispatch) => {
         const response = await axiosInstance.post(`${process.env.REACT_APP_LOGIN_SIGNUP_GOOGLE_CUSTOMER}`, {}, {
             headers: {
                 "Content-Type": "application/json",
-                "API_KEY": process.env.REACT_APP_API_KEY,
-                "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+                "x-api-key": process.env.REACT_APP_API_KEY,
+                "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
             },
             withCredentials: true,
         })
@@ -341,8 +341,8 @@ export const loginInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -398,8 +398,8 @@ export const forgotPasswordInternal = (data) => async (dispatch) => {
     const config = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -448,8 +448,8 @@ export const createTransactionInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -498,8 +498,8 @@ export const createCategoryInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -541,8 +541,8 @@ export const createProductInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -585,8 +585,8 @@ export const DeleteProductInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -620,8 +620,8 @@ export const getJournalDrafByJsonInternal = (data) => async (dispatch, getState)
     const configJson = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -657,8 +657,8 @@ export const inputGeneralJournalInternal = (data) => async (dispatch, getState) 
     const configJson = {
         headers: {
             "Content-Type": "application/json",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -710,8 +710,8 @@ const { setSuccessCreateTableInternal, setErrorCreateTableIntenal, setLoadingCre
 export const createTabelInternal = (data) => async (dispatch) => {
     const configJson = {
         headers: {
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -754,8 +754,8 @@ export const createQROrderTypeTakeAway = () => async (dispatch) => {
     const configJson = {
         headers: {
             "Content-Type": "multipart/form-data",
-            "API_KEY": process.env.REACT_APP_API_KEY,
-            "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+            "x-api-key": process.env.REACT_APP_API_KEY,
+            "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
     }
@@ -802,8 +802,8 @@ export const createEmployee = (formData) => {
       const response = await axiosInstance.post(process.env.REACT_APP_EMPLOYEE, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "API_KEY": process.env.REACT_APP_API_KEY,
-          "API_KEY_MAINTANANCE": process.env.REACT_APP_API_KEY_MAINTANANCE,
+          "x-api-key": process.env.REACT_APP_API_KEY,
+          "x-api-key-maintanance": process.env.REACT_APP_API_KEY_MAINTANANCE,
         },
         withCredentials: true,
       })

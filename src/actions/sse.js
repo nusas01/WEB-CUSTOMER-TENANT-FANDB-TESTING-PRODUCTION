@@ -71,7 +71,7 @@ const SSETransactionOnGoingCustomer = () => {
     const dispatch = useDispatch()
     const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
     const encodedApiKeyMaintanance = encodeURIComponent(process.env.REACT_APP_API_KEY_MAINTANANCE)
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_ON_GOING_URL}?API_KEY=${encodedApiKey}&API_KEY_MAINTANANCE=${encodedApiKeyMaintanance}`
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_ON_GOING_URL}?x-api-key=${encodedApiKey}&x-api-key-maintanance=${encodedApiKeyMaintanance}`
 
     useSSE(url, (data) => {
         dispatch(updateTransactionOnGoingStatusById(data))
@@ -86,7 +86,7 @@ const SSETransactionCashOnGoingInternal = () => {
     const dispatch = useDispatch()
     const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
     const encodedApiKeyMaintanance = encodeURIComponent(process.env.REACT_APP_API_KEY_MAINTANANCE)
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${encodedApiKey}&API_KEY_MAINTANANCE=${encodedApiKeyMaintanance}`
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_CASH_ON_GOING_INTERNAL_URL}?x-api-key=${encodedApiKey}&x-api-key-maintanance=${encodedApiKeyMaintanance}`
 
     useSSE(url, (data) => {
         dispatch(addTransactionCashOnGoingInternal(data))
@@ -101,7 +101,7 @@ const SSETransactionNonCashOnGoingInternal = () => {
     const dispatch = useDispatch()
     const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
     const encodedApiKeyMaintanance = encodeURIComponent(process.env.REACT_APP_API_KEY_MAINTANANCE)
-    const url = `${process.env.REACT_APP_SSE_TRANSACTION_NON_CASH_ON_GOING_INTERNAL_URL}?API_KEY=${encodedApiKey}&API_KEY_MAINTANANCE=${encodedApiKeyMaintanance}`
+    const url = `${process.env.REACT_APP_SSE_TRANSACTION_NON_CASH_ON_GOING_INTERNAL_URL}?x-api-key=${encodedApiKey}&x-api-key-maintanance=${encodedApiKeyMaintanance}`
 
     useSSE(url, (data) => {
         dispatch(addTransactionNonCashOnGoingInternal(data))
@@ -118,7 +118,7 @@ const SSEOrderInternal = () => {
     const dispatch = useDispatch()
     const encodedApiKey = encodeURIComponent(process.env.REACT_APP_API_KEY)
     const encodedApiKeyMaintanance = encodeURIComponent(process.env.REACT_APP_API_KEY_MAINTANANCE)
-    const url = `${process.env.REACT_APP_SSE_ORDER_INTERNAL_URL}?API_KEY=${encodedApiKey}&API_KEY_MAINTANANCE=${encodedApiKeyMaintanance}`
+    const url = `${process.env.REACT_APP_SSE_ORDER_INTERNAL_URL}?x-api-key=${encodedApiKey}&x-api-key-maintanance=${encodedApiKeyMaintanance}`
 
     useSSE(url, (data) => {
         dispatch(appendOrdersInternal(data))
