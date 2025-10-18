@@ -148,8 +148,7 @@ const CreateEmployee = () => {
       '.jpeg': 'image/jpeg',
       '.jpg': 'image/jpeg', 
       '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml'
+      '.webp': 'image/webp',
     }
 
     const validateField = (name, value) => {
@@ -567,7 +566,7 @@ const CreateEmployee = () => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".jpeg,.jpg,.png,.gif,.svg"
+                  accept=".jpeg,.jpg,.png,.webp"
                   onChange={handleImageChange}
                   className="hidden"
                 />
